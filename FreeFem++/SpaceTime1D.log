@@ -1,0 +1,55 @@
+-- FreeFem++ v  3.610001 (date jeu. 12 juil. 2018 15:05:23)
+ Load: lg_fem lg_mesh lg_mesh3 eigenvalue
+    1 : load "medit"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\medit = 0)
+    2 :
+    3 : /*
+    4 : State equation:
+    5 :     u_t - div(a*grad(u)) = F, (x, t) \in \Omega x [0, T]
+    6 : Neumann boundary condition:
+    7 :     du(x, t)/dN = uN(x, t), (x, t) \in \partial\Omega x [0, T]
+    8 : Initial condition:
+    9 :     u(x, 0) = u0(x), x \in \Omega
+   10 : */
+   11 :
+   12 : real T = 1;
+   13 : int nn = 100;
+   14 : int Nx = nn, Ny = nn;
+   15 : int[int] labs = [1, 2, 3, 4];
+   16 : mesh Th = square(Nx, Ny, [x, T * y], label = labs);
+   17 : fespace Vh(Th, P1);
+   18 :
+   19 : Vh ue = cos(pi * x) * sin(pi * y);
+   20 : Vh uN = 0;
+   21 : Vh u0 = ue(x, 0);
+   22 : Vh a = 1;
+   23 : Vh F = pi * cos(pi * x) * cos(pi * y) + pi^2 * cos(pi * x) * sin(pi * y);
+   24 :
+   25 : Vh u, v;
+   26 :
+   27 : solve SpaceTime(u, v, solver = GMRES) =
+   28 :           int2d(Th)(dy(u) * v + dx(u) * dx(v))
+   29 :         + int2d(Th)(dy(u0) * v + dx(u0) * dx(v))
+   30 :         - int1d(Th, 2, 4)(uN * v)
+   31 :         - int2d(Th)(F * v) + on(1, u = 0);
+   32 : u = u + u0;
+   33 :
+   34 : plot(ue, wait = 1, dim=3d);
+   35 : plot(u, ue, wait = 1, dim=3d);
+   36 : plot(ue, wait = 1, dim=3d);
+   37 : plot(u, ue, wait = 1, dim=3d);
+   38 :
+   39 : //Vh er = ue - u;
+   40 : //cout << "Error in L2: " << sqrt(int2d(Th) (er * er)) << endl;
+   41 : //cout << "Error in H1: " << sqrt(int2d(Th) (dy(er) * dy(er))) << endl;
+   42 : //cout << "Error in H1: " << sqrt(int2d(Th) (dx(er) * dx(er))) << endl;
+   43 : //cout << er[] << endl;ÿ sizestack + 1024 =4712  ( 3688 )
+ 
+  -- Square mesh : nb vertices  =10201 ,  nb triangles = 20000 ,  nb boundary edges 400
+GMRES converges: 6162 2.60349e-008 0.0261413 9.95928e-007 < 1e-006
+  -- Solve :
+          min -0.999941  max 0.999623
+times: compile 0.121s, execution 8.641s,  mpirank:0
+ ######## We forget of deleting   43 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
+ CodeAlloc : nb ptr  2963,  size :386888 mpirank: 0
+Ok: Normal End
+ try getConsole D:\Study\HUST\FEM\heatsource\FreeFem++\SpaceTime1D.edp

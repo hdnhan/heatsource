@@ -1,0 +1,22 @@
+\begin{thebibliography}{1}
+
+\bibitem{a5}
+Dinh~Nho {H}ao, Phan~Xuan Thanh, D.~Lesnic, and B.T. Johansson.
+\newblock A boundary element method for a multi-dimensional inverse heat
+  conduction problem.
+\newblock {\em International Journal of Computer Mathematics}, 89:1540--1554,
+  2012.
+
+\bibitem{b6}
+Olaf {S}teinbach.
+\newblock {\em Numerical approximation methods for elliptic boundary value
+  problems. Finite and boundary elements}.
+\newblock Springer, New York, 2008.
+
+\bibitem{b1}
+Fredi {T}röltzsch.
+\newblock {\em Optimal Control of Partial Differential Equations: Theory,
+  Methods, and Applications}.
+\newblock American Mathematical Society, Providence, Rhode Island, 2010.
+
+\end{thebibliography}

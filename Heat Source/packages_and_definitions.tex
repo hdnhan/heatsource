@@ -1,0 +1,52 @@
+% packages
+\usepackage[utf8]{vietnam}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{color, graphicx, cases}
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=black,
+	filecolor=black,      
+	urlcolor=black,
+}
+\usepackage{array, multirow, booktabs}
+\usepackage{caption, subcaption}
+\usepackage{ragged2e} % using justifying
+\numberwithin{equation}{section}
+\everymath{\displaystyle}
+
+%\usepackage{fancyhdr}
+%\pagestyle{fancy}
+%\lhead{HỒ ĐỨC NHÂN}
+%\chead{}
+%\rhead{ĐỒ ÁN TỐT NGHIỆP}
+%\lfoot{}
+%\cfoot{\thepage}
+%\rfoot{}
+
+\usepackage[a4paper,left=35mm,top=31mm,right=20mm,bottom=30mm]{geometry}
+\renewcommand{\baselinestretch}{1.5}
+
+% new definitions
+\newtheorem{dl}{Định lý}[section]
+\newtheorem{md}{Mệnh đề}[section]
+\newtheorem{hq}{Hệ quả}[section]
+
+\theoremstyle{definition}
+\newtheorem{dn}{Định nghĩa}[section]
+\newtheorem{vd}{Ví dụ}[section]
+\newtheorem{cy}{Chú ý}[section]
+\newtheorem{bt}{Bài toán}[section]
+\newtheorem{nx}{Nhận xét}[section]
+
+% reference
+\usepackage{cleveref}
+\crefname{dl}{\textbf{Định lý}}{}
+\crefname{md}{\textbf{Mệnh đề}}{}
+\crefname{hq}{\textbf{Hệ quả}}{}
+
+\crefname{dn}{\textbf{Định nghĩa}}{}
+\crefname{vd}{\textbf{Ví dụ}}{}
+\crefname{cy}{\textbf{Chú ý}}{}
+\crefname{bt}{\textbf{Bài toán}}{}
+\crefname{nx}{\textbf{Nhận xét}}{}

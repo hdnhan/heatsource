@@ -1,0 +1,88 @@
+load "ff-IpOpt"
+load "medit"
+
+real T = 1;
+int nn = 50;
+int Nx = nn, Ny = nn; 
+int[int] labs = [1, 2, 3, 4];
+mesh Th = square(Nx, Ny, [x, T * y], label = labs);
+fespace Vh(Th, P1);
+
+//func real ue(real x, real y){return cos(pi * x) * sin(pi * y);}
+Vh ue = cos(pi * x) * sin(pi * y);
+Vh uN = 0;
+Vh u0 = 0;
+Vh a = 1;
+Vh q = x * y + 1;
+Vh fe = (1 + y^2) * (x * (x <= 0.5) + (1 - x) * (x > 0.5)); 
+Vh g = pi * cos(pi * x) * cos(pi * y) + a * pi^2 * cos(pi * x) * sin(pi * y) - fe * q;
+real gamma = 1e-6;
+
+Vh u;
+
+/*
+State equation: 
+    u_t - div(a*grad(u)) = f * q + g, (x, t) \in \Omega x [0, T]
+Neumann boundary condition: 
+    du(x, t)/dN = uN(x, t), (x, t) \in \partial\Omega x [0, T]
+Initial condition: 
+    u(x, 0) = u0(x), x \in \Omega
+*/
+
+// State equation:
+func real[int] StateProblem(real[int] f){
+    Vh u, v, ff; ff[] = f;
+    Vh rsh = ff * q + g;
+
+    solve SpaceTime(u, v, solver = GMRES) = 
+          int2d(Th)(dy(u)  * v + a * dx(u)  * dx(v)) 
+        + int2d(Th)(dy(u0) * v + a * dx(u0) * dx(v))
+        - int1d(Th, 2, 4) (uN * v)
+        - int2d(Th)(rsh * v) 
+        + on(1, u = u0);
+    u = u + u0;
+    return u[];
+}
+
+// Adjoint equation
+func real[int] AdjointProblem(real[int] u){
+    //int[int] labs1 = [0, 2, 3, 4];
+    //mesh Th1 = square(Nx, Ny, [x, T * y], label = labs1);
+    //fespace Vh1(Th, P1);
+    Vh p, v, uu; uu[] = u;
+    Vh rsh = uu - ue;
+    Vh pN = 0;
+
+    solve JointProblem(p, v, solver = GMRES) =
+          int2d(Th)(-dy(p) * v + a * dx(p) * dx(v))
+        - int1d(Th, 2, 4)(pN * v)
+        - int2d(Th)(rsh * v) + on(3, p = 0);
+    return p[];
+}
+
+// Tikhonov functional
+func real J(real[int] f) {
+    Vh ff; ff[] = f;
+    Vh uu; uu[] = StateProblem(f); 
+     return 0.5 * int2d(Th)((uu - ue)^2) + 0.5 * gamma * int2d(Th)(ff^2);
+}
+
+// Gradient of Tikhonov funtional
+func real[int] GradJ(real[int] f) {
+    Vh ff; ff[] = f;
+    Vh pp; pp[] = AdjointProblem(StateProblem(f));
+    Vh res = pp * q + gamma * ff;
+    return res[];
+}
+
+Vh f = 0;
+IPOPT(J, GradJ, f[], tol=1e-4);
+
+savemesh(Th, "IP1.mesh");
+savesol("IP1.sol", Th, f);
+savemesh(Th, "IPe.mesh");
+savesol("IPe.sol", Th, fe);
+
+//plot(fe, wait = 1, dim=3d);
+//plot(f, fe, wait = 1, dim=3d);
+cout << "Error: " << sqrt(int2d(Th)((fe - f)^2)) << endl;

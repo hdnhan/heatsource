@@ -1,0 +1,43 @@
+load "medit"
+
+/*
+State equation: 
+    u_t - div(a*grad(u)) = F, (x, t) \in \Omega x [0, T]
+Neumann boundary condition: 
+    du(x, t)/dN = uN(x, t), (x, t) \in \partial\Omega x [0, T]
+Initial condition: 
+    u(x, 0) = u0(x), x \in \Omega
+*/
+
+real T = 1;
+int nn = 100;
+int Nx = nn, Ny = nn; 
+int[int] labs = [1, 2, 3, 4];
+mesh Th = square(Nx, Ny, [x, T * y], label = labs);
+fespace Vh(Th, P1);
+
+Vh ue = cos(pi * x) * sin(pi * y);
+Vh uN = 0;
+Vh u0 = ue(x, 0);
+Vh a = 1;
+Vh F = pi * cos(pi * x) * cos(pi * y) + pi^2 * cos(pi * x) * sin(pi * y);
+
+Vh u, v;
+
+solve SpaceTime(u, v, solver = GMRES) = 
+          int2d(Th)(dy(u) * v + dx(u) * dx(v))
+        + int2d(Th)(dy(u0) * v + dx(u0) * dx(v))
+        - int1d(Th, 2, 4)(uN * v)
+        - int2d(Th)(F * v) + on(1, u = 0);
+u = u + u0;
+
+plot(ue, wait = 1, dim=3d);
+plot(u, ue, wait = 1, dim=3d);
+plot(ue, wait = 1, dim=3d);
+plot(u, ue, wait = 1, dim=3d);
+
+//Vh er = ue - u;
+//cout << "Error in L2: " << sqrt(int2d(Th) (er * er)) << endl;
+//cout << "Error in H1: " << sqrt(int2d(Th) (dy(er) * dy(er))) << endl;
+//cout << "Error in H1: " << sqrt(int2d(Th) (dx(er) * dx(er))) << endl;
+//cout << er[] << endl;
