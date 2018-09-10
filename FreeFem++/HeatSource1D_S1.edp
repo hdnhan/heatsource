@@ -4,7 +4,7 @@ load "medit"
 real T = 1;
 int nn = 25;
 int Nx = nn, Ny = nn; 
-int[int] labs = [1, 2, 3, 4];
+int[int] labs = [1, 2, 0, 4];
 mesh Th = square(Nx, Ny, [x, T * y], label = labs);
 fespace Vh(Th, P1);
 
@@ -14,7 +14,7 @@ Vh uN = 0;
 Vh u0 = 0;
 Vh a = 1;
 Vh q = x * y + 1;
-Vh fe = (1 + 0) * (x * (x <= 0.5) + (1 - x) * (x > 0.5)); 
+Vh fe = (1 + y^2) * (x * (x <= 0.5) + (1 - x) * (x > 0.5)); 
 Vh g = pi * cos(pi * x) * cos(pi * y) + a * pi^2 * cos(pi * x) * sin(pi * y) - fe * q;
 real gamma = 1e-6;
 
@@ -34,7 +34,7 @@ func real[int] StateProblem(real[int] f){
     Vh u, v, ff; ff[] = f;
     Vh rsh = ff * q + g;
 
-    solve SpaceTime(u, v, solver = GMRES) = 
+    solve SpaceTime(u, v, solver = sparsesolver) = 
           int2d(Th)(dy(u)  * v + a * dx(u)  * dx(v)) 
         + int2d(Th)(dy(u0) * v + a * dx(u0) * dx(v))
         - int1d(Th, 2, 4) (uN * v)
@@ -44,16 +44,31 @@ func real[int] StateProblem(real[int] f){
     return u[];
 }
 
+func real[int] flip(real[int] u){
+    Vh uu; uu[] = u;
+    Vh flipu;
+    for (int i =0; i <= Ny/2; i++){
+        for (int j=0; j <= Nx; j++){
+            flipu[][i * (Nx + 1) + j] = uu[][(Ny - i) * (Nx + 1) + j];
+            flipu[][(Ny - i) * (Nx + 1) + j] = uu[][i * (Nx + 1) + j];
+        }
+    }
+    return flipu[];
+}
 // Adjoint equation
 func real[int] AdjointProblem(real[int] u){
     Vh p, v, uu; uu[] = u;
-    Vh rsh = uu - ue;
+    Vh temp = flip(u); 
+    Vh rsh =  temp - ue(x, T - y);
+    Vh pN = 0;
 
-    solve JointProblem(p, v, solver = GMRES) =
-          int2d(Th)(-dy(p) * v + a * dx(p) * dx(v))
+    solve JointProblem(p, v, solver = sparsesolver) =
+          int2d(Th)(dy(p) * v + a(x, T-y) * dx(p) * dx(v))
         - int1d(Th, 2, 4)(rsh * v)
-        + on(3, p = 0);
-    return p[];
+        + on(1, p = 0);
+    real[int] pp = p[];
+    Vh res = flip(pp);
+    return res[];
 }
 
 // Tikhonov functional
@@ -72,7 +87,12 @@ func real[int] GradJ(real[int] f) {
 }
 
 Vh f = 0;
-IPOPT(J, GradJ, f[], tol=1e-4, maxiter=10);
+IPOPT(J, GradJ, f[], tol=1e-4);
+
+savemesh(Th, "IP1.mesh");
+savesol("IP1.sol", Th, f);
+savemesh(Th, "IPe.mesh");
+savesol("IPe.sol", Th, fe);
 
 plot(fe, wait = 1, dim=3d);
 plot(f, fe, wait = 1, dim=3d);

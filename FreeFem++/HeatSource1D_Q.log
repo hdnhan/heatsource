@@ -6,7 +6,7 @@
     4 : real T = 1;
     5 : int nn = 50;
     6 : int Nx = nn, Ny = nn;
-    7 : int[int] labs = [1, 2, 3, 4];
+    7 : int[int] labs = [1, 2, 0, 4];
     8 : mesh Th = square(Nx, Ny, [x, T * y], label = labs);
     9 : fespace Vh(Th, P1);
    10 :
@@ -36,7 +36,7 @@
    34 :     Vh u, v, ff; ff[] = f;
    35 :     Vh rsh = ff * q + g;
    36 :
-   37 :     solve SpaceTime(u, v, solver = GMRES) =
+   37 :     solve SpaceTime(u, v, solver = sparsesolver) =
    38 :           int2d(Th)(dy(u)  * v + a * dx(u)  * dx(v))
    39 :         + int2d(Th)(dy(u0) * v + a * dx(u0) * dx(v))
    40 :         - int1d(Th, 2, 4) (uN * v)
@@ -46,49 +46,60 @@
    44 :     return u[];
    45 : }
    46 :
-   47 : // Adjoint equation
-   48 : func real[int] AdjointProblem(real[int] u){
-   49 :     //int[int] labs1 = [0, 2, 3, 4];
-   50 :     //mesh Th1 = square(Nx, Ny, [x, T * y], label = labs1);
-   51 :     //fespace Vh1(Th, P1);
-   52 :     Vh p, v, uu; uu[] = u;
-   53 :     Vh rsh = uu - ue;
-   54 :     Vh pN = 0;
-   55 :
-   56 :     solve JointProblem(p, v, solver = GMRES) =
-   57 :           int2d(Th)(-dy(p) * v + a * dx(p) * dx(v))
-   58 :         - int1d(Th, 2, 4)(pN * v)
-   59 :         - int2d(Th)(rsh * v) + on(3, p = 0);
-   60 :     return p[];
-   61 : }
-   62 :
-   63 : // Tikhonov functional
-   64 : func real J(real[int] f) {
-   65 :     Vh ff; ff[] = f;
-   66 :     Vh uu; uu[] = StateProblem(f);
-   67 :      return 0.5 * int2d(Th)((uu - ue)^2) + 0.5 * gamma * int2d(Th)(ff^2);
-   68 : }
-   69 :
-   70 : // Gradient of Tikhonov funtional
-   71 : func real[int] GradJ(real[int] f) {
-   72 :     Vh ff; ff[] = f;
-   73 :     Vh pp; pp[] = AdjointProblem(StateProblem(f));
-   74 :     Vh res = pp * q + gamma * ff;
-   75 :     return res[];
-   76 : }
-   77 :
-   78 : Vh f = 0;
-   79 : IPOPT(J, GradJ, f[], tol=1e-4);
+   47 : func real[int] flip(real[int] u){
+   48 :     Vh uu; uu[] = u;
+   49 :     Vh flipu;
+   50 :     for (int i =0; i <= Ny/2; i++){
+   51 :         for (int j=0; j <= Nx; j++){
+   52 :             flipu[][i * (Nx + 1) + j] = uu[][(Ny - i) * (Nx + 1) + j];
+   53 :             flipu[][(Ny - i) * (Nx + 1) + j] = uu[][i * (Nx + 1) + j];
+   54 :         }
+   55 :     }
+   56 :     return flipu[];
+   57 : }
+   58 : // Adjoint equation
+   59 : func real[int] AdjointProblem(real[int] u){
+   60 :     Vh p, v, uu; uu[] = u;
+   61 :     Vh temp = flip(u);
+   62 :     Vh rsh =  temp - ue(x, T - y);
+   63 :     Vh pN = 0;
+   64 :
+   65 :     solve JointProblem(p, v, solver = sparsesolver) =
+   66 :           int2d(Th)(dy(p) * v + a(x, T-y) * dx(p) * dx(v))
+   67 :         - int1d(Th, 2, 4)(pN * v)
+   68 :         - int2d(Th)(rsh * v) + on(1, p = 0);
+   69 :     real[int] pp = p[];
+   70 :     Vh res = flip(pp);
+   71 :     return res[];
+   72 : }
+   73 :
+   74 : // Tikhonov functional
+   75 : func real J(real[int] f) {
+   76 :     Vh ff; ff[] = f;
+   77 :     Vh uu; uu[] = StateProblem(f);
+   78 :      return 0.5 * int2d(Th)((uu - ue)^2) + 0.5 * gamma * int2d(Th)(ff^2);
+   79 : }
    80 :
-   81 : savemesh(Th, "IP1.mesh");
-   82 : savesol("IP1.sol", Th, f);
-   83 : savemesh(Th, "IPe.mesh");
-   84 : savesol("IPe.sol", Th, fe);
-   85 :
-   86 : //plot(fe, wait = 1, dim=3d);
-   87 : //plot(f, fe, wait = 1, dim=3d);
-   88 : cout << "Error: " << sqrt(int2d(Th)((fe - f)^2)) << endl;
-   89 :  sizestack + 1024 =9544  ( 8520 )
+   81 : // Gradient of Tikhonov funtional
+   82 : func real[int] GradJ(real[int] f) {
+   83 :     Vh ff; ff[] = f;
+   84 :     Vh pp; pp[] = AdjointProblem(StateProblem(f));
+   85 :     Vh res = pp * q + gamma * ff;
+   86 :     return res[];
+   87 : }
+   88 :
+   89 : Vh f = 0;
+   90 : IPOPT(J, GradJ, f[], tol=1e-4);
+   91 :
+   92 : savemesh(Th, "IP1.mesh");
+   93 : savesol("IP1.sol", Th, f);
+   94 : savemesh(Th, "IPe.mesh");
+   95 : savesol("IPe.sol", Th, fe);
+   96 :
+   97 : plot(fe, wait = 1, dim=3d);
+   98 : plot(f, fe, wait = 1, dim=3d);
+   99 : cout << "Error: " << sqrt(int2d(Th)((fe - f)^2)) << endl;
+  100 :  sizestack + 1024 =9608  ( 8584 )
  
   -- Square mesh : nb vertices  =2601 ,  nb triangles = 5000 ,  nb boundary edges 200
  
@@ -107,12 +118,10 @@ Number of nonzeros in equality constraint Jacobian...:        0
 Number of nonzeros in inequality constraint Jacobian.:        0
 Number of nonzeros in Lagrangian Hessian.............:        0
  
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.3592e-005, tol=  1e-006, normb 0.0531549
   -- Solve :
-          min -1.15534  max 0.862473
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.00040787, tol=  1e-006, normb 0.00208841
+          min -1.15533  max 0.862482
   -- Solve :
-          min -0.173515  max 8.6451e-035
+          min -0.173446  max 8.62945e-035
 Total number of variables............................:     2601
                      variables with only lower bounds:        0
                 variables with lower and upper bounds:        0
@@ -123,1739 +132,1238 @@ Total number of inequality constraints...............:        0
    inequality constraints with lower and upper bounds:        0
         inequality constraints with only upper bounds:        0
  
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.3592e-005, tol=  1e-006, normb 0.0531549
   -- Solve :
-          min -1.15534  max 0.862473
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.00040787, tol=  1e-006, normb 0.00208841
+          min -1.15533  max 0.862482
   -- Solve :
-          min -0.173515  max 8.6451e-035
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.3592e-005, tol=  1e-006, normb 0.0531549
+          min -0.173446  max 8.62945e-035
   -- Solve :
-          min -1.15534  max 0.862473
+          min -1.15533  max 0.862482
 iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
-   0 2.2312628e-002 0.00e+000 2.12e-001   0.0 0.00e+000    -  0.00e+000 0.00e+000   0
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.25852e-006, tol=  1e-006, normb 0.0527213
+   0 2.2306771e-002 0.00e+000 2.12e-001   0.0 0.00e+000    -  0.00e+000 0.00e+000   0
   -- Solve :
-          min -1.03984  max 0.953841
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.25852e-006, tol=  1e-006, normb 0.0527213
+          min -1.03986  max 0.953821
   -- Solve :
-          min -1.03984  max 0.953841
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.00040666, tol=  1e-006, normb 0.000982503
+          min -1.03986  max 0.953821
   -- Solve :
-          min -0.0746688  max 5.07298e-035
-   1 5.0528458e-003 0.00e+000 9.48e-002 -11.0 2.12e-001    -  1.00e+000 1.00e+000f  1
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.83128e-006, tol=  1e-006, normb 0.0524025
+          min -0.0746633  max 5.0616e-035
+   1 5.0551909e-003 0.00e+000 9.49e-002 -11.0 2.12e-001    -  1.00e+000 1.00e+000f  1
   -- Solve :
-          min -0.952613  max 1.02893
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.83128e-006, tol=  1e-006, normb 0.0524025
+          min -0.95261  max 1.02893
   -- Solve :
-          min -0.952613  max 1.02893
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.000224974, tol=  1e-006, normb 0.00028711
+          min -0.95261  max 1.02893
   -- Solve :
-          min -0.00852381  max 0.00695206
-   2 4.4759972e-004 0.00e+000 1.31e-002 -11.0 1.75e-001    -  1.00e+000 1.00e+000f  1
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.83107e-006, tol=  1e-006, normb 0.052396
+          min -0.00851571  max 0.00696566
+   2 4.4745215e-004 0.00e+000 1.31e-002 -11.0 1.76e-001    -  1.00e+000 1.00e+000f  1
   -- Solve :
-          min -0.956155  max 1.02583
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.83107e-006, tol=  1e-006, normb 0.052396
+          min -0.956168  max 1.02581
   -- Solve :
-          min -0.956155  max 1.02583
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.000226159, tol=  1e-006, normb 0.000258549
+          min -0.956168  max 1.02581
   -- Solve :
-          min -0.00739453  max 0.00670327
-   3 3.6413095e-004 0.00e+000 1.11e-002 -11.0 2.64e-002    -  1.00e+000 1.00e+000f  1
-GMRES converges: 2501 5.22622e-008 0.0525007 9.95457e-007 < 1e-006
+          min -0.00739288  max 0.00669971
+   3 3.6404466e-004 0.00e+000 1.10e-002 -11.0 2.64e-002    -  1.00e+000 1.00e+000f  1
   -- Solve :
-          min -0.989448  max 1.00033
-GMRES converges: 2501 5.22622e-008 0.0525007 9.95457e-007 < 1e-006
+          min -0.989453  max 1.00033
   -- Solve :
-          min -0.989448  max 1.00033
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.000108816, tol=  1e-006, normb 0.000105671
+          min -0.989453  max 1.00033
   -- Solve :
-          min -0.00183909  max 0.00206931
-   4 6.1646687e-005 0.00e+000 3.35e-003 -11.0 2.00e-001    -  1.00e+000 1.00e+000f  1
-GMRES converges: 2441 5.23773e-008 0.0526171 9.95442e-007 < 1e-006
+          min -0.00183384  max 0.00205968
+   4 6.1564241e-005 0.00e+000 3.34e-003 -11.0 2.00e-001    -  1.00e+000 1.00e+000f  1
   -- Solve :
-          min -0.992028  max 1.00168
-GMRES converges: 2441 5.23773e-008 0.0526171 9.95442e-007 < 1e-006
+          min -0.992034  max 1.00167
   -- Solve :
-          min -0.992028  max 1.00168
-WARNING: GMRES do not converges: 2602/2601,  resid = 9.60805e-005, tol=  1e-006, normb 8.632e-005
+          min -0.992034  max 1.00167
   -- Solve :
-          min -0.00133115  max 0.00161631
-   5 4.1197951e-005 0.00e+000 2.73e-003 -11.0 5.70e-002    -  1.00e+000 1.00e+000f  1
-GMRES converges: 2301 5.28375e-008 0.0529057 9.9871e-007 < 1e-006
+          min -0.00133269  max 0.0016067
+   5 4.1167749e-005 0.00e+000 2.71e-003 -11.0 5.69e-002    -  1.00e+000 1.00e+000f  1
   -- Solve :
-          min -0.993969  max 1.00683
-GMRES converges: 2301 5.28375e-008 0.0529057 9.9871e-007 < 1e-006
+          min -0.993878  max 1.00691
   -- Solve :
-          min -0.993969  max 1.00683
-WARNING: GMRES do not converges: 2602/2601,  resid = 6.97132e-005, tol=  1e-006, normb 5.58896e-005
+          min -0.993878  max 1.00691
   -- Solve :
-          min -0.000517164  max 0.000775338
-   6 1.6873568e-005 0.00e+000 1.01e-003 -11.0 1.78e-001    -  1.00e+000 1.00e+000f  1
-GMRES converges: 2467 5.2499e-008 0.0528656 9.93067e-007 < 1e-006
+          min -0.000515049  max 0.000796645
+   6 1.6874597e-005 0.00e+000 1.02e-003 -11.0 1.78e-001    -  1.00e+000 1.00e+000f  1
   -- Solve :
-          min -0.993389  max 1.00681
-GMRES converges: 2467 5.2499e-008 0.0528656 9.93067e-007 < 1e-006
+          min -0.993955  max 1.00622
   -- Solve :
-          min -0.993389  max 1.00681
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.000136044, tol=  1e-006, normb 4.82509e-005
+          min -0.993955  max 1.00622
   -- Solve :
-          min -0.000325618  max 0.000840728
-   7 1.2295711e-005 0.00e+000 1.22e-003 -11.0 9.96e-002    -  1.00e+000 1.00e+000f  1
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.38175e-006, tol=  1e-006, normb 0.0528388
+          min -0.000347393  max 0.000648052
+   7 1.2170836e-005 0.00e+000 8.30e-004 -11.0 9.83e-002    -  1.00e+000 1.00e+000f  1
   -- Solve :
-          min -1.02312  max 0.999489
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.38175e-006, tol=  1e-006, normb 0.0528388
+          min -1.00772  max 1.00375
   -- Solve :
-          min -1.02312  max 0.999489
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.38175e-006, tol=  1e-006, normb 0.0528388
+          min -1.00772  max 1.00375
   -- Solve :
-          min -1.02312  max 0.999489
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.38175e-006, tol=  1e-006, normb 0.0528388
+          min -1.00772  max 1.00375
   -- Solve :
-          min -1.02312  max 0.999489
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.38175e-006, tol=  1e-006, normb 0.0528388
+          min -1.00772  max 1.00375
   -- Solve :
-          min -1.02312  max 0.999489
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.72852e-006, tol=  1e-006, normb 0.0528446
+          min -1.00772  max 1.00375
   -- Solve :
-          min -1.00825  max 1.00182
-GMRES converges: 2576 5.27529e-008 0.0528532 9.98102e-007 < 1e-006
+          min -1.00084  max 1.00392
   -- Solve :
-          min -1.00082  max 1.00298
-GMRES converges: 2307 5.28058e-008 0.0528589 9.98995e-007 < 1e-006
+          min -1.00084  max 1.00392
   -- Solve :
-          min -0.997104  max 1.00357
-GMRES converges: 2307 5.28058e-008 0.0528589 9.98995e-007 < 1e-006
+          min -0.00321402  max 0.000250186
+   8 1.0861725e-005 0.00e+000 3.24e-003 -11.0 3.78e-001    -  1.00e+000 5.00e-001f  2
   -- Solve :
-          min -0.997104  max 1.00357
-WARNING: GMRES do not converges: 2602/2601,  resid = 6.52325e-005, tol=  1e-006, normb 4.44814e-005
+          min -1.3162  max 1.22372
   -- Solve :
-          min -0.00165831  max 0.000274553
-   8 1.0920916e-005 0.00e+000 1.80e-003 -11.0 5.30e-001    -  1.00e+000 1.25e-001f  4
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.98488e-005, tol=  1e-006, normb 0.0533814
+          min -1.3162  max 1.22372
   -- Solve :
-          min -1.1163  max 1.03223
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.98488e-005, tol=  1e-006, normb 0.0533814
+          min -1.3162  max 1.22372
   -- Solve :
-          min -1.1163  max 1.03223
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.98488e-005, tol=  1e-006, normb 0.0533814
+          min -1.3162  max 1.22372
   -- Solve :
-          min -1.1163  max 1.03223
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.98488e-005, tol=  1e-006, normb 0.0533814
+          min -1.3162  max 1.22372
   -- Solve :
-          min -1.1163  max 1.03223
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.98488e-005, tol=  1e-006, normb 0.0533814
+          min -1.15058  max 1.10607
   -- Solve :
-          min -1.1163  max 1.03223
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.08303e-005, tol=  1e-006, normb 0.0529434
+          min -1.07189  max 1.05394
   -- Solve :
-          min -1.05611  max 1.01788
-WARNING: GMRES do not converges: 2602/2601,  resid = 5.0299e-006, tol=  1e-006, normb 0.0528567
+          min -1.03619  max 1.02893
   -- Solve :
-          min -1.02661  max 1.01071
-WARNING: GMRES do not converges: 2602/2601,  resid = 2.81654e-006, tol=  1e-006, normb 0.0528467
+          min -1.01851  max 1.01642
   -- Solve :
-          min -1.01186  max 1.00712
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.72631e-006, tol=  1e-006, normb 0.05285
+          min -1.00967  max 1.01017
   -- Solve :
-          min -1.00448  max 1.00533
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.11697e-006, tol=  1e-006, normb 0.0528538
+          min -1.00526  max 1.00704
   -- Solve :
-          min -1.00079  max 1.00443
-GMRES converges: 2462 5.28287e-008 0.0528562 9.99481e-007 < 1e-006
+          min -1.00305  max 1.00548
   -- Solve :
-          min -0.998948  max 1.00399
-GMRES converges: 2375 5.27612e-008 0.0528575 9.98179e-007 < 1e-006
+          min -1.00194  max 1.0047
   -- Solve :
-          min -0.998026  max 1.00376
-GMRES converges: 2333 5.27316e-008 0.0528582 9.97605e-007 < 1e-006
+          min -1.00194  max 1.0047
   -- Solve :
-          min -0.997565  max 1.00366
-GMRES converges: 2333 5.27316e-008 0.0528582 9.97605e-007 < 1e-006
+          min -0.00330014  max 0.000394137
+   9 1.0678305e-005 0.00e+000 3.40e-003 -11.0 1.65e+001    -  1.00e+000 3.91e-003f  9
   -- Solve :
-          min -0.997565  max 1.00366
-WARNING: GMRES do not converges: 2602/2601,  resid = 7.03053e-005, tol=  1e-006, normb 4.43138e-005
+          min -1.0116  max 1.06207
   -- Solve :
-          min -0.00186818  max 0.000264567
-   9 1.0892951e-005 0.00e+000 2.04e-003 -11.0 2.55e+000    -  1.00e+000 3.91e-003f  9
-WARNING: GMRES do not converges: 2602/2601,  resid = 2.39359e-006, tol=  1e-006, normb 0.0529701
+          min -1.0116  max 1.06207
   -- Solve :
-          min -1.0124  max 1.00949
-WARNING: GMRES do not converges: 2602/2601,  resid = 2.39359e-006, tol=  1e-006, normb 0.0529701
+          min -1.0116  max 1.06207
   -- Solve :
-          min -1.0124  max 1.00949
-WARNING: GMRES do not converges: 2602/2601,  resid = 2.39359e-006, tol=  1e-006, normb 0.0529701
+          min -1.0116  max 1.06207
   -- Solve :
-          min -1.0124  max 1.00949
-WARNING: GMRES do not converges: 2602/2601,  resid = 2.39359e-006, tol=  1e-006, normb 0.0529701
+          min -1.0116  max 1.06207
   -- Solve :
-          min -1.0124  max 1.00949
-WARNING: GMRES do not converges: 2602/2601,  resid = 2.39359e-006, tol=  1e-006, normb 0.0529701
+          min -1.00343  max 1.0314
   -- Solve :
-          min -1.0124  max 1.00949
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.44242e-006, tol=  1e-006, normb 0.0528739
+          min -0.99934  max 1.01607
   -- Solve :
-          min -1.00498  max 1.00657
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.00188e-006, tol=  1e-006, normb 0.052856
+          min -0.998629  max 1.0084
   -- Solve :
-          min -1.00127  max 1.00511
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.00188e-006, tol=  1e-006, normb 0.052856
+          min -1.00029  max 1.00549
   -- Solve :
-          min -1.00127  max 1.00511
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.000252786, tol=  1e-006, normb 3.73544e-005
+          min -1.00029  max 1.00549
   -- Solve :
-          min -0.0017439  max 0.00063137
+          min -0.000860828  max 0.000999124
 iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
-  10 7.8509621e-006 0.00e+000 3.17e-003 -11.0 1.15e+000    -  1.00e+000 2.50e-001f  3
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.1291e-006, tol=  1e-006, normb 0.0527287
+  10 6.7001563e-006 0.00e+000 1.56e-003 -11.0 2.40e+000    -  1.00e+000 6.25e-002f  5
   -- Solve :
-          min -1.00493  max 1.00062
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.1291e-006, tol=  1e-006, normb 0.0527287
+          min -1.00029  max 1.00227
   -- Solve :
-          min -1.00493  max 1.00062
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.1291e-006, tol=  1e-006, normb 0.0527287
+          min -1.00029  max 1.00227
   -- Solve :
-          min -1.00493  max 1.00062
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.1291e-006, tol=  1e-006, normb 0.0527287
+          min -1.00029  max 1.00227
   -- Solve :
-          min -1.00493  max 1.00062
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.1291e-006, tol=  1e-006, normb 0.0527287
+          min -1.00029  max 1.00227
   -- Solve :
-          min -1.00493  max 1.00062
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03955e-006, tol=  1e-006, normb 0.0527853
+          min -1.00029  max 1.00227
   -- Solve :
-          min -1.0031  max 1.0026
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03955e-006, tol=  1e-006, normb 0.0527853
+          min -1.00029  max 1.00347
   -- Solve :
-          min -1.0031  max 1.0026
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.000389258, tol=  1e-006, normb 2.5334e-005
+          min -1.00029  max 1.00347
   -- Solve :
-          min -0.00182313  max 0.000390458
-  11 4.1702877e-006 0.00e+000 3.39e-003 -11.0 4.32e-001    -  1.00e+000 5.00e-001f  2
-GMRES converges: 2577 5.26458e-008 0.0527043 9.98891e-007 < 1e-006
+          min -0.00110574  max 0.000305855
+  11 3.4827591e-006 0.00e+000 2.01e-003 -11.0 2.91e-001    -  1.00e+000 5.00e-001f  2
   -- Solve :
-          min -1.02588  max 0.973997
-GMRES converges: 2577 5.26458e-008 0.0527043 9.98891e-007 < 1e-006
+          min -1.02137  max 0.97302
   -- Solve :
-          min -1.02588  max 0.973997
-GMRES converges: 2577 5.26458e-008 0.0527043 9.98891e-007 < 1e-006
+          min -1.02137  max 0.97302
   -- Solve :
-          min -1.02588  max 0.973997
-GMRES converges: 2577 5.26458e-008 0.0527043 9.98891e-007 < 1e-006
+          min -1.02137  max 0.97302
   -- Solve :
-          min -1.02588  max 0.973997
-GMRES converges: 2577 5.26458e-008 0.0527043 9.98891e-007 < 1e-006
+          min -1.02137  max 0.97302
   -- Solve :
-          min -1.02588  max 0.973997
-GMRES converges: 2439 5.24382e-008 0.0527071 9.94898e-007 < 1e-006
+          min -1.02137  max 0.97302
   -- Solve :
-          min -1.01076  max 0.986311
-GMRES converges: 2532 5.2683e-008 0.0527367 9.98982e-007 < 1e-006
+          min -1.01083  max 0.98821
   -- Solve :
-          min -1.00625  max 0.992468
-GMRES converges: 2522 5.26884e-008 0.0527587 9.98669e-007 < 1e-006
+          min -1.00556  max 0.995805
   -- Solve :
-          min -1.00468  max 0.997171
-GMRES converges: 2574 5.2682e-008 0.0527714 9.98306e-007 < 1e-006
+          min -1.00292  max 0.999602
   -- Solve :
-          min -1.00389  max 0.999884
-GMRES converges: 2575 5.26424e-008 0.0527782 9.97428e-007 < 1e-006
+          min -1.00292  max 0.999602
   -- Solve :
-          min -1.00349  max 1.00124
-GMRES converges: 2584 5.27432e-008 0.0527817 9.99271e-007 < 1e-006
+          min -0.000889329  max 0.0004988
+  12 3.2129912e-006 0.00e+000 1.25e-003 -11.0 5.96e-001    -  1.00e+000 1.25e-001f  4
   -- Solve :
-          min -1.0033  max 1.00192
-GMRES converges: 2584 5.27432e-008 0.0527817 9.99271e-007 < 1e-006
+          min -0.995849  max 1.0057
   -- Solve :
-          min -1.0033  max 1.00192
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.000466548, tol=  1e-006, normb 2.53371e-005
+          min -0.995849  max 1.0057
   -- Solve :
-          min -0.0016674  max 0.000444315
-  12 4.1196849e-006 0.00e+000 3.10e-003 -11.0 1.01e+000    -  1.00e+000 1.56e-002f  7
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.87631e-006, tol=  1e-006, normb 0.0527507
+          min -0.995849  max 1.0057
   -- Solve :
-          min -0.994252  max 1.0141
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.87631e-006, tol=  1e-006, normb 0.0527507
+          min -0.995849  max 1.0057
   -- Solve :
-          min -0.994252  max 1.0141
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.87631e-006, tol=  1e-006, normb 0.0527507
+          min -0.995849  max 1.0057
   -- Solve :
-          min -0.994252  max 1.0141
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.87631e-006, tol=  1e-006, normb 0.0527507
+          min -0.99772  max 1.0021
   -- Solve :
-          min -0.994252  max 1.0141
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.87631e-006, tol=  1e-006, normb 0.0527507
+          min -1.00032  max 1.00031
   -- Solve :
-          min -0.994252  max 1.0141
-GMRES converges: 2267 5.27354e-008 0.0527633 9.9947e-007 < 1e-006
+          min -1.00032  max 1.00031
   -- Solve :
-          min -0.99518  max 1.00617
-GMRES converges: 2321 5.26744e-008 0.0527718 9.98154e-007 < 1e-006
+          min -7.2683e-005  max 0.000730706
+  13 2.6066775e-006 0.00e+000 8.43e-004 -11.0 8.30e-002    -  1.00e+000 2.50e-001f  3
   -- Solve :
-          min -0.997876  max 1.00221
-GMRES converges: 2375 5.27601e-008 0.0527766 9.99689e-007 < 1e-006
+          min -0.994515  max 1.01103
   -- Solve :
-          min -1.00059  max 1.00112
-GMRES converges: 2375 5.27601e-008 0.0527766 9.99689e-007 < 1e-006
+          min -0.994515  max 1.01103
   -- Solve :
-          min -1.00059  max 1.00112
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.000186963, tol=  1e-006, normb 2.33544e-005
+          min -0.994515  max 1.01103
   -- Solve :
-          min -0.000879399  max 0.000588464
-  13 3.1839513e-006 0.00e+000 1.64e-003 -11.0 2.71e-001    -  1.00e+000 1.25e-001f  4
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.62782e-006, tol=  1e-006, normb 0.0527756
+          min -0.994515  max 1.01103
   -- Solve :
-          min -1.00065  max 1.01978
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.62783e-006, tol=  1e-006, normb 0.0527756
+          min -0.994515  max 1.01103
   -- Solve :
-          min -1.00065  max 1.01978
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.62783e-006, tol=  1e-006, normb 0.0527756
+          min -0.996013  max 1.00567
   -- Solve :
-          min -1.00065  max 1.01978
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.62783e-006, tol=  1e-006, normb 0.0527756
+          min -0.996957  max 1.00299
   -- Solve :
-          min -1.00065  max 1.01978
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.62783e-006, tol=  1e-006, normb 0.0527756
+          min -0.998513  max 1.00165
   -- Solve :
-          min -1.00065  max 1.01978
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.2094e-006, tol=  1e-006, normb 0.0527735
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.998263  max 1.01
-GMRES converges: 2204 5.24785e-008 0.0527744 9.94393e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.997169  max 1.00511
-GMRES converges: 2419 5.26219e-008 0.0527753 9.97094e-007 < 1e-006
+          min -2.27422e-036  max 0.00111424
+  14 2.5698279e-006 0.00e+000 1.22e-003 -11.0 2.08e-001    -  1.00e+000 6.25e-002f  5
   -- Solve :
-          min -0.997742  max 1.00267
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.0183  max 1.06382
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.0183  max 1.06382
   -- Solve :
-          min -0.999164  max 1.00145
-WARNING: GMRES do not converges: 2602/2601,  resid = 5.25909e-005, tol=  1e-006, normb 2.35568e-005
+          min -1.0183  max 1.06382
   -- Solve :
-          min -0.000269783  max 0.00120395
-  14 3.0665426e-006 0.00e+000 1.45e-003 -11.0 3.59e-001    -  1.00e+000 6.25e-002f  5
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.7799e-005, tol=  1e-006, normb 0.062348
+          min -1.0183  max 1.06382
   -- Solve :
-          min -1.1587  max 1.3151
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.7799e-005, tol=  1e-006, normb 0.062348
+          min -1.0183  max 1.06382
   -- Solve :
-          min -1.1587  max 1.3151
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.7799e-005, tol=  1e-006, normb 0.062348
+          min -1.00781  max 1.0324
   -- Solve :
-          min -1.1587  max 1.3151
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.7799e-005, tol=  1e-006, normb 0.062348
+          min -1.00257  max 1.01669
   -- Solve :
-          min -1.1587  max 1.3151
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.7799e-005, tol=  1e-006, normb 0.062348
+          min -0.999946  max 1.00883
   -- Solve :
-          min -1.1587  max 1.3151
-WARNING: GMRES do not converges: 2602/2601,  resid = 2.55568e-005, tol=  1e-006, normb 0.0557021
+          min -0.998811  max 1.0049
   -- Solve :
-          min -1.06941  max 1.15827
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.43549e-005, tol=  1e-006, normb 0.053718
+          min -0.998342  max 1.00294
   -- Solve :
-          min -1.03279  max 1.07986
-WARNING: GMRES do not converges: 2602/2601,  resid = 6.81226e-006, tol=  1e-006, normb 0.0531118
+          min -0.998712  max 1.00196
   -- Solve :
-          min -1.01448  max 1.04065
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.16301e-006, tol=  1e-006, normb 0.0529096
+          min -0.999065  max 1.00147
   -- Solve :
-          min -1.00533  max 1.02105
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.19159e-006, tol=  1e-006, normb 0.0528342
+          min -0.999241  max 1.00122
   -- Solve :
-          min -1.00075  max 1.01125
-GMRES converges: 2329 5.27395e-008 0.0528029 9.988e-007 < 1e-006
+          min -0.999329  max 1.0011
   -- Solve :
-          min -0.998491  max 1.00634
-GMRES converges: 2226 5.26133e-008 0.0527889 9.96674e-007 < 1e-006
+          min -0.999373  max 1.00104
   -- Solve :
-          min -0.997591  max 1.00389
-GMRES converges: 2489 5.27696e-008 0.0527822 9.99761e-007 < 1e-006
+          min -0.999395  max 1.00101
   -- Solve :
-          min -0.998143  max 1.00267
-GMRES converges: 2319 5.26024e-008 0.052779 9.96654e-007 < 1e-006
+          min -0.999406  max 1.00099
   -- Solve :
-          min -0.998653  max 1.00206
-GMRES converges: 2327 5.25457e-008 0.0527775 9.95608e-007 < 1e-006
+          min -0.999411  max 1.00098
   -- Solve :
-          min -0.998908  max 1.00175
-GMRES converges: 2273 5.27692e-008 0.0527767 9.99858e-007 < 1e-006
+          min -0.999414  max 1.00098
   -- Solve :
-          min -0.999036  max 1.0016
-GMRES converges: 2319 5.27459e-008 0.0527763 9.99424e-007 < 1e-006
+          min -0.999415  max 1.00098
   -- Solve :
-          min -0.9991  max 1.00152
-GMRES converges: 2310 5.27249e-008 0.0527761 9.9903e-007 < 1e-006
+          min -0.999416  max 1.00098
   -- Solve :
-          min -0.999132  max 1.00148
-GMRES converges: 2303 5.26598e-008 0.052776 9.97799e-007 < 1e-006
+          min -0.999416  max 1.00098
   -- Solve :
-          min -0.999148  max 1.00146
-GMRES converges: 2301 5.26779e-008 0.052776 9.98141e-007 < 1e-006
+          min -0.999416  max 1.00098
   -- Solve :
-          min -0.999156  max 1.00146
-GMRES converges: 2299 5.26917e-008 0.0527759 9.98403e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.99916  max 1.00145
-GMRES converges: 2299 5.2674e-008 0.0527759 9.98069e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999162  max 1.00145
-GMRES converges: 2299 5.26097e-008 0.0527759 9.96851e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999163  max 1.00145
-GMRES converges: 2298 5.27438e-008 0.0527759 9.99392e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999163  max 1.00145
-GMRES converges: 2298 5.2735e-008 0.0527759 9.99225e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999163  max 1.00145
-GMRES converges: 2298 5.27316e-008 0.0527759 9.99161e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27301e-008 0.0527759 9.99133e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27294e-008 0.0527759 9.99119e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.2729e-008 0.0527759 9.99112e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27289e-008 0.0527759 9.99109e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27288e-008 0.0527759 9.99107e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99106e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99106e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99106e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99106e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -2.27422e-036  max 0.00111424
+  15 2.5698279e-006 0.00e+000 1.22e-003 -11.0 1.32e+000    -  1.00e+000 2.22e-016f 53
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.0183  max 1.06382
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.0183  max 1.06382
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.0183  max 1.06382
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.0183  max 1.06382
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.0183  max 1.06382
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.00781  max 1.0324
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.00257  max 1.01669
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999946  max 1.00883
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.998811  max 1.0049
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.998342  max 1.00294
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.998712  max 1.00196
   -- Solve :
-          min -0.999164  max 1.00145
-WARNING: GMRES do not converges: 2602/2601,  resid = 5.25909e-005, tol=  1e-006, normb 2.35568e-005
+          min -0.999065  max 1.00147
   -- Solve :
-          min -0.000269783  max 0.00120395
-  15 3.0665426e-006 0.00e+000 1.45e-003 -11.0 7.55e+000    -  1.00e+000 4.34e-019f 62
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.7799e-005, tol=  1e-006, normb 0.062348
+          min -0.999241  max 1.00122
   -- Solve :
-          min -1.1587  max 1.3151
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.7799e-005, tol=  1e-006, normb 0.062348
+          min -0.999329  max 1.0011
   -- Solve :
-          min -1.1587  max 1.3151
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.7799e-005, tol=  1e-006, normb 0.062348
+          min -0.999373  max 1.00104
   -- Solve :
-          min -1.1587  max 1.3151
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.7799e-005, tol=  1e-006, normb 0.062348
+          min -0.999395  max 1.00101
   -- Solve :
-          min -1.1587  max 1.3151
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.7799e-005, tol=  1e-006, normb 0.062348
+          min -0.999406  max 1.00099
   -- Solve :
-          min -1.1587  max 1.3151
-WARNING: GMRES do not converges: 2602/2601,  resid = 2.55568e-005, tol=  1e-006, normb 0.0557021
+          min -0.999411  max 1.00098
   -- Solve :
-          min -1.06941  max 1.15827
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.43549e-005, tol=  1e-006, normb 0.053718
+          min -0.999414  max 1.00098
   -- Solve :
-          min -1.03279  max 1.07986
-WARNING: GMRES do not converges: 2602/2601,  resid = 6.81226e-006, tol=  1e-006, normb 0.0531118
+          min -0.999415  max 1.00098
   -- Solve :
-          min -1.01448  max 1.04065
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.16301e-006, tol=  1e-006, normb 0.0529096
+          min -0.999416  max 1.00098
   -- Solve :
-          min -1.00533  max 1.02105
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.19159e-006, tol=  1e-006, normb 0.0528342
+          min -0.999416  max 1.00098
   -- Solve :
-          min -1.00075  max 1.01125
-GMRES converges: 2329 5.27395e-008 0.0528029 9.988e-007 < 1e-006
+          min -0.999416  max 1.00098
   -- Solve :
-          min -0.998491  max 1.00634
-GMRES converges: 2226 5.26133e-008 0.0527889 9.96674e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.997591  max 1.00389
-GMRES converges: 2489 5.27696e-008 0.0527822 9.9976e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.998143  max 1.00267
-GMRES converges: 2319 5.26024e-008 0.052779 9.96654e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.998653  max 1.00206
-GMRES converges: 2327 5.25457e-008 0.0527775 9.95608e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.998908  max 1.00175
-GMRES converges: 2273 5.27692e-008 0.0527767 9.99858e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999036  max 1.0016
-GMRES converges: 2319 5.27459e-008 0.0527763 9.99424e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.9991  max 1.00152
-GMRES converges: 2310 5.27249e-008 0.0527761 9.9903e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999132  max 1.00148
-GMRES converges: 2303 5.26598e-008 0.052776 9.97799e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999148  max 1.00146
-GMRES converges: 2301 5.26779e-008 0.052776 9.98141e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999156  max 1.00146
-GMRES converges: 2299 5.26917e-008 0.0527759 9.98403e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.99916  max 1.00145
-GMRES converges: 2299 5.2674e-008 0.0527759 9.98069e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999162  max 1.00145
-GMRES converges: 2299 5.26097e-008 0.0527759 9.96851e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999163  max 1.00145
-GMRES converges: 2298 5.27438e-008 0.0527759 9.99392e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999163  max 1.00145
-GMRES converges: 2298 5.2735e-008 0.0527759 9.99225e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999163  max 1.00145
-GMRES converges: 2298 5.27316e-008 0.0527759 9.99161e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27301e-008 0.0527759 9.99133e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27294e-008 0.0527759 9.99119e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.2729e-008 0.0527759 9.99112e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27289e-008 0.0527759 9.99109e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27288e-008 0.0527759 9.99107e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99106e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99106e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99106e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99106e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -2.27422e-036  max 0.00111424
+  16 2.5698279e-006 0.00e+000 1.22e-003 -11.0 1.32e+000    -  1.00e+000 1.73e-018f 60
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.0183  max 1.06382
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.0183  max 1.06382
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.0183  max 1.06382
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.0183  max 1.06382
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.0183  max 1.06382
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.00781  max 1.0324
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.00257  max 1.01669
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999946  max 1.00883
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.998811  max 1.0049
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.998342  max 1.00294
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.998712  max 1.00196
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999065  max 1.00147
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999241  max 1.00122
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999329  max 1.0011
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999373  max 1.00104
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999395  max 1.00101
   -- Solve :
-          min -0.999164  max 1.00145
-WARNING: GMRES do not converges: 2602/2601,  resid = 5.25909e-005, tol=  1e-006, normb 2.35568e-005
+          min -0.999406  max 1.00099
   -- Solve :
-          min -0.000269783  max 0.00120395
-  16 3.0665426e-006 0.00e+000 1.45e-003 -11.0 7.55e+000    -  1.00e+000 5.42e-020f 65
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.7799e-005, tol=  1e-006, normb 0.062348
+          min -0.999411  max 1.00098
   -- Solve :
-          min -1.1587  max 1.3151
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.7799e-005, tol=  1e-006, normb 0.062348
+          min -0.999414  max 1.00098
   -- Solve :
-          min -1.1587  max 1.3151
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.7799e-005, tol=  1e-006, normb 0.062348
+          min -0.999415  max 1.00098
   -- Solve :
-          min -1.1587  max 1.3151
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.7799e-005, tol=  1e-006, normb 0.062348
+          min -0.999416  max 1.00098
   -- Solve :
-          min -1.1587  max 1.3151
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.7799e-005, tol=  1e-006, normb 0.062348
+          min -0.999416  max 1.00098
   -- Solve :
-          min -1.1587  max 1.3151
-WARNING: GMRES do not converges: 2602/2601,  resid = 2.55568e-005, tol=  1e-006, normb 0.0557021
+          min -0.999416  max 1.00098
   -- Solve :
-          min -1.06941  max 1.15827
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.43549e-005, tol=  1e-006, normb 0.053718
+          min -0.999417  max 1.00098
   -- Solve :
-          min -1.03279  max 1.07986
-WARNING: GMRES do not converges: 2602/2601,  resid = 6.81226e-006, tol=  1e-006, normb 0.0531118
+          min -0.999417  max 1.00098
   -- Solve :
-          min -1.01448  max 1.04065
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.16301e-006, tol=  1e-006, normb 0.0529096
+          min -0.999417  max 1.00098
   -- Solve :
-          min -1.00533  max 1.02105
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.19159e-006, tol=  1e-006, normb 0.0528342
+          min -0.999417  max 1.00098
   -- Solve :
-          min -1.00075  max 1.01125
-GMRES converges: 2329 5.27395e-008 0.0528029 9.988e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.998491  max 1.00634
-GMRES converges: 2226 5.26133e-008 0.0527889 9.96674e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.997591  max 1.00389
-GMRES converges: 2489 5.27696e-008 0.0527822 9.9976e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.998143  max 1.00267
-GMRES converges: 2319 5.26024e-008 0.052779 9.96654e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.998653  max 1.00206
-GMRES converges: 2327 5.25457e-008 0.0527775 9.95608e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.998908  max 1.00175
-GMRES converges: 2273 5.27692e-008 0.0527767 9.99858e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999036  max 1.0016
-GMRES converges: 2319 5.27459e-008 0.0527763 9.99424e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.9991  max 1.00152
-GMRES converges: 2310 5.27249e-008 0.0527761 9.9903e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999132  max 1.00148
-GMRES converges: 2303 5.26598e-008 0.052776 9.97799e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999148  max 1.00146
-GMRES converges: 2301 5.26779e-008 0.052776 9.98141e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999156  max 1.00146
-GMRES converges: 2299 5.26917e-008 0.0527759 9.98403e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.99916  max 1.00145
-GMRES converges: 2299 5.2674e-008 0.0527759 9.98069e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999162  max 1.00145
-GMRES converges: 2299 5.26097e-008 0.0527759 9.96851e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999163  max 1.00145
-GMRES converges: 2298 5.27438e-008 0.0527759 9.99392e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999163  max 1.00145
-GMRES converges: 2298 5.2735e-008 0.0527759 9.99225e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999163  max 1.00145
-GMRES converges: 2298 5.27316e-008 0.0527759 9.99161e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27301e-008 0.0527759 9.99133e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27294e-008 0.0527759 9.99119e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.2729e-008 0.0527759 9.99112e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27289e-008 0.0527759 9.99109e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27288e-008 0.0527759 9.99107e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99106e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99106e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99106e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99106e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.999417  max 1.00098
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -2.27422e-036  max 0.00111424
+  17 2.5698279e-006 0.00e+000 1.22e-003 -11.0 1.32e+000    -  1.00e+000 6.94e-018f 58
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.00003  max 1.00042
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.00003  max 1.00042
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -3.98947e-005  max 0.000560454
+  18 2.1001780e-006 0.00e+000 5.88e-004 -11.0 1.22e-003    -  1.00e+000 1.00e+000f  1
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.00056  max 0.999947
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.00056  max 0.999947
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -0.000225424  max 0.000362324
+  19 1.9867548e-006 0.00e+000 4.97e-004 -11.0 1.54e-003    -  1.00e+000 1.00e+000f  1
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.0006  max 0.999902
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
+          min -1.0006  max 0.999902
   -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-GMRES converges: 2298 5.27287e-008 0.0527759 9.99105e-007 < 1e-006
-  -- Solve :
-          min -0.999164  max 1.00145
-WARNING: GMRES do not converges: 2602/2601,  resid = 5.25909e-005, tol=  1e-006, normb 2.35568e-005
-  -- Solve :
-          min -0.000269783  max 0.00120395
-  17 3.0665426e-006 0.00e+000 1.45e-003 -11.0 7.55e+000    -  1.00e+000 2.71e-020f 66
-GMRES converges: 2281 5.27294e-008 0.0527776 9.99088e-007 < 1e-006
-  -- Solve :
-          min -0.999757  max 1.00092
-GMRES converges: 2281 5.27294e-008 0.0527776 9.99088e-007 < 1e-006
-  -- Solve :
-          min -0.999757  max 1.00092
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.31313e-005, tol=  1e-006, normb 2.08981e-005
-  -- Solve :
-          min -0.00036516  max 0.000691007
-  18 2.4574553e-006 0.00e+000 8.30e-004 -11.0 1.45e-003    -  1.00e+000 1.00e+000f  1
-GMRES converges: 2280 5.27018e-008 0.052779 9.98538e-007 < 1e-006
-  -- Solve :
-          min -1.00036  max 1.0004
-GMRES converges: 2280 5.27018e-008 0.052779 9.98538e-007 < 1e-006
-  -- Solve :
-          min -1.00036  max 1.0004
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.000173343, tol=  1e-006, normb 1.94637e-005
-  -- Solve :
-          min -0.000395538  max 0.000331268
-  19 2.1467733e-006 0.00e+000 7.36e-004 -11.0 2.48e-003    -  1.00e+000 1.00e+000f  1
-GMRES converges: 2333 5.27141e-008 0.0527788 9.98774e-007 < 1e-006
-  -- Solve :
-          min -1.00047  max 1.0003
-GMRES converges: 2333 5.27141e-008 0.0527788 9.98774e-007 < 1e-006
-  -- Solve :
-          min -1.00047  max 1.0003
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.000119151, tol=  1e-006, normb 1.89803e-005
-  -- Solve :
-          min -0.000304855  max 0.000330519
+          min -0.00024123  max 0.000347979
 iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
-  20 2.0468540e-006 0.00e+000 5.67e-004 -11.0 3.62e-003    -  1.00e+000 1.00e+000f  1
-GMRES converges: 2534 5.26657e-008 0.0527777 9.97877e-007 < 1e-006
+  20 1.9612573e-006 0.00e+000 4.77e-004 -11.0 1.33e-003    -  1.00e+000 1.00e+000f  1
   -- Solve :
-          min -1.00121  max 0.999491
-GMRES converges: 2534 5.26657e-008 0.0527777 9.97877e-007 < 1e-006
+          min -1.00056  max 0.999857
   -- Solve :
-          min -1.00121  max 0.999491
-WARNING: GMRES do not converges: 2602/2601,  resid = 7.67907e-005, tol=  1e-006, normb 1.78699e-005
+          min -1.00056  max 0.999857
   -- Solve :
-          min -0.000507484  max 0.000335834
-  21 1.8242055e-006 0.00e+000 5.65e-004 -11.0 1.82e-002    -  1.00e+000 1.00e+000f  1
-GMRES converges: 2575 5.25387e-008 0.0527751 9.9552e-007 < 1e-006
+          min -0.00032205  max 0.000194591
+  21 1.3703050e-006 0.00e+000 4.58e-004 -11.0 3.54e-002    -  1.00e+000 1.00e+000f  1
   -- Solve :
-          min -1.00039  max 1.00015
-GMRES converges: 2575 5.25387e-008 0.0527751 9.9552e-007 < 1e-006
+          min -1.00189  max 0.998672
   -- Solve :
-          min -1.00039  max 1.00015
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.000205093, tol=  1e-006, normb 1.5248e-005
+          min -1.00189  max 0.998672
   -- Solve :
-          min -4.42853e-005  max 0.000442903
-  22 1.4052618e-006 0.00e+000 6.43e-004 -11.0 1.42e-002    -  1.00e+000 1.00e+000f  1
-GMRES converges: 2423 5.2758e-008 0.0527734 9.99708e-007 < 1e-006
+          min -1.00189  max 0.998672
   -- Solve :
-          min -0.999929  max 1.00021
-GMRES converges: 2423 5.2758e-008 0.0527734 9.99708e-007 < 1e-006
+          min -1.00189  max 0.998672
   -- Solve :
-          min -0.999929  max 1.00021
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.000368554, tol=  1e-006, normb 1.14043e-005
+          min -1.00189  max 0.998672
   -- Solve :
-          min -1.67774e-006  max 0.000543014
-  23 9.2614134e-007 0.00e+000 9.07e-004 -11.0 5.37e-002    -  1.00e+000 1.00e+000f  1
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.07448e-006, tol=  1e-006, normb 0.0528093
+          min -1.00123  max 0.999264
   -- Solve :
-          min -1.00653  max 0.998253
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.07448e-006, tol=  1e-006, normb 0.0528093
+          min -1.00123  max 0.999264
   -- Solve :
-          min -1.00653  max 0.998253
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.07448e-006, tol=  1e-006, normb 0.0528093
+          min -0.000685099  max 5.35556e-005
+  22 1.0442519e-006 0.00e+000 8.67e-004 -11.0 9.70e-002    -  1.00e+000 5.00e-001f  2
   -- Solve :
-          min -1.00653  max 0.998253
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.07448e-006, tol=  1e-006, normb 0.0528093
+          min -0.99689  max 1.00319
   -- Solve :
-          min -1.00653  max 0.998253
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.07448e-006, tol=  1e-006, normb 0.0528093
+          min -0.99689  max 1.00319
   -- Solve :
-          min -1.00653  max 0.998253
-GMRES converges: 2331 5.27514e-008 0.0527904 9.99261e-007 < 1e-006
+          min -0.99689  max 1.00319
   -- Solve :
-          min -1.00323  max 0.997722
-GMRES converges: 2297 5.26768e-008 0.0527816 9.98014e-007 < 1e-006
+          min -0.99689  max 1.00319
   -- Solve :
-          min -1.00158  max 0.99848
-GMRES converges: 2497 5.27316e-008 0.0527774 9.99131e-007 < 1e-006
+          min -0.99689  max 1.00319
   -- Solve :
-          min -1.00075  max 0.999343
-GMRES converges: 2497 5.27316e-008 0.0527774 9.99131e-007 < 1e-006
+          min -0.998866  max 1.00123
   -- Solve :
-          min -1.00075  max 0.999343
-WARNING: GMRES do not converges: 2602/2601,  resid = 2.35025e-005, tol=  1e-006, normb 9.52424e-006
+          min -0.998866  max 1.00123
   -- Solve :
-          min -0.000274942  max 0.000112334
-  24 7.5516919e-007 0.00e+000 2.79e-004 -11.0 2.10e-001    -  1.00e+000 1.25e-001f  4
-GMRES converges: 2499 5.26117e-008 0.0528022 9.96392e-007 < 1e-006
+          min -4.84877e-005  max 0.000686111
+  23 7.2670154e-007 0.00e+000 7.16e-004 -11.0 8.71e-002    -  1.00e+000 5.00e-001f  2
   -- Solve :
-          min -0.998048  max 1.00255
-GMRES converges: 2499 5.26117e-008 0.0528022 9.96392e-007 < 1e-006
+          min -1.0011  max 0.998022
   -- Solve :
-          min -0.998048  max 1.00255
-GMRES converges: 2499 5.26117e-008 0.0528022 9.96392e-007 < 1e-006
+          min -1.0011  max 0.998022
   -- Solve :
-          min -0.998048  max 1.00255
-GMRES converges: 2499 5.26117e-008 0.0528022 9.96392e-007 < 1e-006
+          min -1.0011  max 0.998022
   -- Solve :
-          min -0.998048  max 1.00255
-GMRES converges: 2499 5.26117e-008 0.0528022 9.96392e-007 < 1e-006
+          min -1.0011  max 0.998022
   -- Solve :
-          min -0.998048  max 1.00255
-GMRES converges: 2469 5.27627e-008 0.0527897 9.99488e-007 < 1e-006
+          min -1.0011  max 0.998022
   -- Solve :
-          min -0.999401  max 1.00095
-GMRES converges: 2468 5.27653e-008 0.0527836 9.99653e-007 < 1e-006
+          min -0.999983  max 0.999454
   -- Solve :
-          min -1.00008  max 1.00015
-GMRES converges: 2468 5.27653e-008 0.0527836 9.99653e-007 < 1e-006
+          min -0.999425  max 1.00034
   -- Solve :
-          min -1.00008  max 1.00015
-WARNING: GMRES do not converges: 2602/2601,  resid = 5.33378e-005, tol=  1e-006, normb 7.86733e-006
+          min -0.999425  max 1.00034
   -- Solve :
-          min -0.00014569  max 8.45572e-005
-  25 6.4018424e-007 0.00e+000 1.73e-004 -11.0 5.57e-002    -  1.00e+000 2.50e-001f  3
-GMRES converges: 2405 5.27424e-008 0.0527859 9.99176e-007 < 1e-006
+          min -7.99861e-005  max 0.000251636
+  24 6.0488693e-007 0.00e+000 3.67e-004 -11.0 9.97e-002    -  1.00e+000 2.50e-001f  3
   -- Solve :
-          min -1.00048  max 0.999735
-GMRES converges: 2405 5.27424e-008 0.0527859 9.99176e-007 < 1e-006
+          min -1.00016  max 1.0002
   -- Solve :
-          min -1.00048  max 0.999735
-WARNING: GMRES do not converges: 2602/2601,  resid = 0.000123144, tol=  1e-006, normb 6.69587e-006
+          min -1.00016  max 1.0002
   -- Solve :
-          min -0.00030977  max 1.54868e-006
-  26 5.9167715e-007 0.00e+000 4.50e-004 -11.0 2.61e-002    -  1.00e+000 1.00e+000f  1
-GMRES converges: 2515 5.27572e-008 0.0527806 9.99557e-007 < 1e-006
+          min -1.00016  max 1.0002
   -- Solve :
-          min -1.00013  max 1.00042
-GMRES converges: 2515 5.27572e-008 0.0527806 9.99557e-007 < 1e-006
+          min -1.00016  max 1.0002
   -- Solve :
-          min -1.00013  max 1.00042
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.77864e-005, tol=  1e-006, normb 4.77226e-006
+          min -1.00016  max 1.0002
   -- Solve :
-          min -1.72899e-005  max 0.000144069
-  27 4.6909429e-007 0.00e+000 1.47e-004 -11.0 4.05e-002    -  1.00e+000 1.00e+000f  1
-GMRES converges: 2463 5.2597e-008 0.0527737 9.96653e-007 < 1e-006
+          min -0.999792  max 1.00027
   -- Solve :
-          min -0.998381  max 1.00219
-GMRES converges: 2463 5.2597e-008 0.0527737 9.96653e-007 < 1e-006
+          min -0.999792  max 1.00027
   -- Solve :
-          min -0.998381  max 1.00219
-GMRES converges: 2463 5.2597e-008 0.0527737 9.96653e-007 < 1e-006
+          min -0.00014824  max 2.03704e-005
+  25 5.7591859e-007 0.00e+000 2.14e-004 -11.0 1.12e-002    -  1.00e+000 5.00e-001f  2
   -- Solve :
-          min -0.998381  max 1.00219
-GMRES converges: 2463 5.2597e-008 0.0527737 9.96653e-007 < 1e-006
+          min -1.00059  max 0.999996
   -- Solve :
-          min -0.998381  max 1.00219
-GMRES converges: 2463 5.2597e-008 0.0527737 9.96653e-007 < 1e-006
+          min -1.00059  max 0.999996
   -- Solve :
-          min -0.998381  max 1.00219
-GMRES converges: 2481 5.2734e-008 0.0527771 9.99183e-007 < 1e-006
+          min -0.000216758  max 7.94587e-006
+  26 4.9508885e-007 0.00e+000 2.57e-004 -11.0 1.62e-002    -  1.00e+000 1.00e+000f  1
   -- Solve :
-          min -0.999257  max 1.00131
-GMRES converges: 2453 5.27149e-008 0.0527788 9.98789e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -0.999695  max 1.00086
-GMRES converges: 2499 5.26753e-008 0.0527797 9.98021e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -0.999915  max 1.00064
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -8.07337e-005  max 1.38357e-005
+  27 4.4835552e-007 0.00e+000 1.23e-004 -11.0 1.27e-002    -  1.00e+000 1.00e+000f  1
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.03158  max 1.00454
   -- Solve :
-          min -1.00002  max 1.00053
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.33857e-005, tol=  1e-006, normb 4.62206e-006
+          min -1.03158  max 1.00454
   -- Solve :
-          min -1.83047e-005  max 0.000187052
-  28 4.6576065e-007 0.00e+000 1.91e-004 -11.0 4.09e-002    -  1.00e+000 6.25e-002f  5
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03021e-006, tol=  1e-006, normb 0.0527776
+          min -1.03158  max 1.00454
   -- Solve :
-          min -0.99902  max 1.0103
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03021e-006, tol=  1e-006, normb 0.0527776
+          min -1.03158  max 1.00454
   -- Solve :
-          min -0.99902  max 1.0103
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03021e-006, tol=  1e-006, normb 0.0527776
+          min -1.03158  max 1.00454
   -- Solve :
-          min -0.99902  max 1.0103
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03021e-006, tol=  1e-006, normb 0.0527776
+          min -1.01594  max 1.00146
   -- Solve :
-          min -0.99902  max 1.0103
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03021e-006, tol=  1e-006, normb 0.0527776
+          min -1.00812  max 0.999927
   -- Solve :
-          min -0.99902  max 1.0103
-GMRES converges: 2121 5.25963e-008 0.0527783 9.96552e-007 < 1e-006
+          min -1.00421  max 0.999158
   -- Solve :
-          min -0.998577  max 1.00541
-GMRES converges: 2087 5.27691e-008 0.0527791 9.9981e-007 < 1e-006
+          min -1.00226  max 0.998773
   -- Solve :
-          min -0.998355  max 1.00297
-GMRES converges: 2259 5.2617e-008 0.0527796 9.96919e-007 < 1e-006
+          min -1.00128  max 0.999455
   -- Solve :
-          min -0.998996  max 1.00175
-GMRES converges: 2538 5.27268e-008 0.0527799 9.98996e-007 < 1e-006
+          min -1.00079  max 0.999905
   -- Solve :
-          min -0.99951  max 1.00114
-GMRES converges: 2555 5.26723e-008 0.05278 9.97959e-007 < 1e-006
+          min -1.00055  max 1.00013
   -- Solve :
-          min -0.999767  max 1.00084
-GMRES converges: 2485 5.27276e-008 0.0527801 9.99005e-007 < 1e-006
+          min -1.00043  max 1.00024
   -- Solve :
-          min -0.999896  max 1.00068
-GMRES converges: 2500 5.22632e-008 0.0527801 9.90205e-007 < 1e-006
+          min -1.00037  max 1.0003
   -- Solve :
-          min -0.99996  max 1.00061
-GMRES converges: 2530 5.25445e-008 0.0527801 9.95536e-007 < 1e-006
+          min -1.00033  max 1.00033
   -- Solve :
-          min -0.999992  max 1.00057
-GMRES converges: 2535 5.25951e-008 0.0527801 9.96495e-007 < 1e-006
+          min -1.00032  max 1.00034
   -- Solve :
-          min -1.00001  max 1.00055
-GMRES converges: 2539 5.27566e-008 0.0527801 9.99554e-007 < 1e-006
+          min -1.00031  max 1.00035
   -- Solve :
-          min -1.00002  max 1.00054
-GMRES converges: 2542 5.26981e-008 0.0527801 9.98445e-007 < 1e-006
+          min -1.00031  max 1.00035
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2543 5.27039e-008 0.0527801 9.98555e-007 < 1e-006
+          min -1.00031  max 1.00035
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2543 5.27738e-008 0.0527801 9.9988e-007 < 1e-006
+          min -1.00031  max 1.00035
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26387e-008 0.0527801 9.9732e-007 < 1e-006
+          min -1.0003  max 1.00035
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26536e-008 0.0527801 9.97602e-007 < 1e-006
+          min -1.0003  max 1.00035
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26608e-008 0.0527801 9.9774e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26645e-008 0.0527801 9.97808e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26663e-008 0.0527801 9.97842e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26671e-008 0.0527801 9.97859e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26676e-008 0.0527801 9.97867e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26678e-008 0.0527801 9.97872e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26679e-008 0.0527801 9.97874e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97875e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97875e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.0003  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -8.07337e-005  max 1.38357e-005
+  28 4.4835552e-007 0.00e+000 1.23e-004 -11.0 3.42e-001    -  1.00e+000 9.09e-013f 41
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.00044  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.00044  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.00044  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.00044  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.00044  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.00037  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.00034  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -1.00034  max 1.00036
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -7.85925e-005  max 2.05777e-005
+  29 4.4085120e-007 0.00e+000 1.17e-004 -11.0 6.98e-002    -  1.00e+000 2.50e-001f  3
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.986323  max 1.01432
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.986323  max 1.01432
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.986323  max 1.01432
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.986323  max 1.01432
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.986323  max 1.01432
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.992312  max 1.00734
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.995307  max 1.00385
   -- Solve :
-          min -1.00002  max 1.00053
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.33857e-005, tol=  1e-006, normb 4.62206e-006
+          min -0.996804  max 1.0021
   -- Solve :
-          min -1.83047e-005  max 0.000187052
-  29 4.6576065e-007 0.00e+000 1.91e-004 -11.0 1.81e-001    -  1.00e+000 2.78e-017f 56
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03021e-006, tol=  1e-006, normb 0.0527776
+          min -0.998562  max 1.00123
   -- Solve :
-          min -0.99902  max 1.0103
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03021e-006, tol=  1e-006, normb 0.0527776
+          min -0.999451  max 1.00079
   -- Solve :
-          min -0.99902  max 1.0103
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03021e-006, tol=  1e-006, normb 0.0527776
+          min -0.999895  max 1.00058
   -- Solve :
-          min -0.99902  max 1.0103
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03021e-006, tol=  1e-006, normb 0.0527776
+          min -0.999895  max 1.00058
   -- Solve :
-          min -0.99902  max 1.0103
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03021e-006, tol=  1e-006, normb 0.0527776
-  -- Solve :
-          min -0.99902  max 1.0103
-GMRES converges: 2121 5.25963e-008 0.0527783 9.96552e-007 < 1e-006
-  -- Solve :
-          min -0.998577  max 1.00541
-GMRES converges: 2087 5.27691e-008 0.0527791 9.9981e-007 < 1e-006
-  -- Solve :
-          min -0.998355  max 1.00297
-GMRES converges: 2259 5.2617e-008 0.0527796 9.96919e-007 < 1e-006
-  -- Solve :
-          min -0.998996  max 1.00175
-GMRES converges: 2538 5.27268e-008 0.0527799 9.98996e-007 < 1e-006
-  -- Solve :
-          min -0.99951  max 1.00114
-GMRES converges: 2555 5.26718e-008 0.05278 9.97951e-007 < 1e-006
-  -- Solve :
-          min -0.999767  max 1.00084
-GMRES converges: 2485 5.27276e-008 0.0527801 9.99005e-007 < 1e-006
-  -- Solve :
-          min -0.999896  max 1.00068
-GMRES converges: 2500 5.22631e-008 0.0527801 9.90205e-007 < 1e-006
-  -- Solve :
-          min -0.99996  max 1.00061
-GMRES converges: 2530 5.25445e-008 0.0527801 9.95536e-007 < 1e-006
-  -- Solve :
-          min -0.999992  max 1.00057
-GMRES converges: 2535 5.25951e-008 0.0527801 9.96495e-007 < 1e-006
-  -- Solve :
-          min -1.00001  max 1.00055
-GMRES converges: 2539 5.27566e-008 0.0527801 9.99554e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00054
-GMRES converges: 2542 5.26981e-008 0.0527801 9.98445e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2543 5.27039e-008 0.0527801 9.98555e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2543 5.27738e-008 0.0527801 9.9988e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26387e-008 0.0527801 9.9732e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26536e-008 0.0527801 9.97602e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26608e-008 0.0527801 9.9774e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26645e-008 0.0527801 9.97808e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26662e-008 0.0527801 9.97842e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26671e-008 0.0527801 9.97859e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26676e-008 0.0527801 9.97867e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26678e-008 0.0527801 9.97872e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26679e-008 0.0527801 9.97874e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97875e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97875e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97875e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
-  -- Solve :
-          min -1.00002  max 1.00053
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.33857e-005, tol=  1e-006, normb 4.62206e-006
-  -- Solve :
-          min -1.83047e-005  max 0.000187052
+          min -5.5355e-005  max 0.000118788
 iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
-  30 4.6576065e-007 0.00e+000 1.91e-004 -11.0 1.81e-001    -  1.00e+000 2.78e-017f 56
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03021e-006, tol=  1e-006, normb 0.0527776
+  30 4.3437091e-007 0.00e+000 1.19e-004 -11.0 7.92e-001    -  1.00e+000 1.56e-002f  7
   -- Solve :
-          min -0.99902  max 1.0103
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03021e-006, tol=  1e-006, normb 0.0527776
+          min -0.996572  max 1.00691
   -- Solve :
-          min -0.99902  max 1.0103
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03021e-006, tol=  1e-006, normb 0.0527776
+          min -0.996572  max 1.00691
   -- Solve :
-          min -0.99902  max 1.0103
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03021e-006, tol=  1e-006, normb 0.0527776
+          min -0.996572  max 1.00691
   -- Solve :
-          min -0.99902  max 1.0103
-WARNING: GMRES do not converges: 2602/2601,  resid = 1.03021e-006, tol=  1e-006, normb 0.0527776
+          min -0.996572  max 1.00691
   -- Solve :
-          min -0.99902  max 1.0103
-GMRES converges: 2121 5.25963e-008 0.0527783 9.96552e-007 < 1e-006
+          min -0.996572  max 1.00691
   -- Solve :
-          min -0.998577  max 1.00541
-GMRES converges: 2087 5.27691e-008 0.0527791 9.9981e-007 < 1e-006
+          min -0.997253  max 1.00374
   -- Solve :
-          min -0.998355  max 1.00297
-GMRES converges: 2259 5.2617e-008 0.0527796 9.96919e-007 < 1e-006
+          min -0.997787  max 1.00216
   -- Solve :
-          min -0.998996  max 1.00175
-GMRES converges: 2538 5.27268e-008 0.0527799 9.98996e-007 < 1e-006
+          min -0.998841  max 1.00137
   -- Solve :
-          min -0.99951  max 1.00114
-GMRES converges: 2555 5.2672e-008 0.05278 9.97954e-007 < 1e-006
+          min -0.999368  max 1.00097
   -- Solve :
-          min -0.999767  max 1.00084
-GMRES converges: 2485 5.27276e-008 0.0527801 9.99005e-007 < 1e-006
+          min -0.999631  max 1.00077
   -- Solve :
-          min -0.999896  max 1.00068
-GMRES converges: 2500 5.22631e-008 0.0527801 9.90205e-007 < 1e-006
+          min -0.999763  max 1.00067
   -- Solve :
-          min -0.99996  max 1.00061
-GMRES converges: 2530 5.25445e-008 0.0527801 9.95536e-007 < 1e-006
+          min -0.999829  max 1.00063
   -- Solve :
-          min -0.999992  max 1.00057
-GMRES converges: 2535 5.25951e-008 0.0527801 9.96494e-007 < 1e-006
+          min -0.999862  max 1.0006
   -- Solve :
-          min -1.00001  max 1.00055
-GMRES converges: 2539 5.27566e-008 0.0527801 9.99554e-007 < 1e-006
+          min -0.999878  max 1.00059
   -- Solve :
-          min -1.00002  max 1.00054
-GMRES converges: 2542 5.26981e-008 0.0527801 9.98445e-007 < 1e-006
+          min -0.999887  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2543 5.27039e-008 0.0527801 9.98555e-007 < 1e-006
+          min -0.999891  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2543 5.27738e-008 0.0527801 9.9988e-007 < 1e-006
+          min -0.999893  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26387e-008 0.0527801 9.9732e-007 < 1e-006
+          min -0.999894  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26536e-008 0.0527801 9.97602e-007 < 1e-006
+          min -0.999894  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26608e-008 0.0527801 9.9774e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26645e-008 0.0527801 9.97808e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26662e-008 0.0527801 9.97842e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26671e-008 0.0527801 9.97859e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26676e-008 0.0527801 9.97867e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26678e-008 0.0527801 9.97872e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.26679e-008 0.0527801 9.97874e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97875e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97875e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97875e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-GMRES converges: 2544 5.2668e-008 0.0527801 9.97876e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00002  max 1.00053
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.33857e-005, tol=  1e-006, normb 4.62206e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.83047e-005  max 0.000187052
-  31 4.6576065e-007 0.00e+000 1.91e-004 -11.0 1.81e-001    -  1.00e+000 1.82e-012f 40
-GMRES converges: 2547 5.25654e-008 0.0527804 9.95926e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00012  max 1.00044
-GMRES converges: 2547 5.25654e-008 0.0527804 9.95926e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00012  max 1.00044
-WARNING: GMRES do not converges: 2602/2601,  resid = 3.36341e-005, tol=  1e-006, normb 4.41278e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -3.83436e-005  max 0.000106658
-  32 4.6322264e-007 0.00e+000 1.09e-004 -11.0 1.91e-004    -  1.00e+000 1.00e+000f  1
-GMRES converges: 2547 5.25603e-008 0.0527805 9.95826e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00021  max 1.00036
-GMRES converges: 2547 5.25603e-008 0.0527805 9.95826e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00021  max 1.00036
-GMRES converges: 2547 5.25603e-008 0.0527805 9.95826e-007 < 1e-006
+          min -0.999895  max 1.00058
   -- Solve :
-          min -1.00021  max 1.00036
-GMRES converges: 2547 5.25603e-008 0.0527805 9.95826e-007 < 1e-006
+          min -5.5355e-005  max 0.000118788
+  31 4.3437091e-007 0.00e+000 1.19e-004 -11.0 2.44e-001    -  1.00e+000 2.84e-014f 46
   -- Solve :
-          min -1.00021  max 1.00036
-GMRES converges: 2547 5.25603e-008 0.0527805 9.95826e-007 < 1e-006
+          min -0.996572  max 1.00691
   -- Solve :
-          min -1.00021  max 1.00036
-GMRES converges: 2547 5.26382e-008 0.0527805 9.97305e-007 < 1e-006
+          min -0.996572  max 1.00691
   -- Solve :
-          min -1.00016  max 1.0004
-GMRES converges: 2547 5.26422e-008 0.0527804 9.97381e-007 < 1e-006
+          min -0.996572  max 1.00691
   -- Solve :
-          min -1.00014  max 1.00042
-GMRES converges: 2547 5.26028e-008 0.0527804 9.96634e-007 < 1e-006
+          min -0.996572  max 1.00691
   -- Solve :
-          min -1.00013  max 1.00043
-GMRES converges: 2547 5.25866e-008 0.0527804 9.96328e-007 < 1e-006
+          min -0.996572  max 1.00691
   -- Solve :
-          min -1.00012  max 1.00044
-GMRES converges: 2547 5.25866e-008 0.0527804 9.96328e-007 < 1e-006
+          min -0.997253  max 1.00374
   -- Solve :
-          min -1.00012  max 1.00044
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.05137e-005, tol=  1e-006, normb 4.40453e-006
+          min -0.997787  max 1.00216
   -- Solve :
-          min -3.98171e-005  max 0.00010197
-  33 4.6321275e-007 0.00e+000 1.04e-004 -11.0 2.46e-004    -  1.00e+000 6.25e-002f  5
-GMRES converges: 2541 5.2689e-008 0.0527805 9.98267e-007 < 1e-006
+          min -0.998841  max 1.00137
   -- Solve :
-          min -1.00024  max 1.00033
-GMRES converges: 2541 5.2689e-008 0.0527805 9.98267e-007 < 1e-006
+          min -0.999368  max 1.00097
   -- Solve :
-          min -1.00024  max 1.00033
-GMRES converges: 2541 5.2689e-008 0.0527805 9.98267e-007 < 1e-006
+          min -0.999631  max 1.00077
   -- Solve :
-          min -1.00024  max 1.00033
-GMRES converges: 2541 5.2689e-008 0.0527805 9.98267e-007 < 1e-006
+          min -0.999763  max 1.00067
   -- Solve :
-          min -1.00024  max 1.00033
-GMRES converges: 2541 5.2689e-008 0.0527805 9.98267e-007 < 1e-006
+          min -0.999829  max 1.00063
   -- Solve :
-          min -1.00024  max 1.00033
-GMRES converges: 2546 5.27187e-008 0.0527805 9.9883e-007 < 1e-006
+          min -0.999862  max 1.0006
   -- Solve :
-          min -1.00018  max 1.00038
-GMRES converges: 2547 5.25901e-008 0.0527804 9.96393e-007 < 1e-006
+          min -0.999878  max 1.00059
   -- Solve :
-          min -1.00015  max 1.00041
-GMRES converges: 2547 5.25901e-008 0.0527804 9.96393e-007 < 1e-006
+          min -0.999887  max 1.00058
   -- Solve :
-          min -1.00015  max 1.00041
-WARNING: GMRES do not converges: 2602/2601,  resid = 4.3145e-005, tol=  1e-006, normb 4.36656e-006
+          min -0.999891  max 1.00058
   -- Solve :
-          min -4.55632e-005  max 7.99303e-005
-  34 4.6298272e-007 0.00e+000 8.16e-005 -11.0 4.87e-004    -  1.00e+000 2.50e-001f  3
+          min -0.999893  max 1.00058
+  -- Solve :
+          min -0.999894  max 1.00058
+  -- Solve :
+          min -0.999894  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -5.5355e-005  max 0.000118788
+  32 4.3437091e-007 0.00e+000 1.19e-004 -11.0 2.44e-001    -  1.00e+000 1.42e-014f 47
+  -- Solve :
+          min -0.996572  max 1.00691
+  -- Solve :
+          min -0.996572  max 1.00691
+  -- Solve :
+          min -0.996572  max 1.00691
+  -- Solve :
+          min -0.996572  max 1.00691
+  -- Solve :
+          min -0.996572  max 1.00691
+  -- Solve :
+          min -0.997253  max 1.00374
+  -- Solve :
+          min -0.997787  max 1.00216
+  -- Solve :
+          min -0.998841  max 1.00137
+  -- Solve :
+          min -0.999368  max 1.00097
+  -- Solve :
+          min -0.999631  max 1.00077
+  -- Solve :
+          min -0.999763  max 1.00067
+  -- Solve :
+          min -0.999829  max 1.00063
+  -- Solve :
+          min -0.999862  max 1.0006
+  -- Solve :
+          min -0.999878  max 1.00059
+  -- Solve :
+          min -0.999887  max 1.00058
+  -- Solve :
+          min -0.999891  max 1.00058
+  -- Solve :
+          min -0.999893  max 1.00058
+  -- Solve :
+          min -0.999894  max 1.00058
+  -- Solve :
+          min -0.999894  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -0.999895  max 1.00058
+  -- Solve :
+          min -5.5355e-005  max 0.000118788
+  33 4.3437091e-007 0.00e+000 1.19e-004 -11.0 2.44e-001    -  1.00e+000 2.22e-016f 53
+  -- Solve :
+          min -0.999949  max 1.00052
+  -- Solve :
+          min -0.999949  max 1.00052
+  -- Solve :
+          min -0.999949  max 1.00052
+  -- Solve :
+          min -0.999949  max 1.00052
+  -- Solve :
+          min -0.999949  max 1.00052
+  -- Solve :
+          min -0.999922  max 1.00055
+  -- Solve :
+          min -0.999908  max 1.00056
+  -- Solve :
+          min -0.999908  max 1.00056
+  -- Solve :
+          min -5.70135e-005  max 0.000107857
+  34 4.3433001e-007 0.00e+000 1.08e-004 -11.0 1.19e-004    -  1.00e+000 2.50e-001f  3
+  -- Solve :
+          min -1.00003  max 1.00043
+  -- Solve :
+          min -1.00003  max 1.00043
+  -- Solve :
+          min -1.00003  max 1.00043
+  -- Solve :
+          min -1.00003  max 1.00043
+  -- Solve :
+          min -1.00003  max 1.00043
+  -- Solve :
+          min -0.99997  max 1.0005
+  -- Solve :
+          min -0.99997  max 1.0005
+  -- Solve :
+          min -6.1941e-005  max 6.17871e-005
+  35 4.3396851e-007 0.00e+000 7.09e-005 -11.0 3.26e-004    -  1.00e+000 5.00e-001f  2
  
-Number of Iterations....: 34
+Number of Iterations....: 35
  
                                    (scaled)                 (unscaled)
-Objective...............:  4.6298271770283627e-007   4.6298271770283627e-007
-Dual infeasibility......:  8.1626573430728486e-005   8.1626573430728486e-005
+Objective...............:  4.3396851027638400e-007   4.3396851027638400e-007
+Dual infeasibility......:  7.0868901025603886e-005   7.0868901025603886e-005
 Constraint violation....:  0.0000000000000000e+000   0.0000000000000000e+000
 Complementarity.........:  0.0000000000000000e+000   0.0000000000000000e+000
-Overall NLP error.......:  8.1626573430728486e-005   8.1626573430728486e-005
+Overall NLP error.......:  7.0868901025603886e-005   7.0868901025603886e-005
  
  
-Number of objective function evaluations             = 488
-Number of objective gradient evaluations             = 35
+Number of objective function evaluations             = 514
+Number of objective gradient evaluations             = 36
 Number of equality constraint evaluations            = 0
 Number of inequality constraint evaluations          = 0
 Number of equality constraint Jacobian evaluations   = 0
 Number of inequality constraint Jacobian evaluations = 0
 Number of Lagrangian Hessian evaluations             = 0
-Total CPU secs in IPOPT (w/o function evaluations)   =      2.348
-Total CPU secs in NLP function evaluations           =    299.140
+Total CPU secs in IPOPT (w/o function evaluations)   =      1.846
+Total CPU secs in NLP function evaluations           =     33.874
  
 EXIT: Optimal Solution Found.
  
@@ -1865,9 +1373,9 @@ EXIT: Optimal Solution Found.
  write geo in IP1.mesh.gmsh
   number of required edges : 0
  write geo in IPe.mesh.gmsh
-Error: 0.0608526
-times: compile 0.269s, execution 301.944s,  mpirank:0
- ######## We forget of deleting   15113 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
- CodeAlloc : nb ptr  3338,  size :405728 mpirank: 0
+Error: 0.0599336
+times: compile 1.567s, execution 37.487s,  mpirank:0
+ ######## We forget of deleting   16097 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
+ CodeAlloc : nb ptr  3463,  size :409888 mpirank: 0
 Ok: Normal End
  try getConsole D:\Study\HUST\FEM\heatsource\FreeFem++\HeatSource1D_Q.edp

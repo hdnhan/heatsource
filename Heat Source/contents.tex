@@ -8,7 +8,6 @@
 	
 \newpage
 \section{Introduction}
-\addcontentsline{toc}{section}{Lời mở đầu}
 Let's consider a physical domain $\Omega \subset \mathbb{R}^d\,(d=1,\, 2,\, 3)$ that is bounded with the boundary $\Gamma$. Donate $I:=(0,\, T),\, Q:=\Omega\times I$ và $ S:=\Gamma \times I$ with $T>0$ given. 
 \\
 Consider the heat equation with the initial condition
@@ -45,6 +44,30 @@ with $\gamma>0$ being a regularization parameter\\
 $*\to IP1, 2, 3: L^2(Q), L^2(Q_T), L^2(S_1)$\\
 $** \to (x, t), (x), (t): L^2(Q), L^2(\Omega), L^2(I)$
 
+\section{Heat source (variational problem)}
+Sobolev space
+\begin{align}
+	\int_{Q}\left[u_tv+\sum_{i, j=1}^{d}a_{ji}\frac{\partial u}{\partial x_i}\frac{\partial v}{\partial x_j}\right]dxdt=\int_{Q}Fvdxdt+\int_{S}\varphi vdsdt.
+\end{align}
+Adjoint problem
+\begin{align}
+	\begin{cases}
+		-p_t-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial p}{\partial x_i}\right)=..., & (x, t)\in Q,\\
+		\frac{\partial p}{\partial \mathcal{N}}(x, t)=0, & (x, t)\in S,\\
+		p(x, T)=0, & x\in \Omega.
+	\end{cases}
+\end{align}
+\begin{align}
+	\begin{cases}
+		-p_t-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial p}{\partial x_i}\right)=0, & (x, t)\in Q,\\
+		\frac{\partial p}{\partial \mathcal{N}}(x, t)=0, & (x, t)\in S\backslash S_1,\\[0.2cm]
+		\frac{\partial p}{\partial \mathcal{N}}(x, t)=\ell u-\omega, & (x, t)\in S_1,\\
+		p(x, T)=0, & x\in \Omega.
+	\end{cases}
+\end{align}
+\section{Numerical results}
+\section{Conclusion}
+\section{References}
 
 \section{Space-time finite element method}
 introduce

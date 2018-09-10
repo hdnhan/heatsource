@@ -14,8 +14,8 @@ Vh uN = 0;
 Vh u0 = 0;
 Vh a = 1;
 Vh q = x * y + 1;
-Vh fe = (x * (x <= 0.5) + (1 - x) * (x > 0.5)); 
-Vh g = pi * cos(pi * x) * cos(pi * y) + pi^2 * cos(pi * x) * sin(pi * y) - fe * q;
+Vh fe = (1 + 0) * (x * (x <= 0.5) + (1 - x) * (x > 0.5)); 
+Vh g = pi * cos(pi * x) * cos(pi * y) + a * pi^2 * cos(pi * x) * sin(pi * y) - fe * q;
 real gamma = 1e-6;
 
 Vh u;
@@ -35,8 +35,8 @@ func real[int] StateProblem(real[int] f){
     Vh rsh = ff * q + g;
 
     solve SpaceTime(u, v, solver = GMRES) = 
-          int2d(Th)(dy(u)  * v + dx(u)  * dx(v)) 
-        + int2d(Th)(dy(u0) * v + dx(u0) * dx(v))
+          int2d(Th)(dy(u)  * v + a * dx(u)  * dx(v)) 
+        + int2d(Th)(dy(u0) * v + a * dx(u0) * dx(v))
         - int1d(Th, 2, 4) (uN * v)
         - int2d(Th)(rsh * v) 
         + on(1, u = u0);
@@ -46,17 +46,13 @@ func real[int] StateProblem(real[int] f){
 
 // Adjoint equation
 func real[int] AdjointProblem(real[int] u){
-    //int[int] labs1 = [0, 2, 3, 4];
-    //mesh Th1 = square(Nx, Ny, [x, T * y], label = labs1);
-    //fespace Vh1(Th, P1);
     Vh p, v, uu; uu[] = u;
     Vh rsh = uu - ue;
-    Vh pN = 0;
 
     solve JointProblem(p, v, solver = GMRES) =
-          int2d(Th)(-dy(p) * v + dx(p) * dx(v))
-        - int1d(Th, 2, 4)(pN * v)
-        - int2d(Th)(rsh * v) + on(3, p = 0);
+          int2d(Th)(-dy(p) * v + a * dx(p) * dx(v))
+        - int1d(Th, 2, 4)(rsh * v)
+        + on(3, p = 0);
     return p[];
 }
 
@@ -64,7 +60,7 @@ func real[int] AdjointProblem(real[int] u){
 func real J(real[int] f) {
     Vh ff; ff[] = f;
     Vh uu; uu[] = StateProblem(f); 
-     return 0.5 * int2d(Th)((uu - ue)^2) + 0.5 * gamma * int2d(Th)(ff^2);
+     return 0.5 * int1d(Th, 2, 4)((uu - ue)^2) + 0.5 * gamma * int2d(Th)(ff^2);
 }
 
 // Gradient of Tikhonov funtional
