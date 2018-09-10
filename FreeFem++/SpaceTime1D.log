@@ -12,17 +12,17 @@
    10 : */
    11 :
    12 : real T = 1;
-   13 : int nn = 25;
+   13 : int nn = 100;
    14 : int Nx = nn, Ny = nn;
    15 : int[int] labs = [1, 2, 0, 4];
    16 : mesh Th = square(Nx, Ny, [x, T * y], label = labs);
    17 : fespace Vh(Th, P1);
    18 :
-   19 : Vh ue = cos(pi * x) * sin(pi * y);
-   20 : Vh uN = 0;
+   19 : Vh ue = sin(pi * x) * sin(pi * y);
+   20 : Vh uN = pi * cos(pi * x) * sin(pi * y);
    21 : Vh u0 = ue(x, 0);
    22 : Vh a = 1;
-   23 : Vh F = pi * cos(pi * x) * cos(pi * y) + pi^2 * cos(pi * x) * sin(pi * y);
+   23 : Vh F = pi * sin(pi * x) * cos(pi * y) + pi^2 * sin(pi * x) * sin(pi * y);
    24 :
    25 : Vh u, v;
    26 : Vh uu;
@@ -30,7 +30,7 @@
    28 : solve SpaceTime(u, v, solver = GMRES) =
    29 :           int2d(Th)(dy(u) * v + dx(u) * dx(v))
    30 :         + int2d(Th)(dy(u0) * v + dx(u0) * dx(v))
-   31 :         - int1d(Th, 2, 4)(uN * v)
+   31 :         - int1d(Th, 2)(uN * v) + int1d(Th, 4)(uN * v)
    32 :         - int2d(Th)(F * v) + on(1, u = 0);
    33 : u = u + u0;
    34 :
@@ -53,25 +53,34 @@
    51 : //cout << endl;
    52 : //for(int i = 0; i < nbvertices; i++)
    53 :         //cout << i << ": x = " << Th(i).x << ", y = " << Th(i).y << ", u = " << u[][i] << ", uu = " << uu[][i]
-<< ", label = " << Th(i).label << endl;
+<< ", label = " << Th(i).label << endl;
    54 :
-   55 :
-   56 : plot(ue, wait = 1, dim=3d);
-   57 : //plot(u, ue, wait = 1, dim=3d);
-   58 : //plot(ue, wait = 1, dim=3d);
-   59 : //plot(u, ue, wait = 1, dim=3d);
-   60 :
-   61 : //Vh er = ue - u;
-   62 : //cout << "Error in L2: " << sqrt(int2d(Th) (er * er)) << endl;
-   63 : //cout << "Error in H1: " << sqrt(int2d(Th) (dy(er) * dy(er))) << endl;
-   64 : cout << "Error in H1: " << sqrt(int2d(Th) (dx(er) The Identifier er does not exist
+   55 : Vh uuu; uuu[] = uu;
+   56 : Vh res = uuu - ue(x, y);
+   57 : cout << res << endl;
+   58 :
+   59 :
+   60 : plot(ue, wait = 1, dim=3d);
+   61 : plot(u, ue, wait = 1, dim=3d);
+   62 : //plot(ue, wait = 1, dim=3d);
+   63 : //plot(u, ue, wait = 1, dim=3d);
+   64 :
+   65 : Vh er = ue - u;
+   66 : //cout << "Error in L2: " << sqrt(int2d(Th) (er * er)) << endl;
+   67 : //cout << "Error in H1: " << sqrt(int2d(Th) (dy(er) * dy(er))) << endl;
+   68 : cout << "Error in H1: " << sqrt(int2d(Th) (dx(er) * dx(er))) << endl;
+   69 : //cout << er[] << endl;ÿ sizestack + 1024 =6120  ( 5096 )
  
- Error line number 64, in file D:\Study\HUST\FEM\heatsource\FreeFem++\SpaceTime1D.edp, before  token )
+  -- Square mesh : nb vertices  =10201 ,  nb triangles = 20000 ,  nb boundary edges 400
+GMRES converges: 8636 3.14762e-007 0.315121 9.98861e-007 < 1e-006
+  -- Solve :
+          min -0.0030581  max 0.999768
  
-  current line = 64
-Compile error :
-        line number :64, )
-error Compile error :
-        line number :64, )
- code = 1 mpirank: 0
+****************************************
+-1.49966e-032
+Error in H1: 0.000885473
+times: compile 0.287s, execution 10.512s,  mpirank:0
+ ######## We forget of deleting   58 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
+ CodeAlloc : nb ptr  3118,  size :391568 mpirank: 0
+Ok: Normal End
  try getConsole D:\Study\HUST\FEM\heatsource\FreeFem++\SpaceTime1D.edp

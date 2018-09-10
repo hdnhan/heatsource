@@ -16,11 +16,11 @@ int[int] labs = [1, 2, 0, 4];
 mesh Th = square(Nx, Ny, [x, T * y], label = labs);
 fespace Vh(Th, P1);
 
-Vh ue = cos(pi * x) * sin(pi * y);
-Vh uN = 0;
+Vh ue = sin(pi * x) * sin(pi * y);
+Vh uN = pi * cos(pi * x) * sin(pi * y);
 Vh u0 = ue(x, 0);
 Vh a = 1;
-Vh F = pi * cos(pi * x) * cos(pi * y) + pi^2 * cos(pi * x) * sin(pi * y);
+Vh F = pi * sin(pi * x) * cos(pi * y) + pi^2 * sin(pi * x) * sin(pi * y);
 
 Vh u, v;
 Vh uu;
@@ -28,7 +28,7 @@ Vh uu;
 solve SpaceTime(u, v, solver = GMRES) = 
           int2d(Th)(dy(u) * v + dx(u) * dx(v))
         + int2d(Th)(dy(u0) * v + dx(u0) * dx(v))
-        - int1d(Th, 2, 4)(uN * v)
+        - int1d(Th, 2)(uN * v) + int1d(Th, 4)(uN * v)
         - int2d(Th)(F * v) + on(1, u = 0);
 u = u + u0;
 
@@ -53,8 +53,10 @@ for (int i =0; i <= Ny/2; i++){
 	//cout << i << ": x = " << Th(i).x << ", y = " << Th(i).y << ", u = " << u[][i] << ", uu = " << uu[][i] << ", label = " << Th(i).label << endl;
 
 
+
+
 plot(ue, wait = 1, dim=3d);
-//plot(u, ue, wait = 1, dim=3d);
+plot(u, ue, wait = 1, dim=3d);
 //plot(ue, wait = 1, dim=3d);
 //plot(u, ue, wait = 1, dim=3d);
 

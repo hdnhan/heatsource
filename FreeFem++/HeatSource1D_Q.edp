@@ -8,26 +8,14 @@ int[int] labs = [1, 2, 0, 4];
 mesh Th = square(Nx, Ny, [x, T * y], label = labs);
 fespace Vh(Th, P1);
 
-//func real ue(real x, real y){return cos(pi * x) * sin(pi * y);}
-Vh ue = cos(pi * x) * sin(pi * y);
-Vh uN = 0;
-Vh u0 = 0;
+Vh ue = sin(pi * x) * sin(pi * y);
+Vh uN = pi * cos(pi * x) * sin(pi * y);
+Vh u0 = ue(x, 0);
 Vh a = 1;
 Vh q = x * y + 1;
-Vh fe = (1 + y^2) * (x * (x <= 0.5) + (1 - x) * (x > 0.5)); 
-Vh g = pi * cos(pi * x) * cos(pi * y) + a * pi^2 * cos(pi * x) * sin(pi * y) - fe * q;
+Vh fe = (1 + y^0) * (x * (x <= 0.5) + (1 - x) * (x > 0.5)); 
+Vh g = pi * sin(pi * x) * cos(pi * y) + a * pi^2 * sin(pi * x) * sin(pi * y) - fe * q;
 real gamma = 1e-6;
-
-Vh u;
-
-/*
-State equation: 
-    u_t - div(a*grad(u)) = f * q + g, (x, t) \in \Omega x [0, T]
-Neumann boundary condition: 
-    du(x, t)/dN = uN(x, t), (x, t) \in \partial\Omega x [0, T]
-Initial condition: 
-    u(x, 0) = u0(x), x \in \Omega
-*/
 
 // State equation:
 func real[int] StateProblem(real[int] f){
@@ -37,63 +25,74 @@ func real[int] StateProblem(real[int] f){
     solve SpaceTime(u, v, solver = sparsesolver) = 
           int2d(Th)(dy(u)  * v + a * dx(u)  * dx(v)) 
         + int2d(Th)(dy(u0) * v + a * dx(u0) * dx(v))
-        - int1d(Th, 2, 4) (uN * v)
+        - int1d(Th, 2) (uN * v) + int1d(Th, 4) (uN * v)
         - int2d(Th)(rsh * v) 
-        + on(1, u = u0);
+        + on(1, u = 0);
+
     u = u + u0;
     return u[];
 }
 
+
 func real[int] flip(real[int] u){
-    Vh uu; uu[] = u;
-    Vh flipu;
+    Vh uu;
     for (int i =0; i <= Ny/2; i++){
         for (int j=0; j <= Nx; j++){
-            flipu[][i * (Nx + 1) + j] = uu[][(Ny - i) * (Nx + 1) + j];
-            flipu[][(Ny - i) * (Nx + 1) + j] = uu[][i * (Nx + 1) + j];
+            uu[][i * (Nx + 1) + j] = u[(Ny - i) * (Nx + 1) + j];
+            uu[][(Ny - i) * (Nx + 1) + j] = u[i * (Nx + 1) + j];
         }
     }
-    return flipu[];
+    return uu[];
 }
+
+
 // Adjoint equation
 func real[int] AdjointProblem(real[int] u){
     Vh p, v, uu; uu[] = u;
-    Vh temp = flip(u); 
-    Vh rsh =  temp - ue(x, T - y);
+    Vh temp = uu - ue; 
+    Vh rsh =  flip(temp[]);
     Vh pN = 0;
 
-    solve JointProblem(p, v, solver = sparsesolver) =
+    solve SpaceTime(p, v, solver = sparsesolver) =
           int2d(Th)(dy(p) * v + a(x, T-y) * dx(p) * dx(v))
         - int1d(Th, 2, 4)(pN * v)
         - int2d(Th)(rsh * v) + on(1, p = 0);
-    real[int] pp = p[];
-    Vh res = flip(pp);
-    return res[];
+
+    return flip(p[]);
 }
+
 
 // Tikhonov functional
 func real J(real[int] f) {
     Vh ff; ff[] = f;
     Vh uu; uu[] = StateProblem(f); 
-     return 0.5 * int2d(Th)((uu - ue)^2) + 0.5 * gamma * int2d(Th)(ff^2);
+    return 0.5 * int2d(Th)((uu - ue)^2) + 0.5 * gamma * int2d(Th)(ff^2);
 }
+
 
 // Gradient of Tikhonov funtional
 func real[int] GradJ(real[int] f) {
     Vh ff; ff[] = f;
-    Vh pp; pp[] = AdjointProblem(StateProblem(f));
-    Vh res = pp * q + gamma * ff;
+    Vh p; p[] = AdjointProblem(StateProblem(f));
+    Vh res = p * q + gamma * ff;
     return res[];
 }
 
 Vh f = 0;
-IPOPT(J, GradJ, f[], tol=1e-4);
+IPOPT(J, GradJ, f[], tol = 1e-4);
 
-savemesh(Th, "IP1.mesh");
-savesol("IP1.sol", Th, f);
-savemesh(Th, "IPe.mesh");
-savesol("IPe.sol", Th, fe);
+//savemesh(Th, "IP1.mesh");
+//savesol("IP1.sol", Th, f);
+//savemesh(Th, "IPe.mesh");
+//savesol("IPe.sol", Th, fe);
+
+Vh u; u[] = StateProblem(f[]);
+
+plot(ue, wait = 1, dim=3d);
+plot(u, wait = 1, dim=3d);
+plot(u, ue, wait = 1, dim=3d);
 
 plot(fe, wait = 1, dim=3d);
+plot(f, wait = 1, dim=3d);
 plot(f, fe, wait = 1, dim=3d);
 cout << "Error: " << sqrt(int2d(Th)((fe - f)^2)) << endl;
