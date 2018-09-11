@@ -1,0 +1,199 @@
+-- FreeFem++ v  3.610001 (date jeu. 12 juil. 2018 15:05:23)
+ Load: lg_fem lg_mesh lg_mesh3 eigenvalue
+    1 : load "ff-IpOpt"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\ff-IpOpt = 0)
+    2 : load "msh3"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\msh3 = 0)
+    3 : load "medit"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\medit = 0)
+    4 :
+    5 : real T = 1;
+    6 : int nn = 20;
+    7 : int Nx = nn, Ny = nn, Nz = nn;
+    8 : int[int] labs = [1, 2, 3, 4, 5, 0];
+    9 : mesh3 Th = cube(Nx, Ny, Nz, [x, y, T * z], label = labs);
+   10 : fespace Vh(Th, P1);
+   11 :
+   12 :
+   13 : Vh ue = exp(z) * sin(pi * x) * sin(pi * y);
+   14 : Vh duex = exp(z) * cos(pi * x) * sin(pi * y) * pi;
+   15 : Vh duey = exp(z) * sin(pi * x) * cos(pi * y) * pi;
+   16 : Vh uNx = (x == 1) * duex - (x == 0) * duex;
+   17 : Vh uNy = (y == 1) * duey - (y == 0) * duey;
+   18 : Vh u0 = ue(x, y, 0);
+   19 :
+   20 : Vh fe = sin(pi * x) * sin(pi * y) * sin(pi * z);
+   21 : Vh q = 2 + x^2 + y^2 + z^2;
+   22 : Vh g = (1 + 2 * pi^2) * ue(x, y, z) - fe * q;
+   23 : real gamma = 1e-6;
+   24 :
+   25 :
+   26 : func real[int] flip(real[int] uu){
+   27 :     Vh u;
+   28 :     for (int i = 0; i <= Nz/2; i++){
+   29 :         for (int j = 0; j <= Ny; j++){
+   30 :             for (int k = 0; k <= Nx; k++){
+   31 :                 u[][i * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k] = uu[(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Ny +
+1) + k];
+   32 :                 u[][(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k] = uu[i * (Nx + 1) * (Ny + 1) + j * (Ny +
+1) + k];
+   33 :             }
+   34 :         }
+   35 :     }
+   36 :     return u[];
+   37 : }
+   38 :
+   39 :
+   40 : // State equation:
+   41 : func real[int] StateProblem(real[int] ff){
+   42 :     Vh u, v, f; f[] = ff;
+   43 :     Vh rsh = f * q + g;
+   44 :
+   45 :     solve SpaceTime(u, v, solver = sparsesolver) =
+   46 :           int3d(Th)(dz(u) * v + dx(u) * dx(v) + dy(u) * dy(v))
+   47 :         + int3d(Th)(dz(u0) * v + dx(u0) * dx(v) + dy(u0) * dy(v))
+   48 :         - int2d(Th, 1, 3) (uNy * v) - int2d(Th, 2, 4) (uNx * v)
+   49 :         - int3d(Th)(rsh * v)
+   50 :         + on(5, u = 0);
+   51 :
+   52 :     u = u + u0;
+   53 :     return u[];
+   54 : }
+   55 :
+   56 :
+   57 : // Adjoint equation:
+   58 : func real[int] AdjointProblem(real[int] uu){
+   59 :     Vh p, u, v; u[] = uu;
+   60 :     Vh temp = u - ue;
+   61 :     Vh rsh; rsh[] = flip(temp[]);
+   62 :
+   63 :     solve SpaceTime(p, v, solver = sparsesolver) =
+   64 :           int3d(Th)(dz(p) * v + dx(p) * dx(v) + dy(p) * dy(v))
+   65 :         - int3d(Th)(rsh * v)
+   66 :         + on(5, p = 0);
+   67 :
+   68 :     return flip(p[]);
+   69 : }
+   70 :
+   71 : // Tikhonov functional
+   72 : func real J(real[int] ff) {
+   73 :     Vh f; f[] = ff;
+   74 :     Vh u; u[] = StateProblem(ff);
+   75 :     return 0.5 * int3d(Th)((u - ue)^2) + 0.5 * gamma * int2d(Th)(f^2);
+   76 : }
+   77 :
+   78 :
+   79 : // Gradient of Tikhonov funtional
+   80 : func real[int] GradJ(real[int] ff) {
+   81 :     Vh f; f[] = ff;
+   82 :     real[int] uu = StateProblem(ff);
+   83 :     Vh p; p[] = AdjointProblem(uu);
+   84 :     Vh res = p * q + gamma * f;
+   85 :     return res[];
+   86 : }
+   87 :
+   88 : Vh fh = 0;
+   89 : IPOPT(J, GradJ, fh[], tol = 1e-3);
+   90 : //NLCG(GradJ, fh[], nbiter = 1000, eps = -1e-6);
+   91 :
+   92 : cout << "J: " << J(fh[]) << endl;
+   93 :
+   94 :
+   95 : Vh delta = fh - fe;
+   96 :
+   97 : cout << "kq: " << fe[].min << ", " << fe[].max << endl;
+   98 : cout << "kq: " << fh[].min << ", " << fh[].max << endl;
+   99 : cout << "kq: " << delta[].min << ", " << delta[].max << endl;
+  100 : cout << "ss: " << sqrt(int3d(Th)(delta^2)) << endl;
+  101 :  sizestack + 1024 =11968  ( 10944 )
+ 
+  Enter: BuildCube: 6
+    kind = 6 n tet Cube = 6 / n slip 6 70
+  Cube  nv=9261 nt=48000 nbe=4800
+  Out:  BuildCube
+  -- FESpace: Nb of Nodes 9261 Nb of DoF 9261
+ 
+IPOPT Note : No hessian given ==> LBFGS hessian approximation enabled
+ 
+******************************************************************************
+This program contains Ipopt, a library for large-scale nonlinear optimization.
+ Ipopt is released as open source code under the Eclipse Public License (EPL).
+         For more information visit http://projects.coin-or.org/Ipopt
+******************************************************************************
+ 
+This is Ipopt version 3.12.4, running with linear solver mumps.
+NOTE: Other linear solvers might be more efficient (see Ipopt documentation).
+ 
+Number of nonzeros in equality constraint Jacobian...:        0
+Number of nonzeros in inequality constraint Jacobian.:        0
+Number of nonzeros in Lagrangian Hessian.............:        0
+ 
+  -- Solve :
+          min -0.828451  max 0.919517
+  -- Solve :
+          min -0.374132  max 5.03664e-035
+Total number of variables............................:     9261
+                     variables with only lower bounds:        0
+                variables with lower and upper bounds:        0
+                     variables with only upper bounds:        0
+Total number of equality constraints.................:        0
+Total number of inequality constraints...............:        0
+        inequality constraints with only lower bounds:        0
+   inequality constraints with lower and upper bounds:        0
+        inequality constraints with only upper bounds:        0
+ 
+  -- Solve :
+          min -0.828451  max 0.919517
+  -- Solve :
+          min -0.374132  max 5.03664e-035
+  -- Solve :
+          min -0.828451  max 0.919517
+iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+   0 1.0594713e-001 0.00e+000 1.50e+000   0.0 0.00e+000    -  0.00e+000 0.00e+000   0
+  -- Solve :
+          min -2.67889e-034  max 3.16525
+  -- Solve :
+          min -2.67889e-034  max 3.16525
+  -- Solve :
+          min -2.67889e-034  max 3.16525
+  -- Solve :
+          min -2.67889e-034  max 3.16525
+  -- Solve :
+          min -2.67889e-034  max 3.16525
+  -- Solve :
+          min -1.37686e-034  max 2.04238
+  -- Solve :
+          min -1.37686e-034  max 2.04238
+  -- Solve :
+          min -2.284e-035  max 0.285453
+   1 4.4374313e-002 0.00e+000 1.14e+000 -11.0 1.50e+000    -  1.00e+000 5.00e-001f  2
+  -- Solve :
+          min -0.112982  max 1.61912
+  -- Solve :
+          min -0.112982  max 1.61912
+  -- Solve :
+          min -0.017342  max 0.0266164
+   2 2.1338664e-003 0.00e+000 1.07e-001 -11.0 3.25e-001    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -0.104855  max 1.62716
+  -- Solve :
+          min -0.104855  max 1.62716
+  -- Solve :
+          min -0.016119  max 0.0222381
+   3 1.6950210e-003 0.00e+000 8.90e-002 -11.0 3.34e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -0.0339942  max 1.69852
+  -- Solve :
+          min -0.0339942  max 1.69852
+  -- Solve :
+          min -0.00227133  max 0.00452019
+   4 2.0881888e-004 0.00e+000 1.92e-002 -11.0 2.44e-001    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -0.0357966  max 1.6975
+  -- Solve :
+          min -0.0357966  max 1.6975
+  -- Solve :
+          min -0.00187627  max 0.003734
+   5 1.6071663e-004 0.00e+000 1.65e-002 -11.0 4.56e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -0.0473316  max 1.69475
+  -- Solve :
+          min -0.0473316  max 1.69475
+^C try getConsole D:\Study\HUST\FEM\heatsource\FreeFem++\HeatSource2D_Q.edp

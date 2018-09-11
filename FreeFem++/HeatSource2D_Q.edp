@@ -1,0 +1,100 @@
+load "ff-IpOpt"
+load "msh3"
+load "medit"
+
+real T = 1;
+int nn = 20;
+int Nx = nn, Ny = nn, Nz = nn; 
+int[int] labs = [1, 2, 3, 4, 5, 0];
+mesh3 Th = cube(Nx, Ny, Nz, [x, y, T * z], label = labs);
+fespace Vh(Th, P1);
+
+
+Vh ue = exp(z) * sin(pi * x) * sin(pi * y);
+Vh duex = exp(z) * cos(pi * x) * sin(pi * y) * pi;
+Vh duey = exp(z) * sin(pi * x) * cos(pi * y) * pi;
+Vh uNx = (x == 1) * duex - (x == 0) * duex;
+Vh uNy = (y == 1) * duey - (y == 0) * duey;
+Vh u0 = ue(x, y, 0);
+
+Vh fe = sin(pi * x) * sin(pi * y) * sin(pi * z);
+Vh q = 2 + x^2 + y^2 + z^2;
+Vh g = (1 + 2 * pi^2) * ue(x, y, z) - fe * q;
+real gamma = 1e-6;
+
+
+func real[int] flip(real[int] uu){
+    Vh u;
+    for (int i = 0; i <= Nz/2; i++){
+        for (int j = 0; j <= Ny; j++){
+            for (int k = 0; k <= Nx; k++){
+                u[][i * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k] = uu[(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k];
+                u[][(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k] = uu[i * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k];
+            }
+        }
+    }
+    return u[];
+}
+
+
+// State equation:
+func real[int] StateProblem(real[int] ff){
+    Vh u, v, f; f[] = ff;
+    Vh rsh = f * q + g;
+
+    solve SpaceTime(u, v, solver = sparsesolver) = 
+          int3d(Th)(dz(u) * v + dx(u) * dx(v) + dy(u) * dy(v)) 
+        + int3d(Th)(dz(u0) * v + dx(u0) * dx(v) + dy(u0) * dy(v))
+        - int2d(Th, 1, 3) (uNy * v) - int2d(Th, 2, 4) (uNx * v)
+        - int3d(Th)(rsh * v) 
+        + on(5, u = 0);
+
+    u = u + u0;
+    return u[];
+}
+
+
+// Adjoint equation:
+func real[int] AdjointProblem(real[int] uu){
+    Vh p, u, v; u[] = uu;
+    Vh temp = u - ue;
+    Vh rsh; rsh[] = flip(temp[]);
+
+    solve SpaceTime(p, v, solver = sparsesolver) = 
+          int3d(Th)(dz(p) * v + dx(p) * dx(v) + dy(p) * dy(v)) 
+        - int3d(Th)(rsh * v)
+        + on(5, p = 0);
+
+    return flip(p[]);
+}
+
+// Tikhonov functional
+func real J(real[int] ff) {
+    Vh f; f[] = ff;
+    Vh u; u[] = StateProblem(ff); 
+    return 0.5 * int3d(Th)((u - ue)^2) + 0.5 * gamma * int3d(Th)(f^2);
+}
+
+
+// Gradient of Tikhonov funtional
+func real[int] GradJ(real[int] ff) {
+    Vh f; f[] = ff;
+    real[int] uu = StateProblem(ff);
+    Vh p; p[] = AdjointProblem(uu);
+    Vh res = p * q + gamma * f;
+    return res[];
+}
+
+Vh fh = 0;
+IPOPT(J, GradJ, fh[], tol = 1e-3);
+//NLCG(GradJ, fh[], nbiter = 1000, eps = -1e-6);
+
+cout << "J: " << J(fh[]) << endl;
+
+
+Vh delta = fh - fe;
+
+cout << "kq: " << fe[].min << ", " << fe[].max << endl;
+cout << "kq: " << fh[].min << ", " << fh[].max << endl;
+cout << "kq: " << delta[].min << ", " << delta[].max << endl;
+cout << "ss: " << sqrt(int3d(Th)(delta^2)) << endl;

@@ -1,0 +1,64 @@
+-- FreeFem++ v  3.610001 (date jeu. 12 juil. 2018 15:05:23)
+ Load: lg_fem lg_mesh lg_mesh3 eigenvalue
+    1 : load "ff-IpOpt"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\ff-IpOpt = 0)
+    2 : load "msh3"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\msh3 = 0)
+    3 : load "medit"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\medit = 0)
+    4 :
+    5 : real T = 1;
+    6 : int nn = 40;
+    7 : int Nx = nn, Ny = nn, Nz = nn;
+    8 : int[int] labs = [1, 2, 3, 4, 5, 0];
+    9 : mesh3 Th = cube(Nx, Ny, Nz, [x, y, T * z], label = labs);
+   10 : fespace Vh(Th, P1);
+   11 :
+   12 :
+   13 : Vh ue = exp(z) * sin(pi * x) * sin(pi * y);
+   14 : Vh duex = exp(z) * cos(pi * x) * sin(pi * y) * pi;
+   15 : Vh duey = exp(z) * sin(pi * x) * cos(pi * y) * pi;
+   16 : Vh uNx = (x == 1) * duex - (x == 0) * duex;
+   17 : Vh uNy = (y == 1) * duey - (y == 0) * duey;
+   18 : Vh u0 = ue(x, y, 0);
+   19 :
+   20 : //Vh fe = sin(pi * x) * sin(pi * y) * sin(pi * z);
+   21 : Vh F = (1 + 2 * pi^2) * ue(x, y, z);
+   22 :
+   23 : // State equation:
+   24 : func real[int] StateProblem(){
+   25 :     Vh u, v;
+   26 :
+   27 :     solve SpaceTime(u, v, solver = sparsesolver) =
+   28 :           int3d(Th)(dz(u) * v + dx(u) * dx(v) + dy(u) * dy(v))
+   29 :         + int3d(Th)(dz(u0) * v + dx(u0) * dx(v) + dy(u0) * dy(v))
+   30 :         - int2d(Th, 1, 3) (uNy * v) - int2d(Th, 2, 4) (uNx * v)
+   31 :         - int3d(Th)(F * v)
+   32 :         + on(5, u = 0);
+   33 :
+   34 :     u = u + u0;
+   35 :     return u[];
+   36 : }
+   37 :
+   38 : Vh uu; uu[] = StateProblem();
+   39 : Vh delta = uu - ue;
+   40 :
+   41 : cout << "kq: " << ue[].min << ", " << ue[].max << endl;
+   42 : cout << "kq: " << uu[].min << ", " << uu[].max << endl;
+   43 : cout << "kq: " << delta[].min << ", " << delta[].max << endl;
+   44 : cout << "ss: " << sqrt(int3d(Th)(delta^2)) << endl;
+   45 :  sizestack + 1024 =7752  ( 6728 )
+ 
+  Enter: BuildCube: 6
+    kind = 6 n tet Cube = 6 / n slip 6 70
+  Cube  nv=68921 nt=384000 nbe=19200
+  Out:  BuildCube
+  -- FESpace: Nb of Nodes 68921 Nb of DoF 68921
+  -- Solve :
+          min -0.0325821  max 1.70428
+kq: 0, 2.71828
+kq: -0.0325821, 2.70428
+kq: -0.0325821, 0.0123179
+ss: 0.00410325
+times: compile 0.158s, execution 48.694s,  mpirank:0
+ ######## We forget of deleting   62 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
+ CodeAlloc : nb ptr  3200,  size :400528 mpirank: 0
+Ok: Normal End
+ try getConsole D:\Study\HUST\FEM\heatsource\FreeFem++\SpaceTime2D.edp

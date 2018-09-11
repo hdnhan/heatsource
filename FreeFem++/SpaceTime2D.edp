@@ -1,0 +1,44 @@
+load "ff-IpOpt"
+load "msh3"
+load "medit"
+
+real T = 1;
+int nn = 40;
+int Nx = nn, Ny = nn, Nz = nn; 
+int[int] labs = [1, 2, 3, 4, 5, 0];
+mesh3 Th = cube(Nx, Ny, Nz, [x, y, T * z], label = labs);
+fespace Vh(Th, P1);
+
+
+Vh ue = exp(z) * sin(pi * x) * sin(pi * y);
+Vh duex = exp(z) * cos(pi * x) * sin(pi * y) * pi;
+Vh duey = exp(z) * sin(pi * x) * cos(pi * y) * pi;
+Vh uNx = (x == 1) * duex - (x == 0) * duex;
+Vh uNy = (y == 1) * duey - (y == 0) * duey;
+Vh u0 = ue(x, y, 0);
+
+//Vh fe = sin(pi * x) * sin(pi * y) * sin(pi * z);
+Vh F = (1 + 2 * pi^2) * ue(x, y, z);
+
+// State equation:
+func real[int] StateProblem(){
+    Vh u, v;
+
+    solve SpaceTime(u, v, solver = sparsesolver) = 
+          int3d(Th)(dz(u) * v + dx(u) * dx(v) + dy(u) * dy(v)) 
+        + int3d(Th)(dz(u0) * v + dx(u0) * dx(v) + dy(u0) * dy(v))
+        - int2d(Th, 1, 3) (uNy * v) - int2d(Th, 2, 4) (uNx * v)
+        - int3d(Th)(F * v) 
+        + on(5, u = 0);
+
+    u = u + u0;
+    return u[];
+}
+
+Vh uu; uu[] = StateProblem();
+Vh delta = uu - ue;
+
+cout << "kq: " << ue[].min << ", " << ue[].max << endl;
+cout << "kq: " << uu[].min << ", " << uu[].max << endl;
+cout << "kq: " << delta[].min << ", " << delta[].max << endl;
+cout << "ss: " << sqrt(int3d(Th)(delta^2)) << endl;
