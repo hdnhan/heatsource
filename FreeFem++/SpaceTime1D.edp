@@ -1,14 +1,5 @@
 load "medit"
 
-/*
-State equation: 
-    u_t - div(a*grad(u)) = F, (x, t) \in \Omega x [0, T]
-Neumann boundary condition: 
-    du(x, t)/dN = uN(x, t), (x, t) \in \partial\Omega x [0, T]
-Initial condition: 
-    u(x, 0) = u0(x), x \in \Omega
-*/
-
 real T = 1;
 int nn = 100;
 int Nx = nn, Ny = nn; 
@@ -16,52 +7,29 @@ int[int] labs = [1, 2, 0, 4];
 mesh Th = square(Nx, Ny, [x, T * y], label = labs);
 fespace Vh(Th, P1);
 
-Vh ue = sin(pi * x) * sin(pi * y);
-Vh uN = pi * cos(pi * x) * sin(pi * y);
+Vh ue = exp(y) * sin(pi * x);
+Vh duex = exp(y) * cos(pi * x) * pi;
+Vh uN = (x == 1) * duex - (x == 0) * duex;
 Vh u0 = ue(x, 0);
-Vh a = 1;
-Vh F = pi * sin(pi * x) * cos(pi * y) + pi^2 * sin(pi * x) * sin(pi * y);
-
+Vh F = (1 + pi^2) * ue;
 Vh u, v;
-Vh uu;
 
 solve SpaceTime(u, v, solver = GMRES) = 
           int2d(Th)(dy(u) * v + dx(u) * dx(v))
         + int2d(Th)(dy(u0) * v + dx(u0) * dx(v))
-        - int1d(Th, 2)(uN * v) + int1d(Th, 4)(uN * v)
+        - int1d(Th, 2, 4)(uN * v)
         - int2d(Th)(F * v) + on(1, u = 0);
 u = u + u0;
 
 
-// get data of the mesh
-cout << endl << "****************************************" << endl;
-int nbtriangles = Th.nt;
-int nbvertices  = Th.nv;
-//cout << "Number of vertices:  " << nbvertices << endl;
-//cout << "Number of triangles: " << nbtriangles << endl;
-//cout << "Information of vertices: " << endl;
-
-for (int i =0; i <= Ny/2; i++){
-	for (int j=0; j <= Nx; j++){
-		uu[][i * (Nx+1) + j] = u[][(Ny-i)*(Nx+1)+j];
-		uu[][(Ny-i)*(Nx+1)+j] = u[][i * (Nx+1) + j];
-		//cout << "("<<j<<", "<<(nn-i)*(nn+1)+j << ")  ";
-	}
-}
-//cout << endl;
-//for(int i = 0; i < nbvertices; i++)
-	//cout << i << ": x = " << Th(i).x << ", y = " << Th(i).y << ", u = " << u[][i] << ", uu = " << uu[][i] << ", label = " << Th(i).label << endl;
-
-
-
-
 plot(ue, wait = 1, dim=3d);
 plot(u, ue, wait = 1, dim=3d);
-//plot(ue, wait = 1, dim=3d);
-//plot(u, ue, wait = 1, dim=3d);
+plot(u, ue, wait = 1, dim=3d);
 
-Vh er = ue - u;
-//cout << "Error in L2: " << sqrt(int2d(Th) (er * er)) << endl;
-//cout << "Error in H1: " << sqrt(int2d(Th) (dy(er) * dy(er))) << endl;
-cout << "Error in H1: " << sqrt(int2d(Th) (dx(er) * dx(er))) << endl;
-//cout << er[] << endl;
+Vh uu = u;
+Vh delta = uu - ue;
+
+cout << "kq: " << ue[].min << ", " << ue[].max << endl;
+cout << "kq: " << uu[].min << ", " << uu[].max << endl;
+cout << "kq: " << delta[].min << ", " << delta[].max << endl;
+cout << "ss: " << sqrt(int2d(Th)(delta^2)) << endl;

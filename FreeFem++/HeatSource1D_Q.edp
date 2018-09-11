@@ -2,33 +2,48 @@ load "ff-IpOpt"
 load "medit"
 
 real T = 1;
-int nn = 50;
+int nn = 100;
 int Nx = nn, Ny = nn; 
 int[int] labs = [1, 2, 0, 4];
 mesh Th = square(Nx, Ny, [x, T * y], label = labs);
 fespace Vh(Th, P1);
 
-Vh ue = sin(pi * x) * sin(pi * y);
-Vh uN = pi * cos(pi * x) * sin(pi * y);
+
+Vh ue = exp(y) * sin(pi * x);
+Vh duex = exp(y) * cos(pi * x) * pi;
+Vh uN = (x == 1) * duex - (x == 0) * duex;
 Vh u0 = ue(x, 0);
-Vh a = 1;
-Vh q = x * y + 1;
-Vh fe = (1 + y^0) * (x * (x <= 0.5) + (1 - x) * (x > 0.5)); 
-Vh g = pi * sin(pi * x) * cos(pi * y) + a * pi^2 * sin(pi * x) * sin(pi * y) - fe * q;
+
+//Vh fe = x * (1-x) * y * (1-y);
+Vh fe = 1 * sin(pi * x) * sin(pi * y);
+//Vh fe = (x * (x <= 0.5) + (1 - x) * (x > 0.5)) * y * (1-y); 
+
+Vh q = 2 + x^2 + y^2;
+Vh g = (1 + pi^2) * ue(x, y) - fe(x, y) * q(x,y);
 real gamma = 1e-6;
 
 
-Vh u, f = 0;
+func real[int] flip(real[int] uu){
+    Vh u;
+    for (int i = 0; i <= Ny/2; i++){
+        for (int j = 0; j <= Nx; j++){
+            u[][i * (Nx + 1) + j] = uu[(Ny - i) * (Nx + 1) + j];
+            u[][(Ny - i) * (Nx + 1) + j] = uu[i * (Nx + 1) + j];
+        }
+    }
+    return u[];
+}
+
 
 // State equation:
-func real[int] StateProblem(real[int] & f){
-    Vh u, v, ff; ff[] = f;
-    Vh rsh = ff * q + g;
+func real[int] StateProblem(real[int] ff){
+    Vh u, v, f; f[] = ff;
+    Vh rsh = f * q + g;
 
     solve SpaceTime(u, v, solver = sparsesolver) = 
-          int2d(Th)(dy(u)  * v + a * dx(u)  * dx(v)) 
-        + int2d(Th)(dy(u0) * v + a * dx(u0) * dx(v))
-        - int1d(Th, 2) (uN * v) + int1d(Th, 4) (uN * v)
+          int2d(Th)(dy(u)  * v + dx(u)  * dx(v)) 
+        + int2d(Th)(dy(u0) * v + dx(u0) * dx(v))
+        - int1d(Th, 2, 4) (uN * v)
         - int2d(Th)(rsh * v) 
         + on(1, u = 0);
 
@@ -37,54 +52,109 @@ func real[int] StateProblem(real[int] & f){
 }
 
 
-func real[int] flip(real[int] u){
-    Vh uu;
-    for (int i =0; i <= Ny/2; i++){
-        for (int j=0; j <= Nx; j++){
-            uu[][i * (Nx + 1) + j] = u[(Ny - i) * (Nx + 1) + j];
-            uu[][(Ny - i) * (Nx + 1) + j] = u[i * (Nx + 1) + j];
-        }
-    }
-    return uu[];
-}
 
 
 // Adjoint equation
-func real[int] AdjointProblem(real[int] & u){
-    Vh p, v, uu; uu[] = u;
-    Vh temp = uu - ue; 
-    Vh rsh =  flip(temp[]);
-    Vh pN = 0;
+func real[int] AdjointProblem(real[int] uu){
+    Vh p, v, u; u[] = uu;
+    Vh temp = u - ue; 
+    Vh pN; pN[] =  flip(temp[]);
 
     solve SpaceTime(p, v, solver = sparsesolver) =
-          int2d(Th)(dy(p) * v + a(x, T-y) * dx(p) * dx(v))
+          int2d(Th)(dy(p) * v + dx(p) * dx(v))
         - int1d(Th, 2, 4)(pN * v)
-        - int2d(Th)(rsh * v) + on(1, p = 0);
+        + on(1, p = 0);
 
     return flip(p[]);
 }
 
 
 // Tikhonov functional
-func real J(real[int] & f) {
-    Vh ff; ff[] = f;
-    u[] = StateProblem(f); 
-    return 0.5 * int2d(Th)((u - ue)^2) + 0.5 * gamma * int2d(Th)(ff^2);
+func real J(real[int] ff) {
+    Vh f; f[] = ff;
+    Vh u; u[] = StateProblem(ff); 
+    return 0.5 * int1d(Th, 2, 4)((u - ue)^2) + 0.5 * gamma * int2d(Th)(f^2);
 }
 
 
 // Gradient of Tikhonov funtional
-func real[int] GradJ(real[int] & f) {
-    Vh ff; ff[] = f;
-    Vh p; p[] = AdjointProblem(StateProblem(f));
-    Vh res = p * q + gamma * ff;
+func real[int] GradJ(real[int] ff) {
+    Vh f; f[] = ff;
+    real[int] uu = StateProblem(ff);
+    Vh p; p[] = AdjointProblem(uu);
+    Vh res = p * q + gamma * f;
     return res[];
 }
+/*
 
-//Vh f = 0;
-//IPOPT(J, GradJ, f[], tol = 1e-4);
-//NLCG(GradJ, f[], nbiter=10, eps = 1e-3);
-LinearCG(GradJ, f[], eps = 1e-6);
+
+
+
+Vh uh, fh = 0;
+Vh ph;
+Vh rh, rh0, rhold;
+Vh dh;
+//******************************
+// CG method
+
+
+uh[] = StateProblem2() + StateProblem1(fh[]);
+
+for (int iter = 0; iter < 100; iter++){
+
+    
+    ph[] = AdjointProblem(uh[]);
+    
+    //plot(fh, wait = 1, dim=3d);
+    //cout << "Min and Max: =======>>>>>>> "<<fh[].min<<" +++ " << fh[].max << endl;
+
+    rhold = rh;
+    rh = -(ph * q + gamma * fh); //-Gradient J(f)
+    if (iter == 0){
+        rh0 = rh;
+    }
+
+    cout << iter << " GradJ: " << int2d(Th)(rh * rh) << endl;
+
+    if ( int2d(Th)((uh-ue)*(uh-ue)) < 1e-4){
+        cout << "I love you" << endl;
+        break;
+    }
+    
+    if (iter > 0){
+        real beta = int2d(Th)(rh * rh) / int2d(Th)(rhold * rhold);
+        dh = rh + beta * dh;
+        cout << "beta: "  << beta << endl;
+    }else{
+        dh = rh;
+    }
+
+    Vh udh = StateProblem1(dh[]);
+    real alpha = int2d(Th)(dh * rh) / (int1d(Th, 2, 4)(udh * udh) + gamma * int2d(Th)(dh * dh));
+    
+    
+
+
+    fh = fh + alpha * dh;
+    uh = uh + alpha * udh;
+}
+
+//
+//******************************
+
+*/
+
+
+
+Vh fh = 0;
+IPOPT(J, GradJ, fh[], tol = 1e-4);
+//NLCG(GradJ, fh[], nbiter = 1000, eps = -1e-6);
+
+cout << "J, GradJ: " << J(fh[]) << endl; 
+
+
+
+//LinearCG(GradJ, f[], eps = 1e-6);
 
 //savemesh(Th, "IP1.mesh");
 //savesol("IP1.sol", Th, f);
@@ -93,11 +163,20 @@ LinearCG(GradJ, f[], eps = 1e-6);
 
 //Vh u; u[] = StateProblem(f[]);
 
+
+Vh uh1; uh1[] = StateProblem(fe[]);
+Vh uh2; uh2[] = StateProblem(fh[]);
+
+plot(uh1, wait = 1, dim=3d);
+plot(uh2, wait = 1, dim=3d);
+plot(uh1, uh2, wait = 1, dim=3d);
+/*
 plot(ue, wait = 1, dim=3d);
-plot(u, wait = 1, dim=3d);
-plot(u, ue, wait = 1, dim=3d);
+plot(uh, wait = 1, dim=3d);
+plot(uh, ue, wait = 1, dim=3d);
+*/
 
 plot(fe, wait = 1, dim=3d);
-plot(f, wait = 1, dim=3d);
-plot(f, fe, wait = 1, dim=3d);
-cout << "Error: " << sqrt(int2d(Th)((fe - f)^2)) << endl;
+plot(fh, wait = 1, dim=3d);
+plot(fh, fe, wait = 1, dim=3d);
+cout << "Error: " << sqrt(int2d(Th)((fe - fh)^2)) << endl;

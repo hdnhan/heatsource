@@ -2,85 +2,50 @@
  Load: lg_fem lg_mesh lg_mesh3 eigenvalue
     1 : load "medit"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\medit = 0)
     2 :
-    3 : /*
-    4 : State equation:
-    5 :     u_t - div(a*grad(u)) = F, (x, t) \in \Omega x [0, T]
-    6 : Neumann boundary condition:
-    7 :     du(x, t)/dN = uN(x, t), (x, t) \in \partial\Omega x [0, T]
-    8 : Initial condition:
-    9 :     u(x, 0) = u0(x), x \in \Omega
-   10 : */
-   11 :
-   12 : real T = 1;
-   13 : int nn = 100;
-   14 : int Nx = nn, Ny = nn;
-   15 : int[int] labs = [1, 2, 0, 4];
-   16 : mesh Th = square(Nx, Ny, [x, T * y], label = labs);
-   17 : fespace Vh(Th, P1);
-   18 :
-   19 : Vh ue = sin(pi * x) * sin(pi * y);
-   20 : Vh uN = pi * cos(pi * x) * sin(pi * y);
-   21 : Vh u0 = ue(x, 0);
-   22 : Vh a = 1;
-   23 : Vh F = pi * sin(pi * x) * cos(pi * y) + pi^2 * sin(pi * x) * sin(pi * y);
+    3 : real T = 1;
+    4 : int nn = 100;
+    5 : int Nx = nn, Ny = nn;
+    6 : int[int] labs = [1, 2, 0, 4];
+    7 : mesh Th = square(Nx, Ny, [x, T * y], label = labs);
+    8 : fespace Vh(Th, P1);
+    9 :
+   10 : Vh ue = exp(y) * sin(pi * x);
+   11 : Vh duex = exp(y) * cos(pi * x) * pi;
+   12 : Vh uN = (x == 1) * duex - (x == 0) * duex;
+   13 : Vh u0 = ue(x, 0);
+   14 : Vh F = (1 + pi^2) * ue;
+   15 : Vh u, v;
+   16 :
+   17 : solve SpaceTime(u, v, solver = GMRES) =
+   18 :           int2d(Th)(dy(u) * v + dx(u) * dx(v))
+   19 :         + int2d(Th)(dy(u0) * v + dx(u0) * dx(v))
+   20 :         - int1d(Th, 2, 4)(uN * v)
+   21 :         - int2d(Th)(F * v) + on(1, u = 0);
+   22 : u = u + u0;
+   23 :
    24 :
-   25 : Vh u, v;
-   26 : Vh uu;
-   27 :
-   28 : solve SpaceTime(u, v, solver = GMRES) =
-   29 :           int2d(Th)(dy(u) * v + dx(u) * dx(v))
-   30 :         + int2d(Th)(dy(u0) * v + dx(u0) * dx(v))
-   31 :         - int1d(Th, 2)(uN * v) + int1d(Th, 4)(uN * v)
-   32 :         - int2d(Th)(F * v) + on(1, u = 0);
-   33 : u = u + u0;
-   34 :
-   35 :
-   36 : // get data of the mesh
-   37 : cout << endl << "****************************************" << endl;
-   38 : int nbtriangles = Th.nt;
-   39 : int nbvertices  = Th.nv;
-   40 : //cout << "Number of vertices:  " << nbvertices << endl;
-   41 : //cout << "Number of triangles: " << nbtriangles << endl;
-   42 : //cout << "Information of vertices: " << endl;
-   43 :
-   44 : for (int i =0; i <= Ny/2; i++){
-   45 :         for (int j=0; j <= Nx; j++){
-   46 :                 uu[][i * (Nx+1) + j] = u[][(Ny-i)*(Nx+1)+j];
-   47 :                 uu[][(Ny-i)*(Nx+1)+j] = u[][i * (Nx+1) + j];
-   48 :                 //cout << "("<<j<<", "<<(nn-i)*(nn+1)+j << ")  ";
-   49 :         }
-   50 : }
-   51 : //cout << endl;
-   52 : //for(int i = 0; i < nbvertices; i++)
-   53 :         //cout << i << ": x = " << Th(i).x << ", y = " << Th(i).y << ", u = " << u[][i] << ", uu = " << uu[][i]
-<< ", label = " << Th(i).label << endl;
-   54 :
-   55 : Vh uuu; uuu[] = uu;
-   56 : Vh res = uuu - ue(x, y);
-   57 : cout << res << endl;
-   58 :
-   59 :
-   60 : plot(ue, wait = 1, dim=3d);
-   61 : plot(u, ue, wait = 1, dim=3d);
-   62 : //plot(ue, wait = 1, dim=3d);
-   63 : //plot(u, ue, wait = 1, dim=3d);
-   64 :
-   65 : Vh er = ue - u;
-   66 : //cout << "Error in L2: " << sqrt(int2d(Th) (er * er)) << endl;
-   67 : //cout << "Error in H1: " << sqrt(int2d(Th) (dy(er) * dy(er))) << endl;
-   68 : cout << "Error in H1: " << sqrt(int2d(Th) (dx(er) * dx(er))) << endl;
-   69 : //cout << er[] << endl;ÿ sizestack + 1024 =6120  ( 5096 )
+   25 : plot(ue, wait = 1, dim=3d);
+   26 : plot(u, ue, wait = 1, dim=3d);
+   27 : plot(u, ue, wait = 1, dim=3d);
+   28 :
+   29 : Vh uu = u;
+   30 : Vh delta = uu - ue;
+   31 :
+   32 : cout << "kq: " << ue[].min << ", " << ue[].max << endl;
+   33 : cout << "kq: " << uu[].min << ", " << uu[].max << endl;
+   34 : cout << "kq: " << delta[].min << ", " << delta[].max << endl;
+   35 : cout << "ss: " << sqrt(int2d(Th)(delta^2)) << endl; sizestack + 1024 =5240  ( 4216 )
  
   -- Square mesh : nb vertices  =10201 ,  nb triangles = 20000 ,  nb boundary edges 400
-GMRES converges: 8636 3.14762e-007 0.315121 9.98861e-007 < 1e-006
+GMRES converges: 6269 3.92047e-007 0.392104 9.99854e-007 < 1e-006
   -- Solve :
-          min -0.0030581  max 0.999768
- 
-****************************************
--1.49966e-032
-Error in H1: 0.000885473
-times: compile 0.287s, execution 10.512s,  mpirank:0
- ######## We forget of deleting   58 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
- CodeAlloc : nb ptr  3118,  size :391568 mpirank: 0
+          min -0.00226131  max 1.71694
+kq: 0, 2.71828
+kq: -0.00226131, 2.71694
+kq: -0.00226131, 0.00175604
+ss: 0.000472564
+times: compile 0.111s, execution 15.741s,  mpirank:0
+ ######## We forget of deleting   67 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
+ CodeAlloc : nb ptr  3037,  size :388904 mpirank: 0
 Ok: Normal End
  try getConsole D:\Study\HUST\FEM\heatsource\FreeFem++\SpaceTime1D.edp

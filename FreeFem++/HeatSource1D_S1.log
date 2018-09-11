@@ -4,1632 +4,205 @@
     2 : load "medit"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\medit = 0)
     3 :
     4 : real T = 1;
-    5 : int nn = 50;
+    5 : int nn = 100;
     6 : int Nx = nn, Ny = nn;
     7 : int[int] labs = [1, 2, 0, 4];
     8 : mesh Th = square(Nx, Ny, [x, T * y], label = labs);
     9 : fespace Vh(Th, P1);
    10 :
-   11 : Vh ue = sin(pi * x) * sin(pi * y);
-   12 : Vh uN = pi * cos(pi * x) * sin(pi * y);
-   13 : Vh u0 = ue(x, 0);
-   14 : Vh a = 1;
-   15 : Vh q = x * y + 1;
-   16 : Vh fe = (1 + y^0) * (x * (x <= 0.5) + (1 - x) * (x > 0.5));
-   17 : Vh g = pi * sin(pi * x) * cos(pi * y) + a * pi^2 * sin(pi * x) * sin(pi * y) - fe * q;
-   18 : real gamma = 1e-6;
-   19 :
-   20 : // State equation:
-   21 : func real[int] StateProblem(real[int] f){
-   22 :     Vh u, v, ff; ff[] = f;
-   23 :     Vh rsh = ff * q + g;
+   11 :
+   12 : Vh ue = exp(y) * sin(pi * x);
+   13 : Vh duex = exp(y) * cos(pi * x) * pi;
+   14 : Vh uN = (x == 1) * duex - (x == 0) * duex;
+   15 : Vh u0 = ue(x, 0);
+   16 :
+   17 : //Vh fe = x * (1-x) * y * (1-y);
+   18 : Vh fe = 1 * sin(pi * x) * sin(pi * y);
+   19 : //Vh fe = (x * (x <= 0.5) + (1 - x) * (x > 0.5)) * y * (1-y);
+   20 :
+   21 : Vh q = 1 + x * y;
+   22 : Vh g = (1 + pi^2) * ue(x, y) - fe(x, y) * q(x,y);
+   23 : real gamma = 1e-5;
    24 :
-   25 :     solve SpaceTime(u, v, solver = sparsesolver) =
-   26 :           int2d(Th)(dy(u)  * v + a * dx(u)  * dx(v))
-   27 :         + int2d(Th)(dy(u0) * v + a * dx(u0) * dx(v))
-   28 :         - int1d(Th, 2) (uN * v) + int1d(Th, 4) (uN * v)
-   29 :         - int2d(Th)(rsh * v)
-   30 :         + on(1, u = 0);
-   31 :
-   32 :     u = u + u0;
-   33 :     return u[];
-   34 : }
-   35 :
+   25 :
+   26 : func real[int] flip(real[int] uu){
+   27 :     Vh u;
+   28 :     for (int i = 0; i <= Ny/2; i++){
+   29 :         for (int j = 0; j <= Nx; j++){
+   30 :             u[][i * (Nx + 1) + j] = uu[(Ny - i) * (Nx + 1) + j];
+   31 :             u[][(Ny - i) * (Nx + 1) + j] = uu[i * (Nx + 1) + j];
+   32 :         }
+   33 :     }
+   34 :     return u[];
+   35 : }
    36 :
-   37 : func real[int] flip(real[int] u){
-   38 :     Vh uu;
-   39 :     for (int i =0; i <= Ny/2; i++){
-   40 :         for (int j=0; j <= Nx; j++){
-   41 :             uu[][i * (Nx + 1) + j] = u[(Ny - i) * (Nx + 1) + j];
-   42 :             uu[][(Ny - i) * (Nx + 1) + j] = u[i * (Nx + 1) + j];
-   43 :         }
-   44 :     }
-   45 :     return uu[];
-   46 : }
+   37 :
+   38 : // State equation:
+   39 : func real[int] StateProblem1(real[int] ff){
+   40 :     Vh u, v, f; f[] = ff;
+   41 :     Vh rsh = f * q;
+   42 :
+   43 :     solve SpaceTime(u, v, solver = sparsesolver) =
+   44 :           int2d(Th)(dy(u) * v + dx(u) * dx(v))
+   45 :         - int2d(Th)(rsh * v)
+   46 :         + on(1, u = 0);
    47 :
-   48 :
-   49 : // Adjoint equation
-   50 : func real[int] AdjointProblem(real[int] u){
-   51 :     Vh p, v, uu; uu[] = u;
-   52 :     Vh temp = uu - ue;
-   53 :     Vh rsh =  flip(temp[]);
-   54 :     Vh pN = 0;
-   55 :
-   56 :     solve SpaceTime(p, v, solver = sparsesolver) =
-   57 :           int2d(Th)(dy(p) * v + a(x, T-y) * dx(p) * dx(v))
-   58 :         - int1d(Th, 2, 4)(rsh * v)
-   59 :         + on(1, p = 0);
+   48 :     return u[];
+   49 : }
+   50 :
+   51 : func real[int] StateProblem2(){
+   52 :     Vh u, v;
+   53 :
+   54 :     solve SpaceTime(u, v, solver = sparsesolver) =
+   55 :           int2d(Th)(dy(u)  * v + dx(u)  * dx(v))
+   56 :         + int2d(Th)(dy(u0) * v + dx(u0) * dx(v))
+   57 :         - int1d(Th, 2, 4) (uN * v)
+   58 :         - int2d(Th)(g * v)
+   59 :         + on(1, u = 0);
    60 :
-   61 :     return flip(p[]);
-   62 : }
-   63 :
+   61 :     u = u + u0;
+   62 :     return u[];
+   63 : }
    64 :
-   65 : // Tikhonov functional
-   66 : func real J(real[int] f) {
-   67 :     Vh ff; ff[] = f;
-   68 :     Vh uu; uu[] = StateProblem(f);
-   69 :     return 0.5 * int1d(Th, 2, 4)((uu - ue)^2) + 0.5 * gamma * int2d(Th)(ff^2);
-   70 : }
-   71 :
-   72 :
-   73 : // Gradient of Tikhonov funtional
-   74 : func real[int] GradJ(real[int] f) {
-   75 :     Vh ff; ff[] = f;
-   76 :     Vh p; p[] = AdjointProblem(StateProblem(f));
-   77 :     Vh res = p * q + gamma * ff;
-   78 :     return res[];
-   79 : }
-   80 :
-   81 : Vh f = 0;
-   82 : //IPOPT(J, GradJ, f[], tol = 1e-4);
-   83 : NLCG(GradJ, f[]);
-   84 :
-   85 : //savemesh(Th, "IP1.mesh");
-   86 : //savesol("IP1.sol", Th, f);
-   87 : //savemesh(Th, "IPe.mesh");
-   88 : //savesol("IPe.sol", Th, fe);
+   65 :
+   66 :
+   67 :
+   68 : // Adjoint equation
+   69 : func real[int] AdjointProblem(real[int] uu){
+   70 :     Vh p, v, u; u[] = uu;
+   71 :     Vh temp = u - ue;
+   72 :     Vh pN; pN[] =  flip(temp[]);
+   73 :
+   74 :     solve SpaceTime(p, v, solver = sparsesolver) =
+   75 :           int2d(Th)(dy(p) * v + dx(p) * dx(v))
+   76 :         - int2d(Th)(pN * v)
+   77 :         + on(1, p = 0);
+   78 :
+   79 :     return flip(p[]);
+   80 : }
+   81 :
+   82 :
+   83 : Vh uh, fh = 0;
+   84 : Vh ph;
+   85 : Vh rh, rh0, rhold;
+   86 : Vh dh;
+   87 : //******************************
+   88 : // CG method
    89 :
-   90 : Vh u; u[] = StateProblem(f[]);
-   91 :
-   92 : plot(ue, wait = 1, dim=3d);
-   93 : plot(u, wait = 1, dim=3d);
-   94 : plot(u, ue, wait = 1, dim=3d);
+   90 :
+   91 : uh[] = StateProblem2();
+   92 :
+   93 : for (int iter = 0; iter < 100; iter++){
+   94 :
    95 :
-   96 : plot(fe, wait = 1, dim=3d);
-   97 : plot(f, wait = 1, dim=3d);
-   98 : plot(f, fe, wait = 1, dim=3d);
-   99 : cout << "Error: " << sqrt(int2d(Th)((fe - f)^2)) << endl;
-  100 :  sizestack + 1024 =9904  ( 8880 )
+   96 :     ph[] = AdjointProblem(uh[]);
+   97 :
+   98 :     //plot(fh, fe, wait = 1, dim=3d);
+   99 :     //cout << "Min and Max: =======>>>>>>> "<<fh[].min<<" +++ " << fh[].max << endl;
+  100 :
+  101 :     rhold = rh;
+  102 :     rh = -(ph * q + gamma * fh); //-Gradient J(f)
+  103 :     if (iter == 0){
+  104 :         rh0 = rh;
+  105 :     }
+  106 :
+  107 :     //cout << iter << " GradJ: " << int2d(Th)(rh * rh) << endl;
+  108 :     cout << iter << " J: " << 0.5 * int2d(Th)((uh - ue)^2) + 0.5 * gamma * int2d(Th)(fh^2) << endl;
+  109 :
+  110 :     if ( int2d(Th)((uh-ue)^2) < 5e-5){
+  111 :         cout << "I love you" << endl;
+  112 :         break;
+  113 :     }
+  114 :
+  115 :     if (iter > 0){
+  116 :         real beta = int2d(Th)(rh * rh) / int2d(Th)(rhold * rhold);
+  117 :         dh = rh + beta * dh;
+  118 :         cout << "beta: "  << beta << endl;
+  119 :         if(beta>1){
+  120 :             cout << "I love you" << endl;
+  121 :             //break;
+  122 :         }
+  123 :     }else{
+  124 :         dh = rh;
+  125 :     }
+  126 :
+  127 :     Vh udh; udh[] = StateProblem1(dh[]);
+  128 :     real alpha = int2d(Th)(dh * rh) / (int2d(Th)(udh * udh) + gamma * int2d(Th)(dh * dh));
+  129 :     cout << "alpha: " << alpha << endl;
+  130 :     fh = fh + alpha * dh;
+  131 :     uh = uh + alpha * udh;
+  132 : }
+  133 :
+  134 : //
+  135 : //******************************
+  136 :
+  137 :
+  138 :
+  139 :
+  140 : Vh uh1; uh1[] = StateProblem1(fe[])+StateProblem2();
+  141 : Vh uh2; uh2[] = StateProblem1(fh[])+StateProblem2();
+  142 :
+  143 : plot(uh1, wait = 1, dim=3d);
+  144 : plot(uh2, wait = 1, dim=3d);
+  145 : plot(uh1, uh2, wait = 1, dim=3d);
+  146 :
+  147 : Vh delta = fe - fh;
+  148 : cout  << "i: " << delta[].min <<", " << delta[].max << endl;
+  149 :
+  150 :
+  151 : plot(fe, wait = 1, dim=3d);
+  152 : plot(fh, wait = 1, dim=3d);
+  153 : plot(fh, fe, wait = 1, dim=3d);
+  154 : cout << "Error: " << sqrt(int2d(Th)((fe - fh)^2)) << endl;
+  155 :  sizestack + 1024 =10096  ( 9072 )
  
-  -- Square mesh : nb vertices  =2601 ,  nb triangles = 5000 ,  nb boundary edges 200
+  -- Square mesh : nb vertices  =10201 ,  nb triangles = 20000 ,  nb boundary edges 400
   -- Solve :
-          min -0.640547  max 0.724712
+          min -0.511104  max 1.20907
   -- Solve :
-          min -0.564279  max 8.5642e-034
- 0 GCNL  g^2 =622.576
+          min -0.244195  max 2.58384e-035
+0 J: 0.045933
   -- Solve :
-          min -0.0855649  max 1.03302
+          min -1.24707e-035  max 0.257752
+alpha: 1.83413
   -- Solve :
-          min -0.00917393  max 0.0765919
+          min -0.0106082  max 0.0167402
+1 J: 0.000865454
+beta: 0.00216936
   -- Solve :
-          min -0.196372  max 0.967401
+          min -0.00409857  max 0.00399802
+alpha: 14.6004
   -- Solve :
-          min -0.0638534  max 2.09748e-034
+          min -0.00219174  max 0.00282088
+2 J: 8.8663e-005
+beta: 0.0263964
   -- Solve :
-          min -0.136305  max 1.00297
+          min -0.00070295  max 0.000369634
+alpha: 39.7044
   -- Solve :
-          min -0.0263678  max 0.0179799
-CGNL:0,  ro = 0.908417 ||g||^2 = 0.623657
+          min -0.00341711  max 5.30049e-037
+3 J: 3.27176e-005
+beta: 2.42475
+I love you
   -- Solve :
-          min -0.129832  max 0.999091
+          min -0.000337162  max 0.00321618
+alpha: 2.13725
   -- Solve :
-          min -0.0241758  max 0.0157934
+          min -0.000618209  max 0.00123184
+4 J: 2.54499e-005
+I love you
   -- Solve :
-          min -0.123358  max 0.99521
+          min -0.511104  max 1.20907
   -- Solve :
-          min -0.0220974  max 0.0136068
+          min -1.01365e-036  max 0.509532
   -- Solve :
-          min -0.110441  max 0.987449
+          min -0.511104  max 1.20907
   -- Solve :
-          min -0.018029  max 0.00925804
-  -- Solve :
-          min -0.08472  max 0.971928
-  -- Solve :
-          min -0.0104844  max 0.0105304
-  -- Solve :
-          min -0.0408087  max 0.940884
-  -- Solve :
-          min -0.0177194  max 0.0293353
-  -- Solve :
-          min -0.115589  max 0.990554
-  -- Solve :
-          min -0.0196563  max 0.010983
-  -- Solve :
-          min -0.0822413  max 0.970432
-  -- Solve :
-          min -0.00980486  max 0.0112289
-CGNL:1,  ro = 7.61751 ||g||^2 = 0.0639059
-  -- Solve :
-          min -0.088442  max 0.963548
-  -- Solve :
-          min -0.0162084  max 6.29229e-035
-  -- Solve :
-          min -0.0871746  max 0.964955
-  -- Solve :
-          min -0.0135198  max 0.000635701
-CGNL:2,  ro = 6.06051 ||g||^2 = 0.228999
-  -- Solve :
-          min -0.0447072  max 0.984627
-  -- Solve :
-          min -0.000768282  max 0.0207813
-  -- Solve :
-          min -0.069724  max 0.972992
-  -- Solve :
-          min -0.00441558  max 0.00215116
-CGNL:3,  ro = 2.47591 ||g||^2 = 0.00283751
-  -- Solve :
-          min -0.0692191  max 0.973123
-  -- Solve :
-          min -0.00423476  max 0.00203814
-  -- Solve :
-          min -0.0687141  max 0.973254
-  -- Solve :
-          min -0.00405395  max 0.00192512
-  -- Solve :
-          min -0.0677042  max 0.973515
-  -- Solve :
-          min -0.00369232  max 0.00175789
-  -- Solve :
-          min -0.0656844  max 0.974039
-  -- Solve :
-          min -0.00296905  max 0.0016633
-  -- Solve :
-          min -0.0616602  max 0.975086
-  -- Solve :
-          min -0.00153543  max 0.00193802
-  -- Solve :
-          min -0.0632606  max 0.974667
-  -- Solve :
-          min -0.00210114  max 0.00168865
-  -- Solve :
-          min -0.0622652  max 0.974925
-  -- Solve :
-          min -0.00174453  max 0.00181337
-CGNL:4,  ro = 36.5747 ||g||^2 = 0.00169937
-  -- Solve :
-          min -0.081422  max 0.956139
-  -- Solve :
-          min -0.0338756  max 4.73806e-035
-  -- Solve :
-          min -0.0660966  max 0.971056
-  -- Solve :
-          min -0.00616974  max 2.10005e-035
-  -- Solve :
-          min -0.0630315  max 0.974151
-  -- Solve :
-          min -0.00188742  max 0.00123281
-  -- Solve :
-          min -0.0628782  max 0.974306
-  -- Solve :
-          min -0.00185884  max 0.00134892
-  -- Solve :
-          min -0.0629652  max 0.974218
-  -- Solve :
-          min -0.00187506  max 0.00128303
-CGNL:5,  ro = 1.33643 ||g||^2 = 0.000969739
-  -- Solve :
-          min -0.0627379  max 0.974009
-  -- Solve :
-          min -0.00188731  max 0.00116897
-  -- Solve :
-          min -0.0625106  max 0.973799
-  -- Solve :
-          min -0.00191725  max 0.00105491
-  -- Solve :
-          min -0.0620561  max 0.973381
-  -- Solve :
-          min -0.00197715  max 0.000887136
-  -- Solve :
-          min -0.0611469  max 0.972544
-  -- Solve :
-          min -0.00209693  max 0.000787121
-  -- Solve :
-          min -0.0593316  max 0.970869
-  -- Solve :
-          min -0.00377194  max 0.000869628
-  -- Solve :
-          min -0.0616046  max 0.972965
-  -- Solve :
-          min -0.00203663  max 0.000837474
-  -- Solve :
-          min -0.0604674  max 0.971917
-  -- Solve :
-          min -0.00267966  max 0.000712282
-CGNL:6,  ro = 14.6915 ||g||^2 = 0.00616291
-  -- Solve :
-          min -0.021836  max 0.981517
-  -- Solve :
-          min -0.00379741  max 0.0229245
-  -- Solve :
-          min -0.0527412  max 0.972958
-  -- Solve :
-          min -0.00164023  max 0.00445685
-  -- Solve :
-          min -0.0581373  max 0.972151
-  -- Solve :
-          min -0.0020218  max 0.00125334
-CGNL:7,  ro = 0.886144 ||g||^2 = 0.0019486
-  -- Solve :
-          min -0.0571531  max 0.97277
-  -- Solve :
-          min -0.00181311  max 0.00185641
-  -- Solve :
-          min -0.0561712  max 0.973389
-  -- Solve :
-          min -0.00160443  max 0.00248088
-  -- Solve :
-          min -0.0577436  max 0.972399
-  -- Solve :
-          min -0.00193832  max 0.00148196
-  -- Solve :
-          min -0.0570732  max 0.972821
-  -- Solve :
-          min -0.00179613  max 0.0019072
-CGNL:8,  ro = 0.958268 ||g||^2 = 0.00252438
-  -- Solve :
-          min -0.056396  max 0.97367
-  -- Solve :
-          min -0.00148401  max 0.00224494
-  -- Solve :
-          min -0.0557188  max 0.97452
-  -- Solve :
-          min -0.00117189  max 0.00261198
-  -- Solve :
-          min -0.05609  max 0.974054
-  -- Solve :
-          min -0.00134297  max 0.00240885
-  -- Solve :
-          min -0.0559044  max 0.974287
-  -- Solve :
-          min -0.00125743  max 0.00250829
-CGNL:9,  ro = 1.65391 ||g||^2 = 0.00960087
-  -- Solve :
-          min -0.0549471  max 0.978188
-  -- Solve :
-          min -0.000132739  max 0.00576606
-  -- Solve :
-          min -0.0554445  max 0.976161
-  -- Solve :
-          min -0.00045731  max 0.00380805
-CGNL:10,  ro = 0.79445 ||g||^2 = 0.0179373
-  -- Solve :
-          min -0.0569138  max 0.978207
-  -- Solve :
-          min -0.00174042  max 0.0044335
-  -- Solve :
-          min -0.0560539  max 0.977009
-  -- Solve :
-          min -0.000351686  max 0.00406744
-CGNL:11,  ro = 0.329478 ||g||^2 = 0.0142275
-  -- Solve :
-          min -0.0573608  max 0.977086
-  -- Solve :
-          min -0.00160999  max 0.00320402
-  -- Solve :
-          min -0.0568694  max 0.977057
-  -- Solve :
-          min -0.00113684  max 0.00352868
-CGNL:12,  ro = 0.205586 ||g||^2 = 0.00801846
-  -- Solve :
-          min -0.0576758  max 0.97679
-  -- Solve :
-          min -0.00180021  max 0.00272646
-  -- Solve :
-          min -0.0575145  max 0.976844
-  -- Solve :
-          min -0.00166569  max 0.00288691
-  -- Solve :
-          min -0.0575468  max 0.976833
-  -- Solve :
-          min -0.00169259  max 0.00285482
-  -- Solve :
-          min -0.0575216  max 0.976841
-  -- Solve :
-          min -0.00167156  max 0.0028799
-CGNL:13,  ro = 0.166264 ||g||^2 = 0.00440458
-  -- Solve :
-          min -0.058041  max 0.976552
-  -- Solve :
-          min -0.00207179  max 0.00225169
-  -- Solve :
-          min -0.0579371  max 0.97661
-  -- Solve :
-          min -0.00199174  max 0.00237733
-  -- Solve :
-          min -0.0580072  max 0.97657
-  -- Solve :
-          min -0.00204573  max 0.00229259
-CGNL:14,  ro = 0.155439 ||g||^2 = 0.00285654
-  -- Solve :
-          min -0.0583836  max 0.976288
-  -- Solve :
-          min -0.0023244  max 0.00175979
-  -- Solve :
-          min -0.0587599  max 0.976005
-  -- Solve :
-          min -0.00260307  max 0.00123218
-  -- Solve :
-          min -0.0581578  max 0.976457
-  -- Solve :
-          min -0.0021572  max 0.00207947
-  -- Solve :
-          min -0.0583958  max 0.976278
-  -- Solve :
-          min -0.00233349  max 0.00174241
-CGNL:15,  ro = 0.160512 ||g||^2 = 0.00250101
-  -- Solve :
-          min -0.0587198  max 0.975961
-  -- Solve :
-          min -0.00257003  max 0.00121007
-  -- Solve :
-          min -0.0590437  max 0.975643
-  -- Solve :
-          min -0.00280656  max 0.000733877
-  -- Solve :
-          min -0.0585254  max 0.976151
-  -- Solve :
-          min -0.00242811  max 0.00152446
-  -- Solve :
-          min -0.0587482  max 0.975933
-  -- Solve :
-          min -0.00259075  max 0.00116563
-CGNL:16,  ro = 0.174572 ||g||^2 = 0.00307128
-  -- Solve :
-          min -0.059076  max 0.975498
-  -- Solve :
-          min -0.0028324  max 0.000692476
-  -- Solve :
-          min -0.0594039  max 0.975062
-  -- Solve :
-          min -0.00307406  max 0.000618477
-  -- Solve :
-          min -0.0588793  max 0.975759
-  -- Solve :
-          min -0.00268741  max 0.000911498
-  -- Solve :
-          min -0.059095  max 0.975473
-  -- Solve :
-          min -0.00284637  max 0.000684115
-CGNL:17,  ro = 0.184663 ||g||^2 = 0.00488418
-  -- Solve :
-          min -0.05943  max 0.974799
-  -- Solve :
-          min -0.00310453  max 0.000556225
-  -- Solve :
-          min -0.059363  max 0.974934
-  -- Solve :
-          min -0.0030529  max 0.00057965
-  -- Solve :
-          min -0.0594166  max 0.974826
-  -- Solve :
-          min -0.00309421  max 0.00056091
-CGNL:18,  ro = 0.177277 ||g||^2 = 0.00872154
-  -- Solve :
-          min -0.0596618  max 0.973812
-  -- Solve :
-          min -0.00356734  max 0.000345362
-  -- Solve :
-          min -0.0596128  max 0.974015
-  -- Solve :
-          min -0.0034331  max 0.00038841
-  -- Solve :
-          min -0.0596333  max 0.97393
-  -- Solve :
-          min -0.00348919  max 0.000370389
-CGNL:19,  ro = 0.156637 ||g||^2 = 0.0154947
-  -- Solve :
-          min -0.0596034  max 0.972554
-  -- Solve :
-          min -0.00420494  max 2.61187e-005
-  -- Solve :
-          min -0.0596094  max 0.972831
-  -- Solve :
-          min -0.00405164  max 9.5194e-005
-CGNL:20,  ro = 0.125092 ||g||^2 = 0.0247251
-  -- Solve :
-          min -0.0591435  max 0.971329
-  -- Solve :
-          min -0.00520744  max 1.03022e-035
-  -- Solve :
-          min -0.059249  max 0.971669
-  -- Solve :
-          min -0.00485538  max 9.4407e-036
-CGNL:21,  ro = 0.0967652 ||g||^2 = 0.0338928
-  -- Solve :
-          min -0.0583668  max 0.970322
-  -- Solve :
-          min -0.00608721  max 0.000174323
-  -- Solve :
-          min -0.0585677  max 0.970629
-  -- Solve :
-          min -0.00577734  max 0.000104196
-CGNL:22,  ro = 0.0747287 ||g||^2 = 0.0397039
-  -- Solve :
-          min -0.0574479  max 0.96963
-  -- Solve :
-          min -0.00660543  max 0.000481755
-  -- Solve :
-          min -0.0576802  max 0.969837
-  -- Solve :
-          min -0.00643368  max 0.000403446
-CGNL:23,  ro = 0.0592292 ||g||^2 = 0.0406964
-  -- Solve :
-          min -0.056517  max 0.969714
-  -- Solve :
-          min -0.00677617  max 0.000787833
-  -- Solve :
-          min -0.0567496  max 0.969699
-  -- Solve :
-          min -0.00670767  max 0.000710955
-  -- Solve :
-          min -0.0567031  max 0.969702
-  -- Solve :
-          min -0.00672137  max 0.000726331
-  -- Solve :
-          min -0.0567228  max 0.969701
-  -- Solve :
-          min -0.00671557  max 0.000719821
-CGNL:24,  ro = 0.0487495 ||g||^2 = 0.0377715
-  -- Solve :
-          min -0.0556385  max 0.969894
-  -- Solve :
-          min -0.00671195  max 0.00107312
-  -- Solve :
-          min -0.0558553  max 0.969855
-  -- Solve :
-          min -0.00671268  max 0.00100246
-  -- Solve :
-          min -0.0557959  max 0.969866
-  -- Solve :
-          min -0.00671248  max 0.00102184
-CGNL:25,  ro = 0.0416734 ||g||^2 = 0.0328028
-  -- Solve :
-          min -0.0548406  max 0.970117
-  -- Solve :
-          min -0.00649751  max 0.00132966
-  -- Solve :
-          min -0.0550317  max 0.970067
-  -- Solve :
-          min -0.0065405  max 0.00126809
-  -- Solve :
-          min -0.054952  max 0.970088
-  -- Solve :
-          min -0.00652258  max 0.00129375
-CGNL:26,  ro = 0.0368128 ||g||^2 = 0.0273824
-  -- Solve :
-          min -0.0541326  max 0.970359
-  -- Solve :
-          min -0.00619356  max 0.00155537
-  -- Solve :
-          min -0.0542965  max 0.970305
-  -- Solve :
-          min -0.00625936  max 0.00150305
-  -- Solve :
-          min -0.0542086  max 0.970334
-  -- Solve :
-          min -0.00622408  max 0.00153111
-CGNL:27,  ro = 0.0333981 ||g||^2 = 0.0224363
-  -- Solve :
-          min -0.0535117  max 0.970604
-  -- Solve :
-          min -0.00584184  max 0.00192016
-  -- Solve :
-          min -0.0536511  max 0.97055
-  -- Solve :
-          min -0.00591829  max 0.00183025
-  -- Solve :
-          min -0.0535627  max 0.970584
-  -- Solve :
-          min -0.00586985  max 0.00188721
-CGNL:28,  ro = 0.0309502 ||g||^2 = 0.0183459
-  -- Solve :
-          min -0.0529682  max 0.970843
-  -- Solve :
-          min -0.00546866  max 0.00227188
-  -- Solve :
-          min -0.0530871  max 0.970791
-  -- Solve :
-          min -0.0055489  max 0.00219495
-  -- Solve :
-          min -0.0530024  max 0.970828
-  -- Solve :
-          min -0.00549173  max 0.00224976
-CGNL:29,  ro = 0.0291705 ||g||^2 = 0.0151762
-  -- Solve :
-          min -0.0524896  max 0.971073
-  -- Solve :
-          min -0.0050885  max 0.00258169
-  -- Solve :
-          min -0.0525922  max 0.971024
-  -- Solve :
-          min -0.00516915  max 0.00251531
-  -- Solve :
-          min -0.0525125  max 0.971062
-  -- Solve :
-          min -0.0051065  max 0.00256687
-CGNL:30,  ro = 0.0278684 ||g||^2 = 0.0128504
-  -- Solve :
-          min -0.0520627  max 0.971294
-  -- Solve :
-          min -0.0047074  max 0.0028575
-  -- Solve :
-          min -0.0521527  max 0.971248
-  -- Solve :
-          min -0.00478722  max 0.00279937
-  -- Solve :
-          min -0.0520807  max 0.971285
-  -- Solve :
-          min -0.00472336  max 0.00284587
-CGNL:31,  ro = 0.0267537 ||g||^2 = 0.0112589
-  -- Solve :
-          min -0.0516796  max 0.971506
-  -- Solve :
-          min -0.00432999  max 0.00310393
-  -- Solve :
-          min -0.0517598  max 0.971461
-  -- Solve :
-          min -0.00440866  max 0.00305232
-  -- Solve :
-          min -0.0516956  max 0.971497
-  -- Solve :
-          min -0.00434572  max 0.00309361
-  -- Solve :
-          min -0.0516857  max 0.971502
-  -- Solve :
-          min -0.00433596  max 0.00310001
-CGNL:32,  ro = 0.0263475 ||g||^2 = 0.0102715
-  -- Solve :
-          min -0.0513131  max 0.97172
-  -- Solve :
-          min -0.00393757  max 0.00333805
-  -- Solve :
-          min -0.0513876  max 0.971676
-  -- Solve :
-          min -0.00401724  max 0.00329044
-  -- Solve :
-          min -0.051328  max 0.971711
-  -- Solve :
-          min -0.0039535  max 0.00332853
-  -- Solve :
-          min -0.0513226  max 0.971714
-  -- Solve :
-          min -0.00394765  max 0.00333202
-CGNL:33,  ro = 0.0256807 ||g||^2 = 0.00983584
-  -- Solve :
-          min -0.0509726  max 0.971929
-  -- Solve :
-          min -0.00354324  max 0.00355345
-  -- Solve :
-          min -0.0510426  max 0.971886
-  -- Solve :
-          min -0.00362412  max 0.00350916
-  -- Solve :
-          min -0.0509866  max 0.971921
-  -- Solve :
-          min -0.00355942  max 0.00354459
-  -- Solve :
-          min -0.0509785  max 0.971926
-  -- Solve :
-          min -0.00355002  max 0.00354974
-CGNL:34,  ro = 0.0252506 ||g||^2 = 0.00990867
-  -- Solve :
-          min -0.0506391  max 0.972145
-  -- Solve :
-          min -0.0031285  max 0.00378156
-  -- Solve :
-          min -0.050707  max 0.972101
-  -- Solve :
-          min -0.0032128  max 0.00373464
-  -- Solve :
-          min -0.0506527  max 0.972136
-  -- Solve :
-          min -0.00314536  max 0.00377217
-  -- Solve :
-          min -0.0506445  max 0.972141
-  -- Solve :
-          min -0.00313524  max 0.0037778
-CGNL:35,  ro = 0.0248466 ||g||^2 = 0.0104979
-  -- Solve :
-          min -0.0503072  max 0.97237
-  -- Solve :
-          min -0.00268633  max 0.00400844
-  -- Solve :
-          min -0.0503746  max 0.972324
-  -- Solve :
-          min -0.00277611  max 0.00396232
-  -- Solve :
-          min -0.0503207  max 0.972361
-  -- Solve :
-          min -0.00270429  max 0.00399922
-  -- Solve :
-          min -0.0503132  max 0.972366
-  -- Solve :
-          min -0.00269433  max 0.00400433
-CGNL:36,  ro = 0.0244038 ||g||^2 = 0.0116568
-  -- Solve :
-          min -0.0499709  max 0.972609
-  -- Solve :
-          min -0.00220684  max 0.00423496
-  -- Solve :
-          min -0.0500394  max 0.97256
-  -- Solve :
-          min -0.00230434  max 0.00418883
-  -- Solve :
-          min -0.0499846  max 0.972599
-  -- Solve :
-          min -0.00222634  max 0.00422573
-  -- Solve :
-          min -0.0499784  max 0.972604
-  -- Solve :
-          min -0.0022175  max 0.00422991
-CGNL:37,  ro = 0.0238703 ||g||^2 = 0.0134859
-  -- Solve :
-          min -0.049626  max 0.972867
-  -- Solve :
-          min -0.00175535  max 0.00446298
-  -- Solve :
-          min -0.0496964  max 0.972814
-  -- Solve :
-          min -0.00178731  max 0.00441637
-  -- Solve :
-          min -0.0496401  max 0.972856
-  -- Solve :
-          min -0.00175734  max 0.00445366
-  -- Solve :
-          min -0.0496357  max 0.972859
-  -- Solve :
-          min -0.00175672  max 0.00445656
-CGNL:38,  ro = 0.0232124 ||g||^2 = 0.0161358
-  -- Solve :
-          min -0.0492697  max 0.973147
-  -- Solve :
-          min -0.0016939  max 0.00469287
-  -- Solve :
-          min -0.0493429  max 0.973089
-  -- Solve :
-          min -0.00170644  max 0.0046456
-  -- Solve :
-          min -0.0492843  max 0.973135
-  -- Solve :
-          min -0.00169641  max 0.00468341
-CGNL:39,  ro = 0.0222839 ||g||^2 = 0.0197834
-  -- Solve :
-          min -0.0489063  max 0.973449
-  -- Solve :
-          min -0.00161715  max 0.00492013
-  -- Solve :
-          min -0.0489819  max 0.973386
-  -- Solve :
-          min -0.0016329  max 0.00487278
-  -- Solve :
-          min -0.0489214  max 0.973436
-  -- Solve :
-          min -0.00162028  max 0.00491066
-  -- Solve :
-          min -0.0489172  max 0.973439
-  -- Solve :
-          min -0.00161942  max 0.00491326
-CGNL:40,  ro = 0.021637 ||g||^2 = 0.0247532
-  -- Solve :
-          min -0.0485203  max 0.973789
-  -- Solve :
-          min -0.00151935  max 0.00518714
-  -- Solve :
-          min -0.0485997  max 0.973719
-  -- Solve :
-          min -0.00153937  max 0.00513097
-  -- Solve :
-          min -0.0485424  max 0.973769
-  -- Solve :
-          min -0.00152492  max 0.00517151
-CGNL:41,  ro = 0.020433 ||g||^2 = 0.031256
-  -- Solve :
-          min -0.0481393  max 0.974149
-  -- Solve :
-          min -0.00140185  max 0.00544862
-  -- Solve :
-          min -0.0482199  max 0.974073
-  -- Solve :
-          min -0.00142632  max 0.0053932
-  -- Solve :
-          min -0.0481618  max 0.974127
-  -- Solve :
-          min -0.00140869  max 0.00543313
-CGNL:42,  ro = 0.019291 ||g||^2 = 0.0396219
-  -- Solve :
-          min -0.0477571  max 0.974538
-  -- Solve :
-          min -0.00125849  max 0.00573823
-  -- Solve :
-          min -0.0478381  max 0.974456
-  -- Solve :
-          min -0.00128847  max 0.00567259
-  -- Solve :
-          min -0.0477824  max 0.974513
-  -- Solve :
-          min -0.00126781  max 0.00571772
-CGNL:43,  ro = 0.0180857 ||g||^2 = 0.050137
-  -- Solve :
-          min -0.0473868  max 0.974952
-  -- Solve :
-          min -0.00108804  max 0.00613297
-  -- Solve :
-          min -0.0474659  max 0.974864
-  -- Solve :
-          min -0.00112399  max 0.00604713
-  -- Solve :
-          min -0.0474139  max 0.974922
-  -- Solve :
-          min -0.00110034  max 0.0061036
-CGNL:44,  ro = 0.0168479 ||g||^2 = 0.0630203
-  -- Solve :
-          min -0.0470406  max 0.975384
-  -- Solve :
-          min -0.000888583  max 0.00652898
-  -- Solve :
-          min -0.0471153  max 0.975292
-  -- Solve :
-          min -0.000930834  max 0.0064439
-  -- Solve :
-          min -0.0470681  max 0.97535
-  -- Solve :
-          min -0.000904134  max 0.00649767
-CGNL:45,  ro = 0.0156077 ||g||^2 = 0.0783657
-  -- Solve :
-          min -0.0467324  max 0.976118
-  -- Solve :
-          min -0.000659829  max 0.00697632
-  -- Solve :
-          min -0.0467996  max 0.975933
-  -- Solve :
-          min -0.000708516  max 0.00685047
-  -- Solve :
-          min -0.0467586  max 0.976046
-  -- Solve :
-          min -0.000678786  max 0.00692732
-CGNL:46,  ro = 0.0143923 ||g||^2 = 0.0960848
-  -- Solve :
-          min -0.0464762  max 0.977042
-  -- Solve :
-          min -0.000403026  max 0.00768026
-  -- Solve :
-          min -0.0465327  max 0.976843
-  -- Solve :
-          min -0.000457951  max 0.00748846
-  -- Solve :
-          min -0.0464991  max 0.976961
-  -- Solve :
-          min -0.000425302  max 0.00760123
-CGNL:47,  ro = 0.0132248 ||g||^2 = 0.115866
-  -- Solve :
-          min -0.0462848  max 0.978009
-  -- Solve :
-          min -0.000120951  max 0.00862634
-  -- Solve :
-          min -0.0463276  max 0.977799
-  -- Solve :
-          min -0.000181552  max 0.00841003
-  -- Solve :
-          min -0.0463026  max 0.977921
-  -- Solve :
-          min -0.000146186  max 0.00853627
-CGNL:48,  ro = 0.0121235 ||g||^2 = 0.137164
-  -- Solve :
-          min -0.0461686  max 0.978999
-  -- Solve :
-          min -1.58701e-035  max 0.0096565
-  -- Solve :
-          min -0.0461954  max 0.978784
-  -- Solve :
-          min -1.5044e-035  max 0.00941594
-  -- Solve :
-          min -0.0461799  max 0.978909
-  -- Solve :
-          min -1.55217e-035  max 0.00955503
-CGNL:49,  ro = 0.0111007 ||g||^2 = 0.159232
-  -- Solve :
-          min -0.0461349  max 0.979995
-  -- Solve :
-          min -1.97875e-035  max 0.0107193
-  -- Solve :
-          min -0.0461439  max 0.979777
-  -- Solve :
-          min -1.89343e-035  max 0.0104864
-  -- Solve :
-          min -0.0461387  max 0.979903
-  -- Solve :
-          min -1.94274e-035  max 0.010621
-CGNL:50,  ro = 0.0101638 ||g||^2 = 0.181188
-  -- Solve :
-          min -0.0461868  max 0.980975
-  -- Solve :
-          min -2.37443e-035  max 0.0117206
-  -- Solve :
-          min -0.0461772  max 0.98076
-  -- Solve :
-          min -2.28809e-035  max 0.0115007
-  -- Solve :
-          min -0.0461828  max 0.980885
-  -- Solve :
-          min -2.33839e-035  max 0.0116288
-CGNL:51,  ro = 0.00931531 ||g||^2 = 0.202112
-  -- Solve :
-          min -0.0463238  max 0.981921
-  -- Solve :
-          min -2.76689e-035  max 0.0126419
-  -- Solve :
-          min -0.0462956  max 0.981714
-  -- Solve :
-          min -2.68119e-035  max 0.0124393
-  -- Solve :
-          min -0.0463123  max 0.981837
-  -- Solve :
-          min -2.73186e-035  max 0.0125591
-CGNL:52,  ro = 0.00855386 ||g||^2 = 0.221144
-  -- Solve :
-          min -0.046542  max 0.98282
-  -- Solve :
-          min -3.14963e-035  max 0.0135031
-  -- Solve :
-          min -0.0464961  max 0.982623
-  -- Solve :
-          min -3.06608e-035  max 0.013313
-  -- Solve :
-          min -0.0465238  max 0.982742
-  -- Solve :
-          min -3.11649e-035  max 0.0134277
-CGNL:53,  ro = 0.00787532 ||g||^2 = 0.237573
-  -- Solve :
-          min -0.0468347  max 0.983657
-  -- Solve :
-          min -3.51714e-035  max 0.014263
-  -- Solve :
-          min -0.0467725  max 0.983474
-  -- Solve :
-          min -3.43701e-035  max 0.0140959
-  -- Solve :
-          min -0.0468109  max 0.983587
-  -- Solve :
-          min -3.48654e-035  max 0.0141992
-CGNL:54,  ro = 0.00727372 ||g||^2 = 0.250891
-  -- Solve :
-          min -0.0471932  max 0.984425
-  -- Solve :
-          min -3.86507e-035  max 0.0149139
-  -- Solve :
-          min -0.0471167  max 0.984257
-  -- Solve :
-          min -3.78936e-035  max 0.014771
-  -- Solve :
-          min -0.0471652  max 0.984364
-  -- Solve :
-          min -3.8374e-035  max 0.0148617
-CGNL:55,  ro = 0.00674213 ||g||^2 = 0.260818
-  -- Solve :
-          min -0.0476079  max 0.985119
-  -- Solve :
-          min -4.19027e-035  max 0.0154552
-  -- Solve :
-          min -0.0475194  max 0.984968
-  -- Solve :
-          min -4.1197e-035  max 0.0153365
-  -- Solve :
-          min -0.0475772  max 0.985066
-  -- Solve :
-          min -4.16573e-035  max 0.0154139
-CGNL:56,  ro = 0.00627325 ||g||^2 = 0.267289
-  -- Solve :
-          min -0.0480689  max 0.985736
-  -- Solve :
-          min -8.25681e-005  max 0.0158896
-  -- Solve :
-          min -0.0479705  max 0.985602
-  -- Solve :
-          min -2.16291e-005  max 0.0157944
-  -- Solve :
-          min -0.0480365  max 0.985692
-  -- Solve :
-          min -6.24928e-005  max 0.0158582
-CGNL:57,  ro = 0.00585993 ||g||^2 = 0.270427
-  -- Solve :
-          min -0.0485662  max 0.986277
-  -- Solve :
-          min -0.000371213  max 0.0162226
-  -- Solve :
-          min -0.0484602  max 0.98616
-  -- Solve :
-          min -0.000309469  max 0.0161497
-  -- Solve :
-          min -0.0485332  max 0.986241
-  -- Solve :
-          min -0.00035201  max 0.0161999
-CGNL:58,  ro = 0.00549542 ||g||^2 = 0.270499
-  -- Solve :
-          min -0.0490906  max 0.986744
-  -- Solve :
-          min -0.00072542  max 0.0164614
-  -- Solve :
-          min -0.0489791  max 0.986644
-  -- Solve :
-          min -0.000649388  max 0.0164091
-  -- Solve :
-          min -0.049058  max 0.986715
-  -- Solve :
-          min -0.000703154  max 0.0164461
-CGNL:59,  ro = 0.00517355 ||g||^2 = 0.267863
-  -- Solve :
-          min -0.0496338  max 0.987141
-  -- Solve :
-          min -0.00107982  max 0.0166144
-  -- Solve :
-          min -0.0495186  max 0.987056
-  -- Solve :
-          min -0.00100449  max 0.0165807
-  -- Solve :
-          min -0.0496021  max 0.987118
-  -- Solve :
-          min -0.00105909  max 0.0166051
-CGNL:60,  ro = 0.00488881 ||g||^2 = 0.262931
-  -- Solve :
-          min -0.0501942  max 0.987473
-  -- Solve :
-          min -0.00142904  max 0.0166904
-  -- Solve :
-          min -0.0500753  max 0.987402
-  -- Solve :
-          min -0.00135505  max 0.0166733
-  -- Solve :
-          min -0.0501635  max 0.987455
-  -- Solve :
-          min -0.00140993  max 0.016686
-CGNL:61,  ro = 0.00463632 ||g||^2 = 0.25613
-  -- Solve :
-          min -0.0507608  max 0.987744
-  -- Solve :
-          min -0.00177068  max 0.0166983
-  -- Solve :
-          min -0.0506413  max 0.987686
-  -- Solve :
-          min -0.00169853  max 0.0166958
-  -- Solve :
-          min -0.0507319  max 0.98773
-  -- Solve :
-          min -0.00175321  max 0.0166977
-CGNL:62,  ro = 0.00441184 ||g||^2 = 0.247875
-  -- Solve :
-          min -0.0513267  max 0.987961
-  -- Solve :
-          min -0.00210292  max 0.016656
-  -- Solve :
-          min -0.0512077  max 0.987915
-  -- Solve :
-          min -0.00203298  max 0.016664
-  -- Solve :
-          min -0.0512997  max 0.98795
-  -- Solve :
-          min -0.00208705  max 0.0166578
-CGNL:63,  ro = 0.00421168 ||g||^2 = 0.23855
-  -- Solve :
-          min -0.0518875  max 0.988128
-  -- Solve :
-          min -0.00242445  max 0.0165624
-  -- Solve :
-          min -0.05177  max 0.988092
-  -- Solve :
-          min -0.00235697  max 0.0165815
-  -- Solve :
-          min -0.0518626  max 0.98812
-  -- Solve :
-          min -0.00241011  max 0.0165665
-CGNL:64,  ro = 0.00403268 ||g||^2 = 0.228499
-  -- Solve :
-          min -0.05244  max 0.988251
-  -- Solve :
-          min -0.00273438  max 0.0164241
-  -- Solve :
-          min -0.0523245  max 0.988225
-  -- Solve :
-          min -0.00266952  max 0.0164525
-  -- Solve :
-          min -0.0524169  max 0.988246
-  -- Solve :
-          min -0.00272141  max 0.0164298
-CGNL:65,  ro = 0.00387137 ||g||^2 = 0.218018
-  -- Solve :
-          min -0.0529812  max 0.988335
-  -- Solve :
-          min -0.00303205  max 0.0162478
-  -- Solve :
-          min -0.0528683  max 0.988317
-  -- Solve :
-          min -0.00296992  max 0.0162842
-  -- Solve :
-          min -0.0529586  max 0.988331
-  -- Solve :
-          min -0.00301962  max 0.0162551
-CGNL:66,  ro = 0.00371651 ||g||^2 = 0.207383
-  -- Solve :
-          min -0.0535065  max 0.988384
-  -- Solve :
-          min -0.0034278  max 0.0160409
-  -- Solve :
-          min -0.0533969  max 0.988374
-  -- Solve :
-          min -0.00333758  max 0.0160837
-  -- Solve :
-          min -0.0534845  max 0.988382
-  -- Solve :
-          min -0.00340976  max 0.0160494
-  -- Solve :
-          min -0.0534904  max 0.988383
-  -- Solve :
-          min -0.00341461  max 0.0160471
-CGNL:67,  ro = 0.00360785 ||g||^2 = 0.196704
-  -- Solve :
-          min -0.0540251  max 0.988404
-  -- Solve :
-          min -0.00384808  max 0.0158045
-  -- Solve :
-          min -0.0539182  max 0.9884
-  -- Solve :
-          min -0.00376139  max 0.0158531
-  -- Solve :
-          min -0.0540038  max 0.988403
-  -- Solve :
-          min -0.00383074  max 0.0158142
-CGNL:68,  ro = 0.00346354 ||g||^2 = 0.186288
-  -- Solve :
-          min -0.0545176  max 0.988397
-  -- Solve :
-          min -0.00424133  max 0.0155515
-  -- Solve :
-          min -0.0544148  max 0.988398
-  -- Solve :
-          min -0.00415921  max 0.015604
-  -- Solve :
-          min -0.054497  max 0.988397
-  -- Solve :
-          min -0.00422491  max 0.015562
-  -- Solve :
-          min -0.0545061  max 0.988397
-  -- Solve :
-          min -0.00423213  max 0.0155574
-CGNL:69,  ro = 0.00338592 ||g||^2 = 0.176087
-  -- Solve :
-          min -0.0550066  max 0.988367
-  -- Solve :
-          min -0.00462679  max 0.0152747
-  -- Solve :
-          min -0.0549065  max 0.988373
-  -- Solve :
-          min -0.00454786  max 0.0153312
-  -- Solve :
-          min -0.0549866  max 0.988368
-  -- Solve :
-          min -0.004611  max 0.015286
-CGNL:70,  ro = 0.00325049 ||g||^2 = 0.166402
-  -- Solve :
-          min -0.0554642  max 0.988318
-  -- Solve :
-          min -0.00498286  max 0.0149926
-  -- Solve :
-          min -0.0553687  max 0.988328
-  -- Solve :
-          min -0.00490849  max 0.0150513
-  -- Solve :
-          min -0.0554451  max 0.98832
-  -- Solve :
-          min -0.00496799  max 0.0150043
-  -- Solve :
-          min -0.0554577  max 0.988319
-  -- Solve :
-          min -0.00497781  max 0.0149966
-CGNL:71,  ro = 0.00320635 ||g||^2 = 0.157049
-  -- Solve :
-          min -0.0559242  max 0.988251
-  -- Solve :
-          min -0.00533683  max 0.0146883
-  -- Solve :
-          min -0.0558309  max 0.988265
-  -- Solve :
-          min -0.00526503  max 0.01475
-  -- Solve :
-          min -0.0559056  max 0.988254
-  -- Solve :
-          min -0.00532247  max 0.0147006
-CGNL:72,  ro = 0.0030781 ||g||^2 = 0.148346
-  -- Solve :
-          min -0.0563484  max 0.988171
-  -- Solve :
-          min -0.00566953  max 0.0143886
-  -- Solve :
-          min -0.0562599  max 0.988188
-  -- Solve :
-          min -0.00559617  max 0.014451
-  -- Solve :
-          min -0.0563307  max 0.988175
-  -- Solve :
-          min -0.00565486  max 0.0144011
-  -- Solve :
-          min -0.0563445  max 0.988172
-  -- Solve :
-          min -0.00566627  max 0.0143914
-CGNL:73,  ro = 0.00305073 ||g||^2 = 0.140048
-  -- Solve :
-          min -0.0567773  max 0.988076
-  -- Solve :
-          min -0.00602159  max 0.0140685
-  -- Solve :
-          min -0.0566908  max 0.988095
-  -- Solve :
-          min -0.00595053  max 0.0141331
-  -- Solve :
-          min -0.05676  max 0.98808
-  -- Solve :
-          min -0.00600738  max 0.0140814
-  -- Solve :
-          min -0.0567643  max 0.988079
-  -- Solve :
-          min -0.00601087  max 0.0140782
-CGNL:74,  ro = 0.00295864 ||g||^2 = 0.132372
-  -- Solve :
-          min -0.0571778  max 0.987972
-  -- Solve :
-          min -0.00634753  max 0.0137535
-  -- Solve :
-          min -0.0570951  max 0.987993
-  -- Solve :
-          min -0.00628019  max 0.0138184
-  -- Solve :
-          min -0.0571613  max 0.987976
-  -- Solve :
-          min -0.00633406  max 0.0137665
-  -- Solve :
-          min -0.0571689  max 0.987974
-  -- Solve :
-          min -0.00634025  max 0.0137605
-CGNL:75,  ro = 0.00289471 ||g||^2 = 0.125254
-  -- Solve :
-          min -0.0575672  max 0.987858
-  -- Solve :
-          min -0.00666188  max 0.0134329
-  -- Solve :
-          min -0.0574875  max 0.987881
-  -- Solve :
-          min -0.00659755  max 0.0134984
-  -- Solve :
-          min -0.0575512  max 0.987863
-  -- Solve :
-          min -0.00664901  max 0.013446
-  -- Solve :
-          min -0.057559  max 0.98786
-  -- Solve :
-          min -0.0066553  max 0.0134396
-CGNL:76,  ro = 0.00283552 ||g||^2 = 0.118688
-  -- Solve :
-          min -0.0579427  max 0.987736
-  -- Solve :
-          min -0.00696284  max 0.0131103
-  -- Solve :
-          min -0.0578659  max 0.987761
-  -- Solve :
-          min -0.00690133  max 0.0131762
-  -- Solve :
-          min -0.0579273  max 0.987741
-  -- Solve :
-          min -0.00695054  max 0.0131235
-  -- Solve :
-          min -0.0579352  max 0.987738
-  -- Solve :
-          min -0.00695688  max 0.0131167
-CGNL:77,  ro = 0.00278055 ||g||^2 = 0.112662
-  -- Solve :
-          min -0.0583051  max 0.987607
-  -- Solve :
-          min -0.00725127  max 0.0127865
-  -- Solve :
-          min -0.0582311  max 0.987633
-  -- Solve :
-          min -0.00719239  max 0.0128525
-  -- Solve :
-          min -0.0582903  max 0.987612
-  -- Solve :
-          min -0.0072395  max 0.0127997
-  -- Solve :
-          min -0.0582983  max 0.98761
-  -- Solve :
-          min -0.00724586  max 0.0127926
-CGNL:78,  ro = 0.00272939 ||g||^2 = 0.107161
-  -- Solve :
-          min -0.0586551  max 0.987472
-  -- Solve :
-          min -0.00752801  max 0.0124622
-  -- Solve :
-          min -0.0585837  max 0.9875
-  -- Solve :
-          min -0.00747158  max 0.0125282
-  -- Solve :
-          min -0.0586408  max 0.987478
-  -- Solve :
-          min -0.00751673  max 0.0124754
-  -- Solve :
-          min -0.0586489  max 0.987475
-  -- Solve :
-          min -0.00752308  max 0.0124679
-CGNL:79,  ro = 0.00268163 ||g||^2 = 0.102167
-  -- Solve :
-          min -0.0589935  max 0.987332
-  -- Solve :
-          min -0.00779388  max 0.0121378
-  -- Solve :
-          min -0.0589246  max 0.987361
-  -- Solve :
-          min -0.00773972  max 0.0122038
-  -- Solve :
-          min -0.0589797  max 0.987338
-  -- Solve :
-          min -0.00778305  max 0.012151
-  -- Solve :
-          min -0.0589878  max 0.987334
-  -- Solve :
-          min -0.00778936  max 0.0121433
-CGNL:80,  ro = 0.00263694 ||g||^2 = 0.0976602
-  -- Solve :
-          min -0.059321  max 0.987187
-  -- Solve :
-          min -0.00804966  max 0.0118136
-  -- Solve :
-          min -0.0592544  max 0.987217
-  -- Solve :
-          min -0.0079976  max 0.0118795
-  -- Solve :
-          min -0.0593077  max 0.987193
-  -- Solve :
-          min -0.00803925  max 0.0118268
-  -- Solve :
-          min -0.0593157  max 0.98719
-  -- Solve :
-          min -0.00804552  max 0.0118188
-CGNL:81,  ro = 0.002595 ||g||^2 = 0.0936207
-  -- Solve :
-          min -0.0596384  max 0.987038
-  -- Solve :
-          min -0.00829612  max 0.0114898
-  -- Solve :
-          min -0.0595739  max 0.987069
-  -- Solve :
-          min -0.008246  max 0.0115556
-  -- Solve :
-          min -0.0596255  max 0.987044
-  -- Solve :
-          min -0.0082861  max 0.011503
-  -- Solve :
-          min -0.0596335  max 0.987041
-  -- Solve :
-          min -0.00829231  max 0.0114948
-CGNL:82,  ro = 0.00255552 ||g||^2 = 0.0900283
-  -- Solve :
-          min -0.0599464  max 0.986885
-  -- Solve :
-          min -0.008534  max 0.0111665
-  -- Solve :
-          min -0.0598838  max 0.986916
-  -- Solve :
-          min -0.00848566  max 0.0112322
-  -- Solve :
-          min -0.0599338  max 0.986892
-  -- Solve :
-          min -0.00852433  max 0.0111796
-  -- Solve :
-          min -0.0599418  max 0.986888
-  -- Solve :
-          min -0.00853048  max 0.0111713
-CGNL:83,  ro = 0.00251826 ||g||^2 = 0.0868639
-  -- Solve :
-          min -0.0602457  max 0.986729
-  -- Solve :
-          min -0.00876399  max 0.0108435
-  -- Solve :
-          min -0.0601849  max 0.986761
-  -- Solve :
-          min -0.00871729  max 0.0109091
-  -- Solve :
-          min -0.0602335  max 0.986735
-  -- Solve :
-          min -0.00875465  max 0.0108566
-  -- Solve :
-          min -0.0602414  max 0.986731
-  -- Solve :
-          min -0.00876072  max 0.0108481
-CGNL:84,  ro = 0.00248298 ||g||^2 = 0.0841094
-  -- Solve :
-          min -0.060537  max 0.986569
-  -- Solve :
-          min -0.00898677  max 0.0105208
-  -- Solve :
-          min -0.0604779  max 0.986602
-  -- Solve :
-          min -0.00894156  max 0.0105863
-  -- Solve :
-          min -0.0605252  max 0.986576
-  -- Solve :
-          min -0.00897773  max 0.0105339
-  -- Solve :
-          min -0.060533  max 0.986571
-  -- Solve :
-          min -0.00898372  max 0.0105252
-CGNL:85,  ro = 0.00244946 ||g||^2 = 0.0817483
-  -- Solve :
-          min -0.060821  max 0.986406
-  -- Solve :
-          min -0.00920297  max 0.0101981
-  -- Solve :
-          min -0.0607634  max 0.986439
-  -- Solve :
-          min -0.00915912  max 0.0102635
-  -- Solve :
-          min -0.0608095  max 0.986413
-  -- Solve :
-          min -0.0091942  max 0.0102111
-  -- Solve :
-          min -0.0608173  max 0.986408
-  -- Solve :
-          min -0.00920011  max 0.0102023
-CGNL:86,  ro = 0.0024175 ||g||^2 = 0.0797661
-  -- Solve :
-          min -0.0610985  max 0.98624
-  -- Solve :
-          min -0.0094132  max 0.00987499
-  -- Solve :
-          min -0.0610422  max 0.986274
-  -- Solve :
-          min -0.00937058  max 0.00994046
-  -- Solve :
-          min -0.0610872  max 0.986247
-  -- Solve :
-          min -0.00940467  max 0.00988808
-  -- Solve :
-          min -0.0610949  max 0.986242
-  -- Solve :
-          min -0.0094105  max 0.00987913
-CGNL:87,  ro = 0.00238694 ||g||^2 = 0.0781499
-  -- Solve :
-          min -0.0613699  max 0.98607
-  -- Solve :
-          min -0.00961803  max 0.00955125
-  -- Solve :
-          min -0.0613149  max 0.986105
-  -- Solve :
-          min -0.00957653  max 0.00961682
-  -- Solve :
-          min -0.0613589  max 0.986077
-  -- Solve :
-          min -0.00960973  max 0.00956436
-  -- Solve :
-          min -0.0613666  max 0.986072
-  -- Solve :
-          min -0.00961548  max 0.00955528
-CGNL:88,  ro = 0.00235758 ||g||^2 = 0.0768894
-  -- Solve :
-          min -0.0616361  max 0.985897
-  -- Solve :
-          min -0.00981801  max 0.00922641
-  -- Solve :
-          min -0.0615822  max 0.985932
-  -- Solve :
-          min -0.00977751  max 0.00929218
-  -- Solve :
-          min -0.0616253  max 0.985904
-  -- Solve :
-          min -0.00980991  max 0.00923956
-  -- Solve :
-          min -0.0616328  max 0.985899
-  -- Solve :
-          min -0.00981558  max 0.00923035
-CGNL:89,  ro = 0.00232929 ||g||^2 = 0.0759762
-  -- Solve :
-          min -0.0618974  max 0.985721
-  -- Solve :
-          min -0.0100137  max 0.00890001
-  -- Solve :
-          min -0.0618445  max 0.985757
-  -- Solve :
-          min -0.00997404  max 0.00896608
-  -- Solve :
-          min -0.0618869  max 0.985728
-  -- Solve :
-          min -0.0100057  max 0.00891323
-  -- Solve :
-          min -0.0618943  max 0.985723
-  -- Solve :
-          min -0.0100113  max 0.00890389
-CGNL:90,  ro = 0.00230191 ||g||^2 = 0.0754044
-  -- Solve :
-          min -0.0621546  max 0.985541
-  -- Solve :
-          min -0.0102055  max 0.00857155
-  -- Solve :
-          min -0.0621026  max 0.985577
-  -- Solve :
-          min -0.0101666  max 0.00863802
-  -- Solve :
-          min -0.0621442  max 0.985548
-  -- Solve :
-          min -0.0101977  max 0.00858485
-  -- Solve :
-          min -0.0621516  max 0.985543
-  -- Solve :
-          min -0.0102032  max 0.0085754
-CGNL:91,  ro = 0.0022753 ||g||^2 = 0.0751706
-  -- Solve :
-          min -0.0624082  max 0.985356
-  -- Solve :
-          min -0.0103939  max 0.0082405
-  -- Solve :
-          min -0.0623569  max 0.985394
-  -- Solve :
-          min -0.0103557  max 0.00830748
-  -- Solve :
-          min -0.0623979  max 0.985364
-  -- Solve :
-          min -0.0103862  max 0.00825389
-  -- Solve :
-          min -0.0624053  max 0.985359
-  -- Solve :
-          min -0.0103917  max 0.00824432
-CGNL:92,  ro = 0.00224933 ||g||^2 = 0.0752737
-  -- Solve :
-          min -0.0626586  max 0.985168
-  -- Solve :
-          min -0.0105793  max 0.00790627
-  -- Solve :
-          min -0.062608  max 0.985206
-  -- Solve :
-          min -0.0105418  max 0.00797388
-  -- Solve :
-          min -0.0626485  max 0.985176
-  -- Solve :
-          min -0.0105718  max 0.00791979
-  -- Solve :
-          min -0.0626558  max 0.98517
-  -- Solve :
-          min -0.0105772  max 0.00791009
-CGNL:93,  ro = 0.0022239 ||g||^2 = 0.0757151
-  -- Solve :
-          min -0.0629065  max 0.984975
-  -- Solve :
-          min -0.0107622  max 0.00756827
-  -- Solve :
-          min -0.0628563  max 0.985014
-  -- Solve :
-          min -0.0107252  max 0.00763664
-  -- Solve :
-          min -0.0628964  max 0.984983
-  -- Solve :
-          min -0.0107548  max 0.00758194
-  -- Solve :
-          min -0.0629037  max 0.984977
-  -- Solve :
-          min -0.0107601  max 0.00757212
-CGNL:94,  ro = 0.00219888 ||g||^2 = 0.0764991
-  -- Solve :
-          min -0.0631521  max 0.984777
-  -- Solve :
-          min -0.0109429  max 0.00722587
-  -- Solve :
-          min -0.0631024  max 0.984817
-  -- Solve :
-          min -0.0109064  max 0.00729512
-  -- Solve :
-          min -0.0631422  max 0.984785
-  -- Solve :
-          min -0.0109356  max 0.00723972
-  -- Solve :
-          min -0.0631493  max 0.984779
-  -- Solve :
-          min -0.0109409  max 0.00722976
-CGNL:95,  ro = 0.00217418 ||g||^2 = 0.0776323
-  -- Solve :
-          min -0.0633961  max 0.984574
-  -- Solve :
-          min -0.0111218  max 0.00687842
-  -- Solve :
-          min -0.0633467  max 0.984615
-  -- Solve :
-          min -0.0110856  max 0.00694869
-  -- Solve :
-          min -0.0633862  max 0.984582
-  -- Solve :
-          min -0.0111146  max 0.00689248
-  -- Solve :
-          min -0.0633933  max 0.984576
-  -- Solve :
-          min -0.0111198  max 0.00688238
-CGNL:96,  ro = 0.00214969 ||g||^2 = 0.0791242
-  -- Solve :
-          min -0.0636387  max 0.984365
-  -- Solve :
-          min -0.0112992  max 0.00652525
-  -- Solve :
-          min -0.0635896  max 0.984407
-  -- Solve :
-          min -0.0112633  max 0.00659668
-  -- Solve :
-          min -0.0636289  max 0.984373
-  -- Solve :
-          min -0.011292  max 0.00653954
-  -- Solve :
-          min -0.0636359  max 0.984367
-  -- Solve :
-          min -0.0112972  max 0.0065293
-CGNL:97,  ro = 0.00212535 ||g||^2 = 0.0809868
-  -- Solve :
-          min -0.0638804  max 0.984149
-  -- Solve :
-          min -0.0114889  max 0.00616567
-  -- Solve :
-          min -0.0638315  max 0.984193
-  -- Solve :
-          min -0.0114495  max 0.0062384
-  -- Solve :
-          min -0.0638706  max 0.984158
-  -- Solve :
-          min -0.011481  max 0.00618022
-  -- Solve :
-          min -0.0638776  max 0.984152
-  -- Solve :
-          min -0.0114866  max 0.00616983
-CGNL:98,  ro = 0.00210106 ||g||^2 = 0.0832352
-  -- Solve :
-          min -0.0641215  max 0.983927
-  -- Solve :
-          min -0.011683  max 0.00586822
-  -- Solve :
-          min -0.0640727  max 0.983972
-  -- Solve :
-          min -0.0116437  max 0.00587615
-  -- Solve :
-          min -0.0641117  max 0.983936
-  -- Solve :
-          min -0.0116752  max 0.0058698
-  -- Solve :
-          min -0.0641187  max 0.98393
-  -- Solve :
-          min -0.0116807  max 0.00586867
-CGNL:99,  ro = 0.00207676 ||g||^2 = 0.085887
-  -- Solve :
-          min -0.0643623  max 0.983698
-  -- Solve :
-          min -0.0118768  max 0.00582659
-  -- Solve :
-          min -0.0643136  max 0.983745
-  -- Solve :
-          min -0.0118376  max 0.00583501
-  -- Solve :
-          min -0.0643526  max 0.983707
-  -- Solve :
-          min -0.0118689  max 0.00582827
-  -- Solve :
-          min -0.0643595  max 0.983701
-  -- Solve :
-          min -0.0118745  max 0.00582708
-CGNL:100,  ro = 0.00205239 ||g||^2 = 0.0889631
- Non convergence of the NL cojugate gradient
-  -- Solve :
-          min -0.0643595  max 0.983701
-Error: 0.31129
-times: compile 0.218s, execution 43.551s,  mpirank:0
- ######## We forget of deleting   23497 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
- CodeAlloc : nb ptr  3449,  size :410504 mpirank: 0
+          min -5.98625e-036  max 0.507357
+i: -0.657298, 0.302943
+Error: 0.200914
+times: compile 0.362s, execution 15.377s,  mpirank:0
+ ######## We forget of deleting   476 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
+ CodeAlloc : nb ptr  3642,  size :418456 mpirank: 0
 Ok: Normal End
  try getConsole D:\Study\HUST\FEM\heatsource\FreeFem++\HeatSource1D_S1.edp
