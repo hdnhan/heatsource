@@ -2,7 +2,7 @@ load "ff-IpOpt"
 load "medit"
 
 real T = 1;
-int nn = 50;
+int nn = 20;
 int Nx = nn, Ny = nn; 
 int[int] labs = [1, 2, 0, 4];
 mesh Th = square(Nx, Ny, [x, T * y], label = labs);
@@ -36,6 +36,21 @@ func real[int] flip(real[int] uu){
 
 
 // State equation:
+func real[int] StateProblem(real[int] ff){
+    Vh u, v, f; f[] = ff;
+    Vh rsh = f * q + g;
+
+    solve SpaceTime(u, v, solver = sparsesolver) = 
+          int2d(Th)(dy(u)  * v + dx(u)  * dx(v)) 
+        + int2d(Th)(dy(u0) * v + dx(u0) * dx(v))
+        - int1d(Th, 2, 4) (uN * v)
+        - int2d(Th)(rsh * v) 
+        + on(1, u = 0);
+
+    u = u + u0;
+    return u[];
+}
+
 func real[int] StateProblem1(real[int] ff){
     Vh u, v, f; f[] = ff;
     Vh rsh = f * q;
@@ -73,13 +88,31 @@ func real[int] AdjointProblem(real[int] uu){
 
     solve SpaceTime(p, v, solver = sparsesolver) =
           int2d(Th)(dy(p) * v + dx(p) * dx(v))
-        - int2d(Th)(pN * v)
+        - int1d(Th, 2, 4)(pN * v)
         + on(1, p = 0);
 
     return flip(p[]);
 }
 
 
+// Tikhonov functional
+func real J(real[int] ff) {
+    Vh f; f[] = ff;
+    Vh u; u[] = StateProblem(ff); 
+    return 0.5 * int1d(Th, 2, 4)((u - ue)^2) + 0.5 * gamma * int2d(Th)(f^2);
+}
+
+
+// Gradient of Tikhonov funtional
+func real[int] GradJ(real[int] ff) {
+    Vh f; f[] = ff;
+    real[int] uu = StateProblem(ff);
+    Vh p; p[] = AdjointProblem(uu);
+    Vh res = p * q + gamma * f;
+    return res[];
+}
+
+/*
 Vh uh, fh = 0;
 Vh ph;
 Vh rh, rh0, rhold;
@@ -134,21 +167,25 @@ for (int iter = 0; iter < 100; iter++){
 //
 //******************************
 
+*/
 
 
+Vh fh = 0;
+IPOPT(J, GradJ, fh[], tol = 1e-4);
+//NLCG(GradJ, fh[], nbiter = 1000, eps = -1e-6);
+//LinearCG(GradJ, f[], eps = 1e-6);
 
-Vh uh1; uh1[] = StateProblem1(fe[])+StateProblem2();
-Vh uh2; uh2[] = StateProblem1(fh[])+StateProblem2();
-
-plot(uh1, wait = 1, dim=3d);
-plot(uh2, wait = 1, dim=3d);
-plot(uh1, uh2, wait = 1, dim=3d);
-
-Vh delta = fe - fh;
-cout  << "i: " << delta[].min <<", " << delta[].max << endl;
+cout << "J: " << J(fh[]) << endl; 
 
 
-plot(fe, wait = 1, dim=3d);
-plot(fh, wait = 1, dim=3d);
-plot(fh, fe, wait = 1, dim=3d);
-cout << "Error: " << sqrt(int2d(Th)((fe - fh)^2)) << endl;
+//savemesh(Th, "IP1.mesh");
+//savesol("IP1.sol", Th, f);
+//savemesh(Th, "IPe.mesh");
+//savesol("IPe.sol", Th, fe);
+
+Vh delta = fh - fe;
+
+cout << "kq: " << fe[].min << ", " << fe[].max << endl;
+cout << "kq: " << fh[].min << ", " << fh[].max << endl;
+cout << "delta: " << delta[].min << ", " << delta[].max << endl;
+cout << "ss: " << sqrt(int2d(Th)(delta^2)) << endl;

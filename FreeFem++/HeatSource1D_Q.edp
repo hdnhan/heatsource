@@ -2,7 +2,7 @@ load "ff-IpOpt"
 load "medit"
 
 real T = 1;
-int nn = 100;
+int nn = 20;
 int Nx = nn, Ny = nn; 
 int[int] labs = [1, 2, 0, 4];
 mesh Th = square(Nx, Ny, [x, T * y], label = labs);
@@ -58,22 +58,21 @@ func real[int] StateProblem(real[int] ff){
 func real[int] AdjointProblem(real[int] uu){
     Vh p, v, u; u[] = uu;
     Vh temp = u - ue; 
-    Vh pN; pN[] =  flip(temp[]);
+    Vh rsh; rsh[] =  flip(temp[]);
 
     solve SpaceTime(p, v, solver = sparsesolver) =
           int2d(Th)(dy(p) * v + dx(p) * dx(v))
-        - int1d(Th, 2, 4)(pN * v)
+        - int2d(Th)(rsh * v)
         + on(1, p = 0);
 
     return flip(p[]);
 }
 
-
 // Tikhonov functional
 func real J(real[int] ff) {
     Vh f; f[] = ff;
     Vh u; u[] = StateProblem(ff); 
-    return 0.5 * int1d(Th, 2, 4)((u - ue)^2) + 0.5 * gamma * int2d(Th)(f^2);
+    return 0.5 * int2d(Th)((u - ue)^2) + 0.5 * gamma * int2d(Th)(f^2);
 }
 
 
@@ -85,98 +84,25 @@ func real[int] GradJ(real[int] ff) {
     Vh res = p * q + gamma * f;
     return res[];
 }
-/*
-
-
-
-
-Vh uh, fh = 0;
-Vh ph;
-Vh rh, rh0, rhold;
-Vh dh;
-//******************************
-// CG method
-
-
-uh[] = StateProblem2() + StateProblem1(fh[]);
-
-for (int iter = 0; iter < 100; iter++){
-
-    
-    ph[] = AdjointProblem(uh[]);
-    
-    //plot(fh, wait = 1, dim=3d);
-    //cout << "Min and Max: =======>>>>>>> "<<fh[].min<<" +++ " << fh[].max << endl;
-
-    rhold = rh;
-    rh = -(ph * q + gamma * fh); //-Gradient J(f)
-    if (iter == 0){
-        rh0 = rh;
-    }
-
-    cout << iter << " GradJ: " << int2d(Th)(rh * rh) << endl;
-
-    if ( int2d(Th)((uh-ue)*(uh-ue)) < 1e-4){
-        cout << "I love you" << endl;
-        break;
-    }
-    
-    if (iter > 0){
-        real beta = int2d(Th)(rh * rh) / int2d(Th)(rhold * rhold);
-        dh = rh + beta * dh;
-        cout << "beta: "  << beta << endl;
-    }else{
-        dh = rh;
-    }
-
-    Vh udh = StateProblem1(dh[]);
-    real alpha = int2d(Th)(dh * rh) / (int1d(Th, 2, 4)(udh * udh) + gamma * int2d(Th)(dh * dh));
-    
-    
-
-
-    fh = fh + alpha * dh;
-    uh = uh + alpha * udh;
-}
-
-//
-//******************************
-
-*/
 
 
 
 Vh fh = 0;
 IPOPT(J, GradJ, fh[], tol = 1e-4);
 //NLCG(GradJ, fh[], nbiter = 1000, eps = -1e-6);
-
-cout << "J, GradJ: " << J(fh[]) << endl; 
-
-
-
 //LinearCG(GradJ, f[], eps = 1e-6);
+
+cout << "J: " << J(fh[]) << endl; 
+
 
 //savemesh(Th, "IP1.mesh");
 //savesol("IP1.sol", Th, f);
 //savemesh(Th, "IPe.mesh");
 //savesol("IPe.sol", Th, fe);
 
-//Vh u; u[] = StateProblem(f[]);
+Vh delta = fh - fe;
 
-
-Vh uh1; uh1[] = StateProblem(fe[]);
-Vh uh2; uh2[] = StateProblem(fh[]);
-
-plot(uh1, wait = 1, dim=3d);
-plot(uh2, wait = 1, dim=3d);
-plot(uh1, uh2, wait = 1, dim=3d);
-/*
-plot(ue, wait = 1, dim=3d);
-plot(uh, wait = 1, dim=3d);
-plot(uh, ue, wait = 1, dim=3d);
-*/
-
-plot(fe, wait = 1, dim=3d);
-plot(fh, wait = 1, dim=3d);
-plot(fh, fe, wait = 1, dim=3d);
-cout << "Error: " << sqrt(int2d(Th)((fe - fh)^2)) << endl;
+cout << "kq: " << fe[].min << ", " << fe[].max << endl;
+cout << "kq: " << fh[].min << ", " << fh[].max << endl;
+cout << "delta: " << delta[].min << ", " << delta[].max << endl;
+cout << "ss: " << sqrt(int2d(Th)(delta^2)) << endl;
