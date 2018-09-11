@@ -17,8 +17,11 @@ Vh fe = (1 + y^0) * (x * (x <= 0.5) + (1 - x) * (x > 0.5));
 Vh g = pi * sin(pi * x) * cos(pi * y) + a * pi^2 * sin(pi * x) * sin(pi * y) - fe * q;
 real gamma = 1e-6;
 
+
+Vh u, f = 0;
+
 // State equation:
-func real[int] StateProblem(real[int] f){
+func real[int] StateProblem(real[int] & f){
     Vh u, v, ff; ff[] = f;
     Vh rsh = ff * q + g;
 
@@ -47,7 +50,7 @@ func real[int] flip(real[int] u){
 
 
 // Adjoint equation
-func real[int] AdjointProblem(real[int] u){
+func real[int] AdjointProblem(real[int] & u){
     Vh p, v, uu; uu[] = u;
     Vh temp = uu - ue; 
     Vh rsh =  flip(temp[]);
@@ -63,30 +66,32 @@ func real[int] AdjointProblem(real[int] u){
 
 
 // Tikhonov functional
-func real J(real[int] f) {
+func real J(real[int] & f) {
     Vh ff; ff[] = f;
-    Vh uu; uu[] = StateProblem(f); 
-    return 0.5 * int2d(Th)((uu - ue)^2) + 0.5 * gamma * int2d(Th)(ff^2);
+    u[] = StateProblem(f); 
+    return 0.5 * int2d(Th)((u - ue)^2) + 0.5 * gamma * int2d(Th)(ff^2);
 }
 
 
 // Gradient of Tikhonov funtional
-func real[int] GradJ(real[int] f) {
+func real[int] GradJ(real[int] & f) {
     Vh ff; ff[] = f;
     Vh p; p[] = AdjointProblem(StateProblem(f));
     Vh res = p * q + gamma * ff;
     return res[];
 }
 
-Vh f = 0;
-IPOPT(J, GradJ, f[], tol = 1e-4);
+//Vh f = 0;
+//IPOPT(J, GradJ, f[], tol = 1e-4);
+//NLCG(GradJ, f[], nbiter=10, eps = 1e-3);
+LinearCG(GradJ, f[], eps = 1e-6);
 
 //savemesh(Th, "IP1.mesh");
 //savesol("IP1.sol", Th, f);
 //savemesh(Th, "IPe.mesh");
 //savesol("IPe.sol", Th, fe);
 
-Vh u; u[] = StateProblem(f[]);
+//Vh u; u[] = StateProblem(f[]);
 
 plot(ue, wait = 1, dim=3d);
 plot(u, wait = 1, dim=3d);

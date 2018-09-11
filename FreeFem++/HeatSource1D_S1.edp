@@ -79,7 +79,8 @@ func real[int] GradJ(real[int] f) {
 }
 
 Vh f = 0;
-IPOPT(J, GradJ, f[], tol = 1e-4);
+//IPOPT(J, GradJ, f[], tol = 1e-4);
+NLCG(GradJ, f[]);
 
 //savemesh(Th, "IP1.mesh");
 //savesol("IP1.sol", Th, f);
