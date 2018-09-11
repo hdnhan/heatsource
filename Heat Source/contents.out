@@ -1,11 +1,11 @@
 \BOOKMARK [1][-]{section.1}{Introduction}{}% 1
-\BOOKMARK [1][-]{section.2}{Space-time finite element method}{}% 2
-\BOOKMARK [2][-]{subsection.2.1}{Variational problem}{section.2}% 3
-\BOOKMARK [2][-]{subsection.2.2}{S tn tai nghim yu}{section.2}% 4
-\BOOKMARK [2][-]{subsection.2.3}{Phng ph\341p phn t hu han}{section.2}% 5
-\BOOKMARK [1][-]{section.3}{Heat source problem}{}% 6
-\BOOKMARK [2][-]{subsection.3.1}{Variational problem}{section.3}% 7
-\BOOKMARK [2][-]{subsection.3.2}{Finte element method}{section.3}% 8
-\BOOKMARK [2][-]{subsection.3.3}{Error estimation}{section.3}% 9
-\BOOKMARK [1][-]{section.4}{Numerical results}{}% 10
-\BOOKMARK [1][-]{section.5}{Conclusion}{}% 11
+\BOOKMARK [1][-]{section.2}{Variational problem}{}% 2
+\BOOKMARK [1][-]{section.3}{Finte element method}{}% 3
+\BOOKMARK [2][-]{subsection.3.1}{Finite element approcimate of A, A*}{section.3}% 4
+\BOOKMARK [2][-]{subsection.3.2}{Convergence results}{section.3}% 5
+\BOOKMARK [1][-]{section.4}{Space-time finite element method}{}% 6
+\BOOKMARK [2][-]{subsection.4.1}{Variational problem}{section.4}% 7
+\BOOKMARK [2][-]{subsection.4.2}{S tn tai nghim yu}{section.4}% 8
+\BOOKMARK [2][-]{subsection.4.3}{Phng ph\341p phn t hu han}{section.4}% 9
+\BOOKMARK [1][-]{section.5}{Numerical results}{}% 10
+\BOOKMARK [1][-]{section.6}{Conclusion}{}% 11

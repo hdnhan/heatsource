@@ -18,9 +18,9 @@ Vh u0 = ue(x, 0);
 Vh fe = 1 * sin(pi * x) * sin(pi * y);
 //Vh fe = (x * (x <= 0.5) + (1 - x) * (x > 0.5)) * y * (1-y); 
 
-Vh q = 1 + x * y;
-Vh g = (1 + pi^2) * ue(x, y) - fe(x, y) * q(x,y);
-real gamma = 1e-5;
+Vh q = 1;// + x * y;
+Vh g = (1 + pi^2) * ue - fe * q;
+real gamma = 1e-6;
 
 
 func real[int] flip(real[int] uu){
@@ -53,7 +53,7 @@ func real[int] StateProblem(real[int] ff){
 
 func real[int] StateProblem1(real[int] ff){
     Vh u, v, f; f[] = ff;
-    Vh rsh = f * q;
+    Vh rsh = q * f;
 
     solve SpaceTime(u, v, solver = sparsesolver) = 
           int2d(Th)(dy(u) * v + dx(u) * dx(v))
@@ -99,7 +99,7 @@ func real[int] AdjointProblem(real[int] uu){
 func real J(real[int] ff) {
     Vh f; f[] = ff;
     Vh u; u[] = StateProblem(ff); 
-    return 0.5 * int1d(Th, 2, 4)((u - ue)^2) + 0.5 * gamma * int2d(Th)(f^2);
+    return 0.5 * int1d(Th, 2, 4)((u - ue) * (u - ue)) + 0.5 * gamma * int2d(Th)(f^2);
 }
 
 
@@ -108,11 +108,11 @@ func real[int] GradJ(real[int] ff) {
     Vh f; f[] = ff;
     real[int] uu = StateProblem(ff);
     Vh p; p[] = AdjointProblem(uu);
-    Vh res = p * q + gamma * f;
+    Vh res = q * p + gamma * f;
     return res[];
 }
 
-/*
+
 Vh uh, fh = 0;
 Vh ph;
 Vh rh, rh0, rhold;
@@ -128,11 +128,11 @@ for (int iter = 0; iter < 100; iter++){
     
     ph[] = AdjointProblem(uh[]);
     
-    //plot(fh, fe, wait = 1, dim=3d);
+    plot(fh, fe, wait = 1, dim=3d);
     //cout << "Min and Max: =======>>>>>>> "<<fh[].min<<" +++ " << fh[].max << endl;
 
     rhold = rh;
-    rh = -(ph * q + gamma * fh); //-Gradient J(f)
+    rh = -(q * ph + gamma * fh); //-Gradient J(f)
     if (iter == 0){
         rh0 = rh;
     }
@@ -158,7 +158,7 @@ for (int iter = 0; iter < 100; iter++){
     }
 
     Vh udh; udh[] = StateProblem1(dh[]);
-    real alpha = int2d(Th)(dh * rh) / (int2d(Th)(udh * udh) + gamma * int2d(Th)(dh * dh));
+    real alpha = int2d(Th)(dh * rh) / (int1d(Th, 2, 4)(udh * udh) + gamma * int2d(Th)(dh * dh));
     cout << "alpha: " << alpha << endl;
     fh = fh + alpha * dh;
     uh = uh + alpha * udh;
@@ -167,11 +167,9 @@ for (int iter = 0; iter < 100; iter++){
 //
 //******************************
 
-*/
 
-
-Vh fh = 0;
-IPOPT(J, GradJ, fh[], tol = 1e-4);
+//Vh fh = 0;
+//IPOPT(J, GradJ, fh[], tol = 1e-4, maxiter = 100);
 //NLCG(GradJ, fh[], nbiter = 1000, eps = -1e-6);
 //LinearCG(GradJ, f[], eps = 1e-6);
 
