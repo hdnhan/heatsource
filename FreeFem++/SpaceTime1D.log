@@ -44,7 +44,7 @@ kq: 0, 2.71828
 kq: -0.00226131, 2.71694
 kq: -0.00226131, 0.00175604
 ss: 0.000472564
-times: compile 0.111s, execution 15.741s,  mpirank:0
+times: compile 0.222s, execution 16.903s,  mpirank:0
  ######## We forget of deleting   67 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
  CodeAlloc : nb ptr  3037,  size :388904 mpirank: 0
 Ok: Normal End

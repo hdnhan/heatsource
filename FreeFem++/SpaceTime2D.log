@@ -44,7 +44,7 @@
    42 : cout << "kq: " << uu[].min << ", " << uu[].max << endl;
    43 : cout << "kq: " << delta[].min << ", " << delta[].max << endl;
    44 : cout << "ss: " << sqrt(int3d(Th)(delta^2)) << endl;
-   45 :  sizestack + 1024 =7752  ( 6728 )
+   45 :  sizestack + 1024 =7832  ( 6808 )
  
   Enter: BuildCube: 6
     kind = 6 n tet Cube = 6 / n slip 6 70
@@ -57,7 +57,7 @@ kq: 0, 2.71828
 kq: -0.0325821, 2.70428
 kq: -0.0325821, 0.0123179
 ss: 0.00410325
-times: compile 0.158s, execution 48.694s,  mpirank:0
+times: compile 0.576s, execution 30.514s,  mpirank:0
  ######## We forget of deleting   62 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
  CodeAlloc : nb ptr  3200,  size :400528 mpirank: 0
 Ok: Normal End

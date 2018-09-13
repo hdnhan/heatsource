@@ -496,4 +496,630 @@ iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
           min -0.00129612  max 1.71659
   -- Solve :
           min -0.00129612  max 1.71659
- try getConsole D:\Study\HUST\FEM\heatsource\FreeFem++\HeatSource1D_Q.edp
+  -- Solve :
+          min -0.00129612  max 1.71659
+  -- Solve :
+          min -0.00129612  max 1.71659
+  -- Solve :
+          min -0.00129612  max 1.71659
+  -- Solve :
+          min -0.00129612  max 1.71659
+  -- Solve :
+          min -0.00129612  max 1.71659
+  -- Solve :
+          min -0.00129612  max 1.71659
+  -- Solve :
+          min -0.00129612  max 1.71659
+  -- Solve :
+          min -0.00129612  max 1.71659
+  -- Solve :
+          min -0.00129612  max 1.71659
+  -- Solve :
+          min -0.00129612  max 1.71659
+  -- Solve :
+          min -0.00129612  max 1.71659
+  -- Solve :
+          min -0.00129612  max 1.71659
+  -- Solve :
+          min -0.00129612  max 1.71659
+  -- Solve :
+          min -0.00129612  max 1.71659
+  -- Solve :
+          min -8.3706e-035  max 0.00527774
+  15 3.5213569e-005 0.00e+000 1.74e-002 -11.0 1.01e+000    -  1.00e+000 2.22e-016f 53
+  -- Solve :
+          min -0.0211777  max 1.69045
+  -- Solve :
+          min -0.0211777  max 1.69045
+  -- Solve :
+          min -0.0211777  max 1.69045
+  -- Solve :
+          min -0.0211777  max 1.69045
+  -- Solve :
+          min -0.0211777  max 1.69045
+  -- Solve :
+          min -0.00825517  max 1.70352
+  -- Solve :
+          min -0.00250329  max 1.71006
+  -- Solve :
+          min -0.00250329  max 1.71006
+  -- Solve :
+          min -0.000507727  max 0.00287006
+  16 2.7271619e-005 0.00e+000 1.01e-002 -11.0 1.74e-002    -  1.00e+000 2.50e-001f  3
+  -- Solve :
+          min -0.00640584  max 1.70505
+  -- Solve :
+          min -0.00640584  max 1.70505
+  -- Solve :
+          min -0.00640584  max 1.70505
+  -- Solve :
+          min -0.00640584  max 1.70505
+  -- Solve :
+          min -0.00640584  max 1.70505
+  -- Solve :
+          min -0.00437848  max 1.70755
+  -- Solve :
+          min -0.00344089  max 1.7088
+  -- Solve :
+          min -0.00344089  max 1.7088
+  -- Solve :
+          min -0.00100823  max 0.00259774
+  17 2.7143247e-005 0.00e+000 8.93e-003 -11.0 5.44e-003    -  1.00e+000 2.50e-001f  3
+  -- Solve :
+          min -0.0105969  max 1.70098
+  -- Solve :
+          min -0.0105969  max 1.70098
+  -- Solve :
+          min -0.0105969  max 1.70098
+  -- Solve :
+          min -0.0105969  max 1.70098
+  -- Solve :
+          min -0.0105969  max 1.70098
+  -- Solve :
+          min -0.00658811  max 1.70489
+  -- Solve :
+          min -0.00464449  max 1.70685
+  -- Solve :
+          min -0.00464449  max 1.70685
+  -- Solve :
+          min -0.00168426  max 0.00216173
+  18 2.7072368e-005 0.00e+000 7.48e-003 -11.0 1.30e-002    -  1.00e+000 2.50e-001f  3
+  -- Solve :
+          min -0.0157651  max 1.6961
+  -- Solve :
+          min -0.0157651  max 1.6961
+  -- Solve :
+          min -0.0157651  max 1.6961
+  -- Solve :
+          min -0.0157651  max 1.6961
+  -- Solve :
+          min -0.0157651  max 1.6961
+  -- Solve :
+          min -0.0101744  max 1.70148
+  -- Solve :
+          min -0.00737906  max 1.70416
+  -- Solve :
+          min -0.00598139  max 1.7055
+  -- Solve :
+          min -0.00598139  max 1.7055
+  -- Solve :
+          min -0.00207529  max 0.00176303
+  19 2.6975809e-005 0.00e+000 6.16e-003 -11.0 2.52e-002    -  1.00e+000 1.25e-001f  4
+  -- Solve :
+          min -0.018898  max 1.6935
+  -- Solve :
+          min -0.018898  max 1.6935
+  -- Solve :
+          min -0.018898  max 1.6935
+  -- Solve :
+          min -0.018898  max 1.6935
+  -- Solve :
+          min -0.018898  max 1.6935
+  -- Solve :
+          min -0.0124397  max 1.6995
+  -- Solve :
+          min -0.00921053  max 1.7025
+  -- Solve :
+          min -0.00759596  max 1.704
+  -- Solve :
+          min -0.00759596  max 1.704
+  -- Solve :
+          min -0.00249445  max 0.00119201
+iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+  20 2.6660642e-005 0.00e+000 6.01e-003 -11.0 3.76e-002    -  1.00e+000 1.25e-001f  4
+  -- Solve :
+          min -0.0186173  max 1.69445
+  -- Solve :
+          min -0.0186173  max 1.69445
+  -- Solve :
+          min -0.00679646  max 8.79642e-035
+  21 3.8996404e-005 0.00e+000 1.97e-002 -11.0 4.38e-002    -  1.00e+000 1.00e+000w  1
+  -- Solve :
+          min -0.0170747  max 1.6967
+  -- Solve :
+          min -0.0170747  max 1.6967
+  -- Solve :
+          min -0.00581162  max 9.12914e-035
+  22 3.3065361e-005 0.00e+000 1.68e-002 -11.0 1.07e-002    -  1.00e+000 1.00e+000w  1
+  -- Solve :
+          min -1.35251e-033  max 1.73652
+  -- Solve :
+          min -1.35251e-033  max 1.73652
+  -- Solve :
+          min -4.91997e-035  max 0.0125379
+  23 1.1036115e-004 0.00e+000 3.72e-002 -11.0 9.64e-002    -  1.00e+000 1.00e+000w  1
+  -- Solve :
+          min -1.34698e-033  max 1.72252
+  -- Solve :
+          min -0.0131066  max 1.69923
+  -- Solve :
+          min -0.0103513  max 1.70161
+  -- Solve :
+          min -0.0103513  max 1.70161
+  -- Solve :
+          min -0.00311427  max 0.000102214
+  24 2.6223046e-005 0.00e+000 8.76e-003 -11.0 4.17e-002    -  1.00e+000 2.50e-001f  2
+  -- Solve :
+          min -0.00519605  max 1.70961
+  -- Solve :
+          min -0.00519605  max 1.70961
+  -- Solve :
+          min -0.000328518  max 0.000431796
+  25 1.5001837e-005 0.00e+000 1.11e-003 -11.0 4.17e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -0.0035772  max 1.71296
+  -- Solve :
+          min -0.0035772  max 1.71296
+  -- Solve :
+          min -1.74729e-035  max 0.00143234
+  26 1.3812996e-005 0.00e+000 3.73e-003 -11.0 2.93e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -0.0123322  max 1.70499
+  -- Solve :
+          min -0.0123322  max 1.70499
+  -- Solve :
+          min -0.0123322  max 1.70499
+  -- Solve :
+          min -0.0123322  max 1.70499
+  -- Solve :
+          min -0.0123322  max 1.70499
+  -- Solve :
+          min -0.00741927  max 1.70897
+  -- Solve :
+          min -0.00549824  max 1.71096
+  -- Solve :
+          min -0.00549824  max 1.71096
+  -- Solve :
+          min -0.000354976  max 0.0022436
+  27 1.2756410e-005 0.00e+000 7.09e-003 -11.0 1.57e-001    -  1.00e+000 2.50e-001f  3
+  -- Solve :
+          min -0.0392267  max 1.706
+  -- Solve :
+          min -0.0392267  max 1.706
+  -- Solve :
+          min -0.0392267  max 1.706
+  -- Solve :
+          min -0.0392267  max 1.706
+  -- Solve :
+          min -0.0392267  max 1.706
+  -- Solve :
+          min -0.0154058  max 1.70848
+  -- Solve :
+          min -0.010315  max 1.70972
+  -- Solve :
+          min -0.010315  max 1.70972
+  -- Solve :
+          min -0.00142659  max 0.000940981
+  28 9.1099616e-006 0.00e+000 5.03e-003 -11.0 2.94e-001    -  1.00e+000 2.50e-001f  3
+  -- Solve :
+          min -0.00458477  max 1.73458
+  -- Solve :
+          min -0.00458477  max 1.73458
+  -- Solve :
+          min -0.00458477  max 1.73458
+  -- Solve :
+          min -0.00458477  max 1.73458
+  -- Solve :
+          min -0.00458477  max 1.73458
+  -- Solve :
+          min -0.000913631  max 1.72215
+  -- Solve :
+          min -0.0046628  max 1.71594
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.000788165  max 0.00200775
+  29 8.8063730e-006 0.00e+000 5.60e-003 -11.0 2.06e-001    -  1.00e+000 1.25e-001f  4
+  -- Solve :
+          min -0.0266281  max 1.76657
+  -- Solve :
+          min -0.0266281  max 1.76657
+  -- Solve :
+          min -0.0266281  max 1.76657
+  -- Solve :
+          min -0.0266281  max 1.76657
+  -- Solve :
+          min -0.0266281  max 1.76657
+  -- Solve :
+          min -0.0111632  max 1.7397
+  -- Solve :
+          min -0.0050201  max 1.72627
+  -- Solve :
+          min -0.00259681  max 1.71955
+  -- Solve :
+          min -0.00504285  max 1.71619
+  -- Solve :
+          min -0.00626588  max 1.71451
+  -- Solve :
+          min -0.00687739  max 1.71367
+  -- Solve :
+          min -0.00718314  max 1.71325
+  -- Solve :
+          min -0.00733602  max 1.71304
+  -- Solve :
+          min -0.00741246  max 1.71294
+  -- Solve :
+          min -0.00745068  max 1.71288
+  -- Solve :
+          min -0.00746979  max 1.71286
+  -- Solve :
+          min -0.00747935  max 1.71284
+  -- Solve :
+          min -0.00748412  max 1.71284
+  -- Solve :
+          min -0.00748651  max 1.71283
+  -- Solve :
+          min -0.00748771  max 1.71283
+  -- Solve :
+          min -0.0074883  max 1.71283
+  -- Solve :
+          min -0.0074886  max 1.71283
+  -- Solve :
+          min -0.00748875  max 1.71283
+  -- Solve :
+          min -0.00748883  max 1.71283
+  -- Solve :
+          min -0.00748886  max 1.71283
+  -- Solve :
+          min -0.00748888  max 1.71283
+  -- Solve :
+          min -0.00748889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.000788165  max 0.00200775
+iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+  30 8.8063730e-006 0.00e+000 5.60e-003 -11.0 3.27e-001    -  1.00e+000 1.42e-014f 47
+  -- Solve :
+          min -0.0266281  max 1.76657
+  -- Solve :
+          min -0.0266281  max 1.76657
+  -- Solve :
+          min -0.0266281  max 1.76657
+  -- Solve :
+          min -0.0266281  max 1.76657
+  -- Solve :
+          min -0.0266281  max 1.76657
+  -- Solve :
+          min -0.0111632  max 1.7397
+  -- Solve :
+          min -0.0050201  max 1.72627
+  -- Solve :
+          min -0.00259681  max 1.71955
+  -- Solve :
+          min -0.00504285  max 1.71619
+  -- Solve :
+          min -0.00626588  max 1.71451
+  -- Solve :
+          min -0.00687739  max 1.71367
+  -- Solve :
+          min -0.00718314  max 1.71325
+  -- Solve :
+          min -0.00733602  max 1.71304
+  -- Solve :
+          min -0.00741246  max 1.71294
+  -- Solve :
+          min -0.00745068  max 1.71288
+  -- Solve :
+          min -0.00746979  max 1.71286
+  -- Solve :
+          min -0.00747935  max 1.71284
+  -- Solve :
+          min -0.00748412  max 1.71284
+  -- Solve :
+          min -0.00748651  max 1.71283
+  -- Solve :
+          min -0.00748771  max 1.71283
+  -- Solve :
+          min -0.0074883  max 1.71283
+  -- Solve :
+          min -0.0074886  max 1.71283
+  -- Solve :
+          min -0.00748875  max 1.71283
+  -- Solve :
+          min -0.00748883  max 1.71283
+  -- Solve :
+          min -0.00748886  max 1.71283
+  -- Solve :
+          min -0.00748888  max 1.71283
+  -- Solve :
+          min -0.00748889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.000788165  max 0.00200775
+  31 8.8063730e-006 0.00e+000 5.60e-003 -11.0 3.27e-001    -  1.00e+000 7.11e-015f 48
+  -- Solve :
+          min -0.0266281  max 1.76657
+  -- Solve :
+          min -0.0266281  max 1.76657
+  -- Solve :
+          min -0.0266281  max 1.76657
+  -- Solve :
+          min -0.0266281  max 1.76657
+  -- Solve :
+          min -0.0266281  max 1.76657
+  -- Solve :
+          min -0.0111632  max 1.7397
+  -- Solve :
+          min -0.0050201  max 1.72627
+  -- Solve :
+          min -0.00259681  max 1.71955
+  -- Solve :
+          min -0.00504285  max 1.71619
+  -- Solve :
+          min -0.00626588  max 1.71451
+  -- Solve :
+          min -0.00687739  max 1.71367
+  -- Solve :
+          min -0.00718314  max 1.71325
+  -- Solve :
+          min -0.00733602  max 1.71304
+  -- Solve :
+          min -0.00741246  max 1.71294
+  -- Solve :
+          min -0.00745068  max 1.71288
+  -- Solve :
+          min -0.00746979  max 1.71286
+  -- Solve :
+          min -0.00747935  max 1.71284
+  -- Solve :
+          min -0.00748412  max 1.71284
+  -- Solve :
+          min -0.00748651  max 1.71283
+  -- Solve :
+          min -0.00748771  max 1.71283
+  -- Solve :
+          min -0.0074883  max 1.71283
+  -- Solve :
+          min -0.0074886  max 1.71283
+  -- Solve :
+          min -0.00748875  max 1.71283
+  -- Solve :
+          min -0.00748883  max 1.71283
+  -- Solve :
+          min -0.00748886  max 1.71283
+  -- Solve :
+          min -0.00748888  max 1.71283
+  -- Solve :
+          min -0.00748889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.0074889  max 1.71283
+  -- Solve :
+          min -0.000788165  max 0.00200775
+  32 8.8063730e-006 0.00e+000 5.60e-003 -11.0 3.27e-001    -  1.00e+000 2.22e-016f 53
+  -- Solve :
+          min -0.0118192  max 1.70847
+  -- Solve :
+          min -0.0118192  max 1.70847
+  -- Solve :
+          min -0.00155151  max 3.87712e-005
+  33 6.0571884e-006 0.00e+000 5.04e-003 -11.0 5.60e-003    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -0.00899023  max 1.71124
+  -- Solve :
+          min -0.00899023  max 1.71124
+  -- Solve :
+          min -0.000536895  max 0.000841919
+  34 5.6579819e-006 0.00e+000 1.99e-003 -11.0 1.93e-003    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -0.0085327  max 1.71164
+  -- Solve :
+          min -0.0085327  max 1.71164
+  -- Solve :
+          min -0.000360459  max 0.000908503
+  35 5.5514174e-006 0.00e+000 2.25e-003 -11.0 1.41e-003    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -0.00472684  max 1.71452
+  -- Solve :
+          min -0.00472684  max 1.71452
+  -- Solve :
+          min -0.00472684  max 1.71452
+  -- Solve :
+          min -0.00472684  max 1.71452
+  -- Solve :
+          min -0.00472684  max 1.71452
+  -- Solve :
+          min -0.00589818  max 1.71308
+  -- Solve :
+          min -0.00721544  max 1.71236
+  -- Solve :
+          min -0.00721544  max 1.71236
+  -- Solve :
+          min -1.39506e-035  max 0.000978864
+  36 4.8055475e-006 0.00e+000 2.33e-003 -11.0 4.19e-002    -  1.00e+000 2.50e-001f  3
+  -- Solve :
+          min -0.00736937  max 1.71117
+  -- Solve :
+          min -0.00736937  max 1.71117
+  -- Solve :
+          min -0.000164316  max 0.000911709
+  37 4.5327993e-006 0.00e+000 2.98e-003 -11.0 1.29e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -0.00830883  max 1.70947
+  -- Solve :
+          min -0.00830883  max 1.70947
+  -- Solve :
+          min -0.000446761  max 0.000503107
+  38 4.0453361e-006 0.00e+000 1.59e-003 -11.0 8.49e-003    -  1.00e+000 1.00e+000f  1
+^C try getConsole D:\Study\HUST\FEM\heatsource\FreeFem++\HeatSource1D_Q.edp

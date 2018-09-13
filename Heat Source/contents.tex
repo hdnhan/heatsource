@@ -8,16 +8,16 @@
 	
 \newpage
 \section{Introduction}
-Let's consider a physical domain $\Omega \subset \mathbb{R}^d\,(d=1,\, 2,\, 3)$ that is bounded with the boundary $\Gamma$. Donate $I:=(0,\, T),\, Q:=\Omega\times I$ và $ S:=\Gamma \times I$ with $T>0$ given. 
+Consider a physical domain $\Omega \subset \mathbb{R}^d,\, d\in \mathbb{N^+}$ be bounded with the boundary $\Gamma$ and donate $I:=(0,\, T),\, Q:=\Omega\times I$ and $ S:=\Gamma \times I$ with $T>0$ given. 
 \\
-Consider the heat equation with the initial condition
-\begin{align}
-	u_t-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial u}{\partial x_i}\right)=F(x, t), \quad(x, t)\in Q,\label{1.1}
+Consider the heat equation
+\begin{align}\label{1.1}
+	\frac{\partial u}{\partial t}-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial u}{\partial x_i}\right)=F(x, t), \quad(x, t)\in Q,
 \end{align}
-with the initial and Neumann conditions, respectively
+with the initial and Dirichlet conditions, respectively
 \begin{align}
 	u(x, 0)&=u_0(x),\quad x\in \Omega,\label{1.2}\\
-	\frac{\partial u}{\partial \mathcal{N}}(x, t)&=\varphi(x, t),\quad(x, t)\in S,\label{1.3}
+	u(x, t)&=\varphi(x, t),\quad(x, t)\in S \label{1.3}
 \end{align}
 where
 \begin{align*}
@@ -25,108 +25,93 @@ where
 	&\lambda_1\left\|\xi\right\|^2\leq \sum_{i, j=1}^{d}a_{ij}\xi_i\xi_j\leq \lambda_2\left\|\xi\right\|^2,\; \forall \xi\in\mathbb{R}^d,\\
 	&\varphi\in L^2(S),\; u_0\in L^2(\Omega),\; F\in L^2(I;\, H^{-1}(\Omega)),
 \end{align*}
-with $\lambda_1$ và $\lambda_2$ are positive constants and 
-$$\frac{\partial u}{\partial \mathcal{N}}(x, t)=\sum_{i, j=1}^d a_{ji}(x, t)n_j(x, t)\frac{\partial u}{\partial x_i}(x, t),\quad (x, t)\in S,$$
-with $n(x, t)$ is the outer normal to $S$.
+with $\lambda_1$ và $\lambda_2$ are positive constants.
 \\
-The direct problem: 
+The direct problem is to determine $u$ when the coefficients of the questions \eqref{1.1} and the data $u_0, \varphi$ and $F$ are given. The inverse problem is to identify a missed data such as the right hand side $F$ when some additional observation on the solution $u$ are available. 
 \\
-The inverse problem: $F(x, t) = f(x, t) q(x, t) + g(x, t)$.
-%\begin{itemize}
-%	\item IP1: Find $f(.)$ if $u$ is given in $Q$
-%	\item IP2: Find $f(.)$ if $u$ is given in $\Omega\times \{T\}=Q_T$
-%	\item IP3: Find $f(.)$ if $u$ is given in $\Gamma_1\times I =S_1\subseteq S, \Gamma_1\subseteq \Gamma$
-%\end{itemize}
-This inverse problem will be investigated by the least squares method, minimize the functional
-$$J_{\gamma}(f)=\frac{1}{2}\left\|u-\omega\right\|_{L^2(Q)}^2+\frac{\gamma}{2}\left\|f-f^*\right\|_{L^2(Q)}^2,$$
-with $\gamma>0$ being a regularization parameter\\
-%$*\to IP1, 2, 3: L^2(Q), L^2(Q_T), L^2(S_1)$\\
-%$** \to (x, t), (x), (t): L^2(Q), L^2(\Omega), L^2(I)$
+Consider the structure $F(x, t)=f(.)q(x, t)+g(x, t)$, with $f(.)$ is either $f(x, t)$, $f(x)$ or $f(t)$. The problem here is to find $f(.)$ when $\ell u(f)=u(x, t)=\omega(x, t)$ is given on $Q$.
+\\ To solve this problem, we need to minimize the least square functional 
+$$J_{\gamma}(f)=\frac{1}{2}\left\|\ell u(f)-\omega\right\|_{L^2(Q)}^2.$$
+However, this minimization problem is unstable and there might be many minimizers to it. Therefore, we minimize the Tikhonov functional instead
+$$J_{\gamma}(f)=\frac{1}{2}\left\|u-\omega\right\|_{L^2(Q)}^2+\frac{\gamma}{2}\left\|f-f^*\right\|_{L^2(*)}^2,$$
+with $\gamma>0$ being a regularization parameter, $f^*$ is an a prior estimation of $f$ and $\left\|.\right\|_{L^2(*)}$ depends on $f(*)$ appropriately.
 
-%\section{Heat source (variational problem)}
-%Sobolev space
-%\begin{align}
-%	\int_{Q}\left[u_tv+\sum_{i, j=1}^{d}a_{ji}\frac{\partial u}{\partial x_i}\frac{\partial v}{\partial x_j}\right]dxdt=\int_{Q}Fvdxdt+\int_{S}\varphi vdsdt.
-%\end{align}
-%Adjoint problem
-%\begin{align}
-%	\begin{cases}
-%		-p_t-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial p}{\partial x_i}\right)=..., & (x, t)\in Q,\\
-%		\frac{\partial p}{\partial \mathcal{N}}(x, t)=0, & (x, t)\in S,\\
-%		p(x, T)=0, & x\in \Omega.
-%	\end{cases}
-%\end{align}
-%\begin{align}
-%	\begin{cases}
-%		-p_t-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial p}{\partial x_i}\right)=0, & (x, t)\in Q,\\
-%		\frac{\partial p}{\partial \mathcal{N}}(x, t)=0, & (x, t)\in S\backslash S_1,\\[0.2cm]
-%		\frac{\partial p}{\partial \mathcal{N}}(x, t)=\ell u-\omega, & (x, t)\in S_1,\\
-%		p(x, T)=0, & x\in \Omega.
-%	\end{cases}
-%\end{align}
 \section{Variational problem}
-To introduce the concept of weak form, we use the standard Sobolev spaces $H^1(\Omega), H^1_0(\Omega), H^{1, 0}(Q)$ and $H^{1, 1}(Q)$. Further, for a Banach space $B$, we define
-$$L^2(0, T; B)=\left\{u:u(t)\in B \text{a.e} t\in (0, T) \text{and} \left\|u\right\|_{L^2(0, T; B)} <\infty \right\},$$
+To introduce the concept of weak form, we use the standard Sobolev spaces $H^1(\Omega),\, H^1_0(\Omega),\, H^{1, 0}(Q)$ and $H^{1, 1}(Q)$. Further, for a Banach space $B$, we define
+$$L^2(0, T; B)=\left\{u:u(t)\in B \text{ a.e } t\in (0, T) \text{ and } \left\|u\right\|_{L^2(0, T; B)} <\infty \right\},$$
 with the norm
-$$\left\|u\right\|_{L^2(0, T; B)}=\int_0^T\left\|u(t)\right\|^2_Bdt$$
+$$\left\|u\right\|_{L^2(0, T; B)}=\int_0^T\left\|u(t)\right\|^2_Bdt.$$
 In the sequel, we shall use the space $W(0, T)$ define as
 $$W(0, T)=\left\{u: u\in L^2(0, T; H^1(\Omega)), u_t\in L^2\left(0, T; \left(H^1(\Omega)\right)'\right) \right\}$$
-\begin{align}
-	\int_{Q}\left[u_tv+\sum_{i, j=1}^{d}a_{ji}\frac{\partial u}{\partial x_i}\frac{\partial v}{\partial x_j}\right]dxdt=\int_{Q}Fvdxdt+\int_{S}\varphi vdsdt.
+Suppose that $F\in L^2(Q)$, a week solution in $W(0, T)$ of the problem \eqref{1.1} - \eqref{1.3} is a function $u(x, t)\in W(0, T)$ satisfying the identity
+\begin{align}\label{2.1}
+	\int_{Q}\left[\frac{\partial u}{\partial t}v+\sum_{i, j=1}^{d}a_{ji}\frac{\partial u}{\partial x_i}\frac{\partial v}{\partial x_j}\right]dxdt=\int_{Q}Fvdxdt+\int_{S}\varphi vdsdt.
 \end{align}
-\begin{align}
+and 
+\begin{align}\label{2.2}
+	u(x, 0)=u_0, x\in \Omega.
+\end{align}
+\begin{align}\label{2.3}
 	\left\|u\right\|_{L^2(0, T; B)} \leq c_d \left(\left\|F\right\|_{L^2(Q)}+\left\|u_0\right\|_{L^2(\Omega)}+\left\|\varphi\right\|_{L^2(S)}\right)
 \end{align}
-Since the solution $u(x, t)$ depends on the function $f(x, t)$, so we denote it by $u(f)$. To identify $f(x, t)$, we minimize the functional
-$$J_{0}(f)=\frac{1}{2}\left\|u-\omega\right\|_{L^2(Q)}^2,$$
-Because.... Therefore we minimize the Tikhonov functional instead
-$$J_{\gamma}(f)=\frac{1}{2}\left\|u-\omega\right\|_{L^2(Q)}^2+\frac{\gamma}{2}\left\|f-f^*\right\|_{L^2(Q)}^2,$$
-make clear parameters above.\\
-We will prove that $J_\gamma$ is Frechet differentiable and drive a formular for its gradient. Want to do so, we need the adjoint problem
-\begin{align}
+We suppose that $F$ has the form $F(x, t)=f(x, t)q(x, t)+g(x, t)$ with $f\in L^2(Q),\, q\in L^\infty(Q)$ and $g\in L^2(Q)$. We hope to recover $f(x, t)$ from the observation. Since the solution $u(x, t)$ depends on the function $f(x, t)$, so we denote it by $u(x, t, f)$ or $u(f)$. To identify $f(x, t)$, we minimize the Tikhonov functional
+\begin{align}\label{2.4}
+	J_{\gamma}(f)=\frac{1}{2}\left\|\ell u(f)-\omega\right\|_{L^2(Q)}^2+\frac{\gamma}{2}\left\|f-f^*\right\|_{L^2(Q)}^2.
+\end{align}
+We will prove that $J_\gamma$ is Frechet differentiable and drive a formula for its gradient. Want to do so, we need the adjoint problem
+\begin{align}\label{2.5}
 	\begin{cases}
-		-p_t-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial p}{\partial x_i}\right)=\ell u(f)-\omega, & (x, t)\in Q,\\
-		\frac{\partial p}{\partial \mathcal{N}}(x, t)=0, & (x, t)\in S\\
+		-\frac{\partial p}{\partial t}-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial p}{\partial x_i}\right)=\ell u(f)-\omega, & (x, t)\in Q,\\
+		u(x, t)=0, & (x, t)\in S\\
 		p(x, T)=0, & x\in \Omega.
 	\end{cases}
 \end{align}
 By changing the time direction, meaning $\overline{p}(x, t)=p(x, T-t)$, we will get a Neumann problem for parabolic equations.
 \begin{dl}
 	The functional $J_\gamma$ is Frechet differentiable and its gradient $\nabla J_\gamma$ at $f$ has the form 
-	$$\nabla J_\gamma(f)=q(x, t)p(x, t)+\gamma f(x, t)$$
+	\begin{align}\label{2.6}
+		\nabla J_\gamma(f)=q(x, t)p(x, t)+\gamma \left(f(x, t)-f^*(x, t)\right)
+	\end{align}
 \end{dl}
 \begin{proof}
-	Taking a small variation $\delta f \in L^2(Q)$ of $f$ and denote $\delta u(f)=u(f+\delta f)-u(f)$, we have
+	By taking a small variation $\delta f \in L^2(Q)$ of $f$ and denoting $\delta u(f)=u(f+\delta f)-u(f)$, we have
 	\begin{align*}
 		J_0(f+\delta f)-J_0(f)&=\frac{1}{2}\left\|\ell u(f+\delta f)-\omega\right\|^2_{L^2(Q)}-\frac{1}{2}\left\|\ell u(f)-\omega\right\|^2_{L^2(Q)}\\
 		&=\frac{1}{2}\left\|\ell \delta u(f) +\ell u(f)-\omega\right\|^2_{L^2(Q)}-\frac{1}{2}\left\|\ell u(f)-\omega\right\|^2_{L^2(Q)}\\
 		&=\frac{1}{2}\left\|\ell \delta u(f)\right\|^2_{L^2(Q)}+\left\langle \ell \delta u(f), \ell u(f)-\omega\right\rangle_{L^2(Q)}
 	\end{align*}
 	where $\delta u(f)$ is the solution to the problem
-	\begin{align}\label{3.6}
+	\begin{align}\label{2.7}
 		\begin{cases}
-			\delta u_t-\sum\limits_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial \delta u}{\partial x_i}\right)=q(x, t)\delta f,&(x, t)\in Q,\\
-			\frac{\partial \delta u}{\partial \mathcal{N}}(x, t)=0, & (x, t)\in S,\\
+			\frac{\partial \delta u}{\partial t}-\sum\limits_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial \delta u}{\partial x_i}\right)=q(x, t)\delta f,&(x, t)\in Q,\\
+			\delta u(x, t)=0, & (x, t)\in S,\\
 			\delta u(x, 0)=0, &x\in \Omega.
 		\end{cases}
 	\end{align}
-	Because the priori estimate (...) for the direct problem, we have
+	Because the priori estimate \eqref{2.3} for the direct problem, we have
 	\begin{align*}
 		\left\|\ell\delta u(f)\right\|_{L^2(Q)}^2=o\left(\left\|\delta f\right\|_{L^2(Q)}\right)\, \text{when } \left\|\delta f\right\|_{L^2(Q)}\to 0.
 	\end{align*}
-	What is more, applying the Green formula for (....) and (...), we get
+	What is more, applying the Green formula for \eqref{2.5} and \eqref{2.7}, we get
 	$$\int_{Q} \delta u \left(\ell u(f)-\omega\right)dxdt=\int_{Q} p(x, t)q(x, t)\delta f(x, t)dxdt$$
 	Therefore,
-	\begin{align}
+	\begin{align*}
 		J_0(f+\delta f)-J_0(f)&=\int_{Q}\delta u\left(\ell u-\omega\right)ds+o\left(\left\|\delta f\right\|_{L^2(Q)}\right)\notag\\
 		&=\int_Q qp\delta fdxdt+o\left(\left\|\delta f\right\|_{L^2(I)}\right)\notag\\
-		&=\left\langle qp,\delta f \right\rangle_{L^2(Q)}+o\left(\left\|\delta f\right\|^2_{L(Q)}\right).\label{3.7}
-	\end{align}
-	It's easy to get this
-	$$J_\gamma(f+\delta f)-J_\gamma(f)=\left\langle qp,\delta f \right\rangle_{L^2(Q)}+\gamma\left\langle f-f^*,\delta f \right\rangle_{L^2(Q)}+o\left(\left\|\delta f\right\|^2_{L(Q)}\right)$$
-	Hence the functional $J_\gamma$ is Frechet differentiable and its gradient $\nabla J_\gamma$ at $f$ has the form (...). The theorem is proved.
+		&=\left\langle qp,\delta f \right\rangle_{L^2(Q)}+o\left(\left\|\delta f\right\|^2_{L(Q)}\right).
+	\end{align*}
+	It is easy to get this
+	$$J_\gamma(f+\delta f)-J_\gamma(f)=\left\langle qp,\delta f \right\rangle_{L^2(Q)}+\gamma\left\langle f-f^*,\delta f \right\rangle_{L^2(Q)}+o\left(\left\|\delta f\right\|^2_{L(Q)}\right).$$
+	Hence the functional $J_\gamma$ is Frechet differentiable and its gradient $\nabla J_\gamma$ at $f$ has the form \eqref{2.5}. The theorem is proved.
 \end{proof}
-To find $f$ satisfied (...), we use the conjjugate gradient method (CG). It proceeds as follows: Assume that at the $k$th iteration, we have $f^k$. Then the next iteration is
+\begin{cy}
+	In this theorem, we write the Tikhonov functional for $F(x, t)=f(x, t)q(x, t)+g(x, t)$. But when F has another structure, the penalty term should be modified
+	\begin{itemize}
+		\item $F(x, t)=f(x)q(x, t)+g(x, t)$: the penalty functional is $\left\|f-f^*\right\|_{L^2(\Omega)}$ and $$\nabla J_0(f)=\int_0^Tq(x, t)p(x, t)dt.$$
+		\item $F(x, t)=f(t)q(x, t)+g(x, t)$: the penalty functional is $\left\|f-f^*\right\|_{L^2(0, T)}$ and $$\nabla J_0(f)=\int_\Omega q(x, t)p(x, t)dt.$$
+	\end{itemize}
+\end{cy}
+\noindent To find $f$ satisfied \eqref{2.4}, we use the conjugate gradient method (CG). It proceeds as follows: assume that at the $k$th iteration, we have $f^k$. Then the next iteration is
 $$f^{k+1}=f^k+\alpha_kd^k,$$
 with
 \begin{align*}
@@ -139,66 +124,68 @@ with
 and
 $$\alpha_k=\operatorname*{arg\,min}_{\alpha\geq 0}J_\gamma(f^k+\alpha d^k).$$
 To identify $\alpha_k$, we consider two problems
-Để xác định $\alpha_k$, chúng ta sẽ xét hai bài toán sau
-\begin{bt}\label{bt3.1}
+\begin{bt}\label{bt2.1}
 	Denote the solution of this problem is $u[f]$
 	\begin{align*}
-	\begin{cases}
-	u_t-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial u}{\partial x_i}\right)=f(t)h(x, t),&(x, t)\in Q,\\
-	\frac{\partial u}{\partial \mathcal{N}}(x, t)=0, & (x, t)\in S,\\
-	u(x, 0)=0,&x\in \Omega.
-	\end{cases}
+		\begin{cases}
+			\frac{\partial u}{\partial t}-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial u}{\partial x_i}\right)=f(t)h(x, t),&(x, t)\in Q,\\
+			\frac{\partial u}{\partial \mathcal{N}}(x, t)=0, & (x, t)\in S,\\
+			u(x, 0)=0,&x\in \Omega.
+		\end{cases}
 	\end{align*}
 \end{bt}
-\begin{bt}\label{bt3.2}
+\begin{bt}\label{bt2.2}
 	Denote the solution of this problem is $u(u_0, \varphi)$
 	\begin{align*}
-	\begin{cases}
-	u_t-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial u}{\partial x_i}\right)=g(x, t),&(x, t)\in Q,\\
-	\frac{\partial u}{\partial \mathcal{N}}(x, t)=\varphi(x, t), & (x, t)\in S,\\
-	u(x, 0)=u_0(x),&x\in \Omega.
-	\end{cases}
+		\begin{cases}
+			\frac{\partial u}{\partial t}-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial u}{\partial x_i}\right)=g(x, t),&(x, t)\in Q,\\
+			\frac{\partial u}{\partial \mathcal{N}}(x, t)=\varphi(x, t), & (x, t)\in S,\\
+			u(x, 0)=u_0(x),&x\in \Omega.
+		\end{cases}
 	\end{align*}
 \end{bt}
-If so, the observation operators have the form $\ell u(f)=\ell u[f]+\ell u(u_0, \varphi)=Af+\ell u(u_0, \varphi)$, with $A$ being bounded linear operators from $L^2(Q)$ đến $L^2(Q)$.\\
+\noindent If so, the observation operators have the form $\ell u(f)=\ell u[f]+\ell u(u_0, \varphi)=Af+\ell u(u_0, \varphi)$, with $A$ being bounded linear operators from $L^2(Q)$ to $L^2(Q)$.\\
 We have
 \begin{align*}
 	J_{\gamma}(f^k+\alpha d^k)&=\frac{1}{2}\left\|\ell u(f^k+\alpha d^k)-\omega\right\|_{L^2(S_1)}^2+\frac{\gamma}{2}\left\|f^k+\alpha d^k-f^*\right\|_{L^2(I)}^2\\[0.2cm]
 	&=\frac{1}{2}\left\|\alpha Ad^k+Af^k+\ell u(u_0, \varphi)-\omega\right\|_{L^2(S_1)}^2+\frac{\gamma}{2}\left\|f^k+\alpha d^k-f^*\right\|_{L^2(I)}^2\\[0.2cm]
 	&=\frac{1}{2}\left\|\alpha Ad^k+\ell u(f^k)-\omega\right\|_{L^2(S_1)}^2+\frac{\gamma}{2}\left\|f^k+\alpha d^k-f^*\right\|_{L^2(I)}^2.
 \end{align*}
-Taking differentiating $J_\gamma(f^k+\alpha d^k)$ with respect to $\alpha$, we get
+Differentiating $J_\gamma(f^k+\alpha d^k)$ with respect to $\alpha$, we get
 \begin{align*}
 \frac{\partial J_\gamma(f^k+\alpha d^k)}{\partial \alpha} &= \alpha\left\|Ad^k \right\|_{L^2(S_1)}^2+\left\langle Ad^k,\ell u(f^k)-\omega\right\rangle_{L^2(S_1)}\\[0.2cm]
 &\quad+\gamma\alpha\left\| d^k\right\|_{L^2(I)}^2+\gamma\left\langle d^k, f^k-f^*\right\rangle_{L^2(I)}.
 \end{align*}
-Từ điều kiện của cực trị $\frac{\partial J_\gamma(f^k+\alpha d^k)}{\partial \alpha}=0$, chúng ta thu được
+Putting $\frac{\partial J_\gamma(f^k+\alpha d^k)}{\partial \alpha}=0$, we obtain
 \begin{align*}
 \alpha_k&=-\frac{\left\langle Ad^k, \ell u(f^k)-\omega\right\rangle_{L^2(S_1)}+\gamma\left\langle d^k, f^k-f^*\right\rangle_{L^2(I)}}{\left\|Ad^k\right\|^2_{L^2(S_1)}+\gamma\left\|d^k\right\|^2_{L^2(I)}}\\[0.2cm]
 &=-\frac{\left\langle d^k, A^*\left(\ell u(f^k)-\omega\right)\right\rangle_{L^2(I)}+\gamma\left\langle d^k, f^k-f^*\right\rangle_{L^2(I)}}{\left\|Ad^k\right\|^2_{L^2(S_1)}+\gamma\left\|d^k\right\|^2_{L^2(I)}}\\[0.2cm]
 &=-\frac{\left\langle d^k, A^*\left(\ell u(f^k)-\omega\right)+\gamma(f^k-f^*)\right\rangle_{L^2(I)}}{\left\|Ad^k\right\|^2_{L^2(S_1)}+\gamma\left\|d^k\right\|^2_{L^2(I)}}\\[0.2cm]
 &=-\frac{\left\langle d^k,\nabla J_\gamma(f^k)\right\rangle_{L^2(I)}}{\left\|Ad^k\right\|^2_{L^2(S_1)}+\gamma\left\|d^k\right\|^2_{L^2(I)}}.
 \end{align*}
-Vì $d^k=r^k+\beta_kd^{k-1},\, r^k=-\nabla J_\gamma (f^k)$ và $\left\langle r^k,d^{k-1}\right\rangle_{L^2(I)}=0$ nên 
+Because of $d^k=r^k+\beta_kd^{k-1},\, r^k=-\nabla J_\gamma (f^k)$ and $\left\langle r^k,d^{k-1}\right\rangle_{L^2(I)}=0$, we get 
 $$\alpha_k=\frac{\left\|r^k\right\|^2_{L^2(I)}}{\left\|Ad^k\right\|^2_{L^2(S_1)}+\gamma\left\|d^k\right\|^2_{L^2(I)}}.$$
 
 \noindent \textbf{CG algorithm}
 \begin{itemize}
 	\item[1.] Set $k=0$, initiate $f^0$.
-	\item[2.] Calculate $r^0=-\nabla J_\gamma(f^0)$ and set $d^0=r^0$.
+	\item[2.] For $k=0, 1, 2,...$. Calculate
+	$$r^k=-\nabla J_\gamma(f^k).$$
+	Update\\
+	\begin{align*}
+		d^k&=\left\{\begin{array}{ll}
+		r^k,& k=0,\\
+		r^k+\beta_kd^{k-1},& k>0,
+		\end{array}\right.\\\\
+		\beta_k&=\frac{\left\|r^k\right\|^2_{L^2(Q)}}{\left\|r^{k-1}\right\|^2_{L^2(Q)}}.
+	\end{align*}
 	\item[3.] Calculate
-	$$\alpha_0=\frac{\left\|r^0\right\|^2_{L^2(I)}}{\left\|Ad^0\right\|^2_{L^2(S_1)}+\gamma\left\|d^0\right\|^2_{L^2(I)}},$$
-	$$f^1=f^0+\alpha_0d^0.$$
-	\item[4.] For $k=1, 2,...$. Calculate
-	$$r^k=-\nabla J_\gamma(f^k),$$
-	$$d^k=r^k+\beta_kd^{k-1}, \; \beta_k=\frac{\left\|r^k\right\|^2_{L^2(I)}}{\left\|r^{k-1}\right\|^2_{L^2(I)}}.$$
-	\item[5.] Calculate
-	$$\alpha_k=\frac{\left\|r^k\right\|^2_{L^2(I)}}{\left\|Ad^k\right\|^2_{L^2(S_1)}+\gamma\left\|d^k\right\|^2_{L^2(I)}}.$$
+	$$\alpha_k=\frac{\left\|r^k\right\|^2_{L^2(Q)}}{\left\|Ad^k\right\|^2_{L^2(S_1)}+\gamma\left\|d^k\right\|^2_{L^2(Q)}}.$$
 	Update
 	$$f^{k+1}=f^{k}+\alpha_kd^k.$$
 \end{itemize}
 
-\section{Finte element method}
+\section{Finite element method}
 We rewrite the Tikhonov functional
 \begin{align*}
 	J_\gamma(f)&=\frac{1}{2}\left\|\ell u[f]+\ell u(u_0, \varphi)-\omega\right\|^2_{L^2(S_1)}+\frac{\gamma}{2}\left\|f-f^*\right\|^2_{L^2(I)}\\
@@ -207,380 +194,132 @@ We rewrite the Tikhonov functional
 \end{align*}
 with $\hat{\omega}=\omega-\ell u(u_0, \varphi)$.
 \\
-The solution $f^\gamma$ of the minimization problem (..) is characterized by the first-order optimality condition
-\begin{align}\label{3.8}
+The solution $f^\gamma$ of the minimization problem \eqref{2.4} is characterized by the first-order optimality condition
+\begin{align}\label{3.1}
 	\nabla J_\gamma(f^\gamma)= A^*(Af^\gamma-\hat{\omega})+\gamma(f^\gamma-f^*)=0,
 \end{align}
-with $A^*: L^2(Q)\to L^2(Q)$ is the adjoint operator of $A$ defined by $A^*\phi = p$ where $\phi = \ell u - \omega$ and $p$ is the solution of the adjoint problem (...). 
+with $A^*: L^2(Q)\to L^2(Q)$ is the adjoint operator of $A$ defined by $A^*\phi = p$ where $\phi = \ell u(f) - \omega$ and $p$ is the solution of the adjoint problem \eqref{2.5}. 
+
+\subsection{Finite element approximate of $A,\, A^*$}
+We will approximate \eqref{3.1} by using the space-time finite element method with finite spaces $X_h \subset Y_h$. For the space-time domain $Q=\Omega\times I\subset \mathbb{R}^{d+1}$, we consider a sequence of admissible decompositions $Q_h$ into shape regular simplicity finite element $q_l$
+$$Q_h=\cup_{l=1}^{N}\bar{q}_l.$$
+Denote $\left\lbrace (x_k, t_k)\right\rbrace_{k=1}^M $ is a set of nodes $(x_k, t_k)\in \mathbb{R}^{d+1}$. We introduce a reference element $q\in \mathbb{R}^{d+1}$ which any element $q_l$ can maple to $q$ by using
+$$\begin{pmatrix}x\\t\end{pmatrix}=\begin{pmatrix}x_k\\t_k\end{pmatrix}+J_l\begin{pmatrix}\xi\\\tau\end{pmatrix}, \; \begin{pmatrix}\xi\\\tau\end{pmatrix}\in q.$$
+with $\Delta_l$ is the volume of $q_l$ 
+$$\Delta_l=\int_{q_l}dxdt=\det J_l\int_q d\xi d\tau=|q|\det J_l,$$
+and the local mesh width
+$$h_l=\Delta_l^{\frac{1}{d+1}},\; h:=\max_{l=1, ..., N}h_l.$$
+Note that
+$$|q|=\begin{cases}
+	\frac{1}{2},& d=1,\\[0.1cm]
+	\frac{1}{6},& d=2.
+\end{cases}$$
+phương trình biến phân xấp xỉ
+\begin{align}\label{3.2}
+	\int_{Q}\left[\frac{\partial u_h}{t}v_h+\sum_{i, j=1}^{d}a_{ji}\frac{\partial u_h}{\partial x_i}\frac{\partial v_h}{\partial x_j}\right]dxdt=\int_{Q}Fv_hdxdt+\int_{S}\varphi v_hdsdt, \forall v_h\in Y_h.
+\end{align}
+and 
+\begin{align}\label{3.3}
+	u_h(x, 0)=u_0, x\in \Omega.
+\end{align}
 \\
-Difficulty of finding $A$ and $A^*$ so....
-\subsection{Finite element approcimate of $A,\, A^*$}
-\qquad Các toán tử $A$ và $A^*$ thường rất khó để xác định chính xác, thay vào đó chúng ta phải tìm xấp xỉ $A_h$ và $A^*_h$ của $A$ và $A^*$ tương ứng. Trước khi xấp xỉ các toán tử trên, chúng ta có đánh giá sai số nghiệm theo phương phương không gian-thời gian, xem chứng minh ở \cite{a5}.
+The discrete variational problem \eqref{3.2} admits a unique solution $u_h\in X_h$. Hence, the discrete version of the optimal control problem will be
+$$J_{\gamma, h}(f)=\frac{1}{2}\left\|A_hf-\hat{\omega}_h\right\|^2_{L^2(S_1)}+\frac{\gamma}{2}\left\|f-f^*\right\|^2_{L^2(I)}.$$
+Let $f^\gamma_h$ be the solution of this problem is characterized by the variational equation
+\begin{align}\label{3.4}
+	\nabla J_{\gamma, h}(f^\gamma_h)= A_h^*(A_hf^\gamma-\hat{\omega}_h)+\gamma(f^\gamma_h-f^*)=0,
+\end{align}
+where $A_h^*$ is the adjoint oeprator of $A_h$. But it is hardly to find $A^*_h$ from $A_h$ in practice. So we define a proximate $\hat{A}_h^*$ of $A^*$ instead. In deed, we have $\hat{A}^*_h\phi=p_h$, with $p_h$ is the approximate solution of adjoint problem \eqref{2.5}. Therefore, the equation above will be
+\begin{align}\label{3.5}
+	\nabla J_{\gamma, h}(f^\gamma_h)\simeq\nabla J_{\gamma, h}(\hat{f}^\gamma_h)= \hat{A}_h^*(A_h\hat{f}^\gamma-\hat{\omega}_h)+\gamma(\hat{f}^\gamma_h-f^*)=0,
+\end{align}
+Moreover, the observation will have noise in pratice, so instead of $\omega(x, t)$, we only get $\omega^{\delta}(x, t)$ satisfy
+$$\left\| \omega-\omega^\delta\right\|_{L^2(S_1)}\leq \delta.$$
+Therefore, instead of getting $\hat{f}^\gamma_h$ satisfies the equation \eqref{3.5}, we will get $\hat{f}^{\gamma, \delta}_h$ satisfies
+\begin{align}\label{3.6}
+	\nabla J_{\gamma, h}\left(\hat{f}^{\gamma, \delta}_h\right)= \hat{A}_h^*(A_h\hat{f}^{\gamma, \delta}_h-\hat{\omega}_h^\delta)+\gamma(\hat{f}^{\gamma, \delta}_h-f^*)=0,
+\end{align}
+with $\hat{\omega}_h^\delta=\omega^\delta-\ell u_h(u_0, \varphi)$.
+\subsection{Convergence results}
 \begin{dl}\label{dl3.2}
-	Giả sử $u(x, t)$ và $u_h(x, t)$ lần lượt là nghiệm và nghiệm xấp xỉ theo phương pháp phần tử hữu hạn không gian-thời gian của bài toán thuận, ta có đánh giá sai số
-	\begin{align}\label{3.9}
-	\left\| u-u_h\right\|_{L^2(Q)}\leq \left\| u-u_h\right\|_{L^2(I;\; H^1(\Omega))}\leq c_2h_{xt} \left|u\right|_{H^2(\Omega)}.
-	\end{align}
-	với $h_{xt}$ là bước lưới và
-	\begin{align}\label{them}
-	\left\|u \right\|_{W(I)}\leq c\left[\left\| F\right\|_{L^2(0, T;\, H^{-1}(\Omega))}+\left\|u_0 \right\|_{L^2(\Omega)}+\left\| \varphi\right\|_{L^2(S)}\right].
+	Let $u(x, t)$ be the solution of variational problem \eqref{2.1} - \eqref{2.2} and $u_h(x, t)$ be the solution for \eqref{3.2} - \eqref{3.3} Then there holds the error estimate
+	\begin{align}\label{3.7}
+		\left\| u-u_h\right\|_{L^2(Q)}\leq \left\| u-u_h\right\|_{L^2(I;\; H^1(\Omega))}\leq c_2h_{xt} \left|u\right|_{H^2(\Omega)}.
 	\end{align}
 \end{dl}
-\noindent Gọi $u_h[f]$ và $u_h(u_0, \varphi)$ là nghiệm xấp xỉ của \cref{bt3.1} và \cref{bt3.2} bằng phương pháp phần tử hữu hạn không gian-thời gian. Ta định nghĩa toán tử xấp xỉ $A_h$ của $A$ là $A_hf=\ell u_h[f]$ và $\hat{\omega}_h=\omega-\ell u_h(u_0, \varphi)$. Chúng ta có
-\begin{align}\label{3.11}
-\left\| \left(A-A_h\right)f\right\|_{L^2(S_1)}=\left\| u[f]-u_h[f]\right\|_{L^2(S_1)}\leq \left\| u[f]-u_h[f]\right\|_{L^2(Q)}\leq c_3h_{xt},
+\noindent What is more,
+\begin{align*}
+	\left\| \left(A^*-\hat{A}^*_h\right)\phi\right\|_{L^2(Q)}^2=\int_Q (p-p_h)^2dxdt=\left\| p-p_h\right\|_{L^2(Q)}^2
+\end{align*}
+\begin{align}\label{3.8}
+	\Rightarrow \left\| \left(A^*-A^*_h\right)q\right\|_{L^2(I)}\leq c_5h.
 \end{align}
-và 
-\begin{align}
-\left\| \hat{\omega}-\hat{\omega}_h\right\|_{L^2(S_1)}&=\left\| u(u_0,\varphi)-u_h(u_0, \varphi)\right\|_{L^2(S_1)}\notag\\
-&\leq \left\| u(u_0,\varphi)-u_h(u_0, \varphi)\right\|_{L^2(Q)}\leq c_4h_{xt}\label{3.12}.
+Let $u_h[f]$ và $u_h(u_0, \varphi)$ are the approximate solutions of \cref{bt2.1} and \cref{bt2.2} by using space-time finite element method. We define $A_h$ of $A$ is $A_hf=\ell u_h[f]$ and $\hat{\omega}_h=\omega-\ell u_h(u_0, \varphi)$. We have
+\begin{align}\label{3.9}
+	\left\| \left(A-A_h\right)f\right\|_{L^2(Q)}=\left\| \ell u[f]-\ell u_h[f]\right\|_{L^2(\Omega)}\leq \left\| u[f]-u_h[f]\right\|_{L^2(Q)}\leq c_3h,
 \end{align}
-Sử dụng các xấp xỉ $u_h[f]$ và $u_h(u_0, \varphi)$, ta xét bài toán tối ưu rời rạc
-$$J_{\gamma, h}(f)=\frac{1}{2}\left\|A_hf-\hat{\omega}_h\right\|^2_{L^2(S_1)}+\frac{\gamma}{2}\left\|f-f^*\right\|^2_{L^2(I)}\to \min.$$
-Giả sử $f^\gamma_h$ là nghiệm của bài toán này thỏa mãn điều kiện tối ưu sau
-\begin{align}\label{3.13}
-\nabla J_{\gamma, h}(f^\gamma_h)= A_h^*(A_hf^\gamma-\hat{\omega}_h)+\gamma(f^\gamma_h-f^*)=0,
-\end{align}
-trong đó $A_h^*$ là toán tử liên hợp của toán tử $A_h$. Nhưng trong thực tế, chúng ta khó có thể tìm được $A^*_h$ từ $A_h$, thay vào đó chúng ta định nghĩa một xấp xỉ $\hat{A}_h^*$ của toán tử $A^*$. Thật vậy, ta có $\hat{A}^*_hq=\int_\Omega p_hhdx$, với $p_h$ là nghiệm xấp xỉ của bài toán liên hợp \eqref{3.4}. Vì vậy phương trình biến phân \eqref{3.13} sẽ trở thành
-\begin{align}\label{3.14}
-\nabla J_{\gamma, h}(f^\gamma_h)\simeq\nabla J_{\gamma, h}(\hat{f}^\gamma_h)= \hat{A}_h^*(A_h\hat{f}^\gamma-\hat{\omega}_h)+\gamma(\hat{f}^\gamma_h-f^*)=0,
-\end{align}
-Hơn nữa, trên thực tế khi quan sát và đo đạc, kết quả quan sát có thể bị nhiễu do máy đo nên thay vì nhận được quan sát chính xác $\omega(x, t)$, chúng ta chỉ thu được quan sát có nhiễu $\omega^{\delta}(x, t)$ thỏa mãn
-$$\left\| \omega-\omega^\delta\right\|_{L^2(S_1)}\leq \delta.$$
-Vì vậy, thay vì nhận kết quả $\hat{f}^\gamma_h$ thỏa mãn phương trình \eqref{3.14}, ta chỉ nhận được $\hat{f}^{\gamma, \delta}_h$ thỏa mãn
-\begin{align}\label{3.15}
-\nabla J_{\gamma, h}\left(\hat{f}^{\gamma, \delta}_h\right)= \hat{A}_h^*(A_h\hat{f}^{\gamma, \delta}_h-\hat{\omega}_h^\delta)+\gamma(\hat{f}^{\gamma, \delta}_h-f^*)=0,
-\end{align}
-với $\hat{\omega}_h^\delta=\omega^\delta-\ell u_h(u_0, \varphi)$.
-Hơn nữa, chúng ta có
-\begin{align}
-\left\| \left(A^*-\hat{A}^*_h\right)q\right\|_{L^2(I)}^2=&\int_I\left(\int_\Omega h(p-p_h)dx\right)^2dt\leq \left\| h\right\|_{L^2(Q)}^2\left\| p-p_h\right\|_{L^2(Q)}^2\notag\\[0.2cm]
-&\Rightarrow \left\| \left(A^*-A^*_h\right)q\right\|_{L^2(I)}\leq c_5h_{xt}.\label{3.16}
+and 
+\begin{align}\label{3.10}
+	\left\| \hat{\omega}-\hat{\omega}_h\right\|_{L^2(Q)}=\left\| u(u_0,\varphi)-u_h(u_0, \varphi)\right\|_{L^2(Q)}\leq c_4h.
 \end{align}
 
-\subsection{Convergence results}
 \begin{dl}\label{dl3.3}
-	Giả sử $f^\gamma$ và $\hat{f}^\gamma_h$ lần lượt là nghiệm của bài toán biến phân \eqref{2.8} và bài toán biến phân xấp xỉ \eqref{2.13}. Khi đó với $\gamma>0$, ta có đánh giá sai số
+	Let $f^\gamma$ and $\hat{f}^\gamma_h$ are the solution of variational problems \eqref{3.1} and \eqref{3.5}, respectively. Then there hold a error estimate
 	\begin{align}\label{3.17}
-	\left\|f^\gamma-\hat{f}^\gamma_h \right\|_{L^2(I)}\leq c_6h_{xt}.
+	\left\|f^\gamma-\hat{f}^\gamma_h \right\|_{L^2(Q)}\leq c_6h.
 	\end{align}
 \end{dl}
-\begin{proof} Từ phương trình \eqref{3.8} và \eqref{3.14}, ta suy ra được
+\begin{proof} From equations \eqref{3.1} and \eqref{3.5}, we will have
 	\begin{align*}
-	\gamma \left(f^\gamma-\hat{f}^\gamma_h\right)&=\hat{A}^*_h\left(A_h\hat{f}^\gamma_h-\hat{\omega}_h\right)-A^*\left(Af^\gamma-\hat{\omega}\right)\\
-	&=\left(\hat{A}^*_h-A^*\right)\left(A_h\hat{f}^\gamma_h-\hat{\omega}_h\right)+A^*A_h\left(\hat{f}^\gamma_h-f^\gamma\right)\\
-	&\quad+A^*\left(A_h-A\right)f^\gamma+A^*\left(\hat{\omega}-\hat{\omega}_h\right)
+		\gamma \left(f^\gamma-\hat{f}^\gamma_h\right)&=\hat{A}^*_h\left(A_h\hat{f}^\gamma_h-\hat{\omega}_h\right)-A^*\left(Af^\gamma-\hat{\omega}\right)\\
+		&=\left(\hat{A}^*_h-A^*\right)\left(A_h\hat{f}^\gamma_h-\hat{\omega}_h\right)+A^*A_h\left(\hat{f}^\gamma_h-f^\gamma\right)\\
+		&\quad+A^*\left(A_h-A\right)f^\gamma+A^*\left(\hat{\omega}-\hat{\omega}_h\right)
 	\end{align*}
-	Theo \eqref{3.11}, \eqref{3.12} và \eqref{3.16}, ta có
+	According to \eqref{3.8}, \eqref{3.9} and \eqref{3.10}, we have
 	\begin{align*}
-	&\left\| \left(\hat{A}^*_h-A^*\right)\left(A_h\hat{f}^\gamma_h-\hat{\omega}_h\right)\right\|_{L^2(I)}\leq c_7h_{xt},\\
-	&\left\| A^*\left(A_h-A\right)f^\gamma\right\|_{L^2(I)}\leq c_8h_{xt},\\
-	&\left\|A^*\left(\hat{\omega}-\hat{\omega}_h\right) \right\|_{L^2(I)}\leq c_9h_{xt}.
+		&\left\| \left(\hat{A}^*_h-A^*\right)\left(A_h\hat{f}^\gamma_h-\hat{\omega}_h\right)\right\|_{L^2(I)}\leq c_7h_{xt},\\
+		&\left\| A^*\left(A_h-A\right)f^\gamma\right\|_{L^2(I)}\leq c_8h_{xt},\\
+		&\left\|A^*\left(\hat{\omega}-\hat{\omega}_h\right) \right\|_{L^2(I)}\leq c_9h_{xt}.
 	\end{align*}
-	Ta phân tích
+	We take apart this
 	$$A^*A_h\left(\hat{f}^\gamma_h-f^\gamma\right)=A^*\left(A_h-A\right)\left(\hat{f}^\gamma_h-f^\gamma\right)+A^*A\left(\hat{f}^\gamma_h-f^\gamma\right).$$
-	Hơn nữa, chúng ta có
+	Moreover, we have
 	\begin{align*}
-	&\left\langle A^*\left(A_h-A\right)\left(\hat{f}^\gamma_h-f^\gamma\right), f^\gamma-\hat{f}^\gamma_h\right\rangle_{L^2(I)}\leq c_{10}h_{xt}^2\left\| f^\gamma-\hat{f}^\gamma_h\right\|^2_{L^2(I)},\\
-	&\left\langle A^*A\left(\hat{f}^\gamma_h-f^\gamma\right), f^\gamma-\hat{f}^\gamma_h\right\rangle_{L^2(I)}=-\left\|A\left(f^\gamma-\hat{f}^\gamma_h\right) \right\|^2_{L^(S_1)}<0.
+		&\left\langle A^*\left(A_h-A\right)\left(\hat{f}^\gamma_h-f^\gamma\right), f^\gamma-\hat{f}^\gamma_h\right\rangle_{L^2(I)}\leq c_{10}h_{xt}^2\left\| f^\gamma-\hat{f}^\gamma_h\right\|^2_{L^2(I)},\\
+		&\left\langle A^*A\left(\hat{f}^\gamma_h-f^\gamma\right), f^\gamma-\hat{f}^\gamma_h\right\rangle_{L^2(I)}=-\left\|A\left(f^\gamma-\hat{f}^\gamma_h\right) \right\|^2_{L^(S_1)}<0.
 	\end{align*}
-	Từ đó suy ra điều phải chứng minh.
+	The theorem is proved.
 \end{proof}
 \begin{cy}\label{cy3.1}
-	Giả sử $f^\gamma$ và $\hat{f}^{\gamma, \delta}_h$ lần lượt là nghiệm của bài toán biến phân \eqref{3.8} và bài toán biến phân xấp xỉ \eqref{3.15}. Khi đó với $\gamma>0$, ta có đánh giá sai số
-	\begin{align}\label{3.18}
-	\left\|f^\gamma-\hat{f}^{\gamma, \delta}_h \right\|_{L^2(I)}\leq c_{11}(h_{xt}+\delta).
+	Let $f^\gamma$ and $\hat{f}^\gamma_h$ are the solution of variational problems \eqref{3.1} and \eqref{3.5}, respectively. Then there hold a error estimate
+	\begin{align}\label{3.12}
+		\left\|f^\gamma-\hat{f}^{\gamma, \delta}_h \right\|_{L^2(I)}\leq c_{11}(h+\delta).
 	\end{align}
 \end{cy}
 
 
-
-
-
-
-
-\section{Space-time finite element method}
-\subsection{Variational problem}
-\qquad Nhân cả hai vế phương trình thứ nhất của \eqref{1.14a} với hàm thử $v(x, t)\in L^2(I;\, H^1(\Omega))$ và lấy tích phân trên miền $Q$, áp dụng công thức Green \cite{b6}, ta sẽ thu được
-\begin{align*}
-	\int_{Q}\left[u_tv+\sum_{i, j=1}^{d}a_{ji}\frac{\partial u}{\partial x_i}\frac{\partial v}{\partial x_j}\right]dxdt=\int_{Q}Fvdxdt+\int_{S}\varphi vdsdt.
-\end{align*}
-Từ phương trình biến phân trên, ta sẽ có bài toán yếu của bài toán truyền nhiệt biên Neumann được định nghĩa như sau.
-\begin{dn}{\textit{(Bài toán yếu)}}\label{dn2.1}
-	Tìm hàm $u(x, t)\in W(I)$ thỏa mãn
-	\begin{subnumcases}{}
-		\alpha(u, v) = L(v),&$\forall v\in L^2(I;\, H^1(\Omega))$,\label{2.1a}\\
-		u(x, 0)=u_0(x),& $x\in \Omega$, \label{2.1b}
-	\end{subnumcases}
-	trong đó
-	\begin{align*}
-		&\alpha(u, v) = \left\langle u_t, v\right\rangle_{L^2(Q)}+\int_{Q}\sum_{i, j=1}^{d}a_{ji}\frac{\partial u}{\partial x_i}\frac{\partial v}{\partial x_j}dxdt,\\
-		&L(v)=\left\langle f, v\right\rangle_{L^2(Q)}+\left\langle \varphi, v\right\rangle_{L^2(S)}.
-	\end{align*}
-\end{dn}
-
-\subsection{Sự tồn tại nghiệm yếu}
-\qquad Trước khi chứng minh sự tồn tại duy nhất nghiệm của bài toán biến phân \eqref{2.1a} - \eqref{2.1b}, chúng ta xét phương trình sau với $\phi(x, t), \; \forall t \in I$ cho trước
-$$\begin{cases}
-	-\sum_{i, j=1}^{d}\frac{\partial }{\partial x_j}\left(a_{ji}(x, t)\frac{\partial w(x, t)}{\partial x_i}\right)=\phi(x, t), & x \in \Omega,\\
-	\frac{\partial w}{\partial \mathcal{N}}(x, t)=0, &x\in \Gamma.
-\end{cases}$$
-Phương trình biến phân tương ứng, tìm $w\in L^2(I;\, H^1(\Omega))$ sao cho
-\begin{align}\label{2.2}
-	\int_{Q}\sum_{i, j=1}^{d}a_{ji}\frac{\partial w}{\partial x_i}\frac{\partial v}{\partial x_j}dxdt=\int_{Q}\phi vdxdt,
-\end{align}
-với mọi $v\in L^2\left(I;\, H^1(\Omega)\right)$, với $\phi(x, t)\in L^2(I;\, H^{-1}(\Omega))$ cho trước. 
-\\
-Chúng ta sẽ sử dụng chuẩn tương đương, chúng ta có 
-\begin{align*}
-	\left\|w\right\|_{L^2(I;\, H^1(\Omega))}^2&=\int_{Q}\sum_{i, j=1}^{d}a_{ij}\frac{\partial w}{\partial x_i}\frac{\partial w}{\partial x_j}dxdt\\
-	&=\int_{Q}\phi wdxdt\leq \left\|\phi\right\|_{L^2(I;\, H^{-1}(\Omega))}\left\|w\right\|_{L^2(I;\, H^1(\Omega))}. 
-\end{align*}
-$$\Rightarrow\left\|w\right\|_{L^2(I;\, H^1(\Omega))}\leq \left\|\phi\right\|_{L^2(I;\, H^{-1}(\Omega))}.$$
-Nghiệm của phương trình biến phân \eqref{2.2} là $w\in L^2(I;\, H^1(\Omega))$ duy nhất với mỗi hàm $\phi\in L^2(I;\, H^{-1}(\Omega))$. Ta định nghĩa toán tử Newton
-$$\mathnormal{N}\phi=w,\;\mathnormal{N}: L^2(I;\, H^{-1}(\Omega))\to L^2(I;\, H^1(\Omega)).$$
-Theo định nghĩa chuẩn đối ngẫu, ta có
-\begin{align*}
-	\left\|\phi\right\|_{L^2(I;\, H^{-1}(\Omega))}&=\sup_{0\neq v\in L^2(I;\, H^1(\Omega))}\frac{\left\langle\phi, v\right\rangle_{Q}}{\left\|v\right\|_{L^2(I;\, H^1(\Omega))}}\\
-	&=\sup_{0\neq v\in L^2(I;\, H^1(\Omega))}\frac{1}{\left\|v\right\|_{L^2(I;\, H^1(\Omega))}}\int_{Q}\sum_{i, j=1}^{d}a_{ji}\frac{\partial w}{\partial x_i}\frac{\partial v}{\partial x_j}dxdt\\
-	&\leq \left\|w\right\|_{L^2(I;\, H^1(\Omega))}.
-\end{align*}
-Kết hợp hai bất đẳng thức trên, ta thu được
-\begin{align}\label{2.3}
-	\left\|w\right\|_{L^2(I;\, H^1(\Omega))}=\left\|\phi\right\|_{L^2(I;\, H^{-1}(\Omega))}=\left\|\mathnormal{N}\phi\right\|_{L^2(I;\, H^1(\Omega))}.
-\end{align}
-Đẳng thức này dẫn đến
-\begin{align*}
-	\left\|\phi\right\|_{L^2(I;\, H^{-1}(\Omega))}^2&=\left\|w\right\|_{L^2(I;\, H^1(\Omega))}^2=\int_{Q}\sum_{i, j=1}^{d}a_{ij}\frac{\partial w}{\partial x_i}\frac{\partial w}{\partial x_j}dxdt\\
-	&=\int_{Q}\phi w dxdt=\left\langle\phi, w\right\rangle_{L^2(Q)}.
-\end{align*}
-Do đó, chúng ta thu được
-\begin{align}\label{2.4}
-	\left\|\phi\right\|_{L^2(I;\, H^{-1}(\Omega))}^2=\left\langle\phi, w\right\rangle_{L^2(Q)}=\left\langle\phi, \mathnormal{N}\phi\right\rangle_{L^2(Q)},\, \forall \phi \in L^2(I;\, H^{-1}(\Omega))
-\end{align}
-Sử dụng bất đẳng thức Cauchy-Schwarz và Holder, chúng ta có
-\begin{align}
-	\alpha(u, v) &= \int_{Q}\left[u_tv+\sum_{i, j=1}^{d}a_{ij}\frac{\partial u}{\partial x_i}\frac{\partial v}{\partial x_i}\right]dxdt \label{2.5}\\
-	&\leq \left[\left\|u_t\right\|_{L^2(I;\, H^{-1}(\Omega))}+\left\|u\right\|_{L^2(I;\, H^1(\Omega))}\right]\left\|v\right\|_{L^2(I;\, H^1(\Omega))}\notag\\
-	&\leq \sqrt{2}\sqrt{\left\|u_t\right\|_{L^2(I;\, H^{-1}(\Omega))}^2+\left\|u\right\|_{L^2(I;\, H^1(\Omega))}^2}\left\|v\right\|_{L^2(I;\, H^1(\Omega))}\notag\\
-	&=\sqrt{2}\left\|u\right\|_{W(I)}\left\|v\right\|_{L^2(I;\, H^1(\Omega))}, \label{2.6}
-\end{align}
-với mọi $u\in W(I)$ và $v\in L^2(I;\, H^1(\Omega))$, trong đó chúng ta đã sử dụng chuẩn đã định nghĩa ở \eqref{1.17}
-\begin{align}
-	\left\|u\right\|_{W(I)}^2&=\left\|u_t\right\|_{L^2(I;\, H^{-1}(\Omega))}^2+\left\|u\right\|_{L^2(I;\, H^1(\Omega))}^2 \notag\\
-	&=\left\|\mathnormal{N}u_t\right\|_{L^2(I;\, H^1(\Omega))}^2+\left\|u\right\|_{L^2(I;\, H^1(\Omega))}^2. \label{2.7}
-\end{align}
-Để chứng minh sự tồn tại nghiệm duy nhất của bài toán biên phân Galerkin-Petrov \eqref{2.1a} - \eqref{2.1b}, chúng ta xét điều kiện ổn định bằng định lý sau.
-\begin{dl}\label{dl2.1}
-	Giả sử $u\in W(I),$ thỏa mãn $u(x, 0)=0, \, \forall x\in \Omega$, ta có đánh giá sự ổn định sau 
-	\begin{align}\label{2.8}
-		\frac{1}{2\sqrt{2}}\left\|u\right\|_{W(I)}\leq \sup_{0\neq v\in L^2(I;\, H^1(\Omega))}\frac{\alpha(u, v)}{\left\|v\right\|_{L^2(I;\, H^1(\Omega))}}.
-	\end{align}
-\end{dl}
-\begin{proof}
-	Với mỗi giá trị $u\in W(I),$ thỏa mãn $u(x, 0)=0, \, \forall x\in \Omega$, chúng ta chọn $v$ sao cho $v=u+\mathnormal{N}u_t\in L^2(I;\, H^1(\Omega))$, lúc đó ta có
-	$$\alpha(u, u+\mathnormal{N}u_t)=\alpha(u, u)+\alpha(u, \mathnormal{N}u_t)$$
-	Đối với thành phần thứ nhất, vì $u(x, 0)=0, \forall x \in \Omega$ nên ta có
-	\begin{align*}
-	\alpha(u, u)&=\int_{Q}\left[u_tu+\sum_{i, j=1}^{d}a_{ij}\frac{\partial u}{\partial x_i}\frac{\partial u}{\partial x_j}\right]dxdt\\
-	&=\frac{1}{2}\int_I\frac{d}{dt}\left\|u(t)\right\|^2_{L^2(\Omega)}dt+\left\|u\right\|^2_{L^2(I;\, H^1(\Omega))}\\
-	&=\frac{1}{2}\left\|u(T)\right\|^2_{L^2(\Omega)}+\left\|u\right\|^2_{L^2(I;\, H^1(\Omega))}\geq \left\|u\right\|^2_{L^2(I;\, H^1(\Omega))}.
-	\end{align*}
-	Đối với thành phần thứ hai, sử dụng \eqref{2.3}, \eqref{2.4} và bất đẳng thức Cauchy - Schwarz, ta thu được
-	\begin{align*}
-	\alpha(u, \mathnormal{N}u_t)&=\int_{Q}\left[u_t\mathnormal{N}u_t+\sum_{i, j=1}^{d}a_{ij}\frac{\partial u}{\partial x_i}\frac{\partial \mathnormal{N}u_t}{\partial x_j}\right]dxdt\\
-	&\geq\left\langle u_t, \mathnormal{N}u_t\right\rangle_{L^2(Q)}-\left\|u \right\|_{L^2(I;\, H^1(\Omega))}\left\| \mathnormal{N}u_t\right\|_{L^2(I;\, H^1(\Omega))}\\
-	&\geq\left\|u_t\right\|^2_{L^2(I;\, H^{-1}(\Omega))}-\frac{1}{2}\left\|u \right\|_{L^2(I;\, H^1(\Omega))}^2-\frac{1}{2}\left\| \mathnormal{N}u_t\right\|_{L^2(I;\, H^1(\Omega))}^2\\
-	&=\frac{1}{2}\left\|u_t\right\|^2_{L^2(I;\, H^{-1}(\Omega))}-\frac{1}{2}\left\|u \right\|_{L^2(I;\, H^1(\Omega))}^2.
-	\end{align*}
-	Vì vậy, chúng ta có
-	\begin{align*}
-	\alpha(u, u+\mathnormal{N}u_t)&\geq \frac{1}{2}\left\| u_t\right\|_{L^2(I;\, H^{-1}(\Omega))}^2+\frac{1}{2}\left\|u \right\|_{L^2(I;\, H^1(\Omega))}^2\\
-	&=\frac{1}{2}\left\| u\right\|_{W(I)}^2.
-	\end{align*}
-	Hơn nữa, vì
-	\begin{align*}
-	\left\|u+\mathnormal{N}u_t \right\|_{L^2(I;\, H^1(\Omega))}^2&\leq 2 \left[\left\|u \right\|_{L^2(I;\, H^1(\Omega))}^2+\left\| \mathnormal{N}u_t\right\|_{L^2(I;\, H^1(\Omega))}^2\right]\\
-	&=2 \left[\left\|u \right\|_{L^2(I;\, H^1(\Omega))}^2+\left\|u_t\right\|_{L^2(I;\, H^{-1}(\Omega))}^2\right]\\
-	&=2\left\| u\right\|_{W(I)}^2,
-	\end{align*}
-	nên chúng ta thu được
-	$$\alpha(u,u+\mathnormal{N}u_t)\geq \frac{1}{2\sqrt{2}}\left\| u\right\|_{W(I)}\left\|u+\mathnormal{N}u_t \right\|_{L^2(I;\, H^1(\Omega))},$$
-	từ đây suy ra điều kiện ổn định \eqref{2.8} được chứng minh.
-\end{proof}
-
-\noindent Bởi vì bài toán ban đầu có điều kiện \eqref{1.14c}, do đó chúng ta tách $u(x, t)=\bar{u}(x, t)+\bar{u}_0(x, t)$ với $(x, t)\in Q$ và $\bar{u}_0\in W(I)$ là thác triển của $u_0\in H^1(\Omega)$. Vì vậy chúng ta phải tìm hàm $\bar{u}\in W(I)$ sao cho $\bar{u}(x, 0)=0,\, x\in \Omega$ và
-\begin{align}\label{2.9}
-	\alpha(\bar{u}, v)=\beta(v)-\alpha(\bar{u}_0, v),\; \forall v \in L^2(I;\, H^1(\Omega)),
-\end{align}
-Bài toán thỏa mãn điều kiện ổn định \eqref{2.8}, vì vậy bài toán biến phân Galerkin-Petrov có nghiệm duy nhất theo \cite[Định lý 3.7, trang 50]{b6}.
-\\
-Ta đặt
-$$X:=\left\{v\in W(I): v(x, 0), \, x\in \Omega \right\},\quad Y:= L^2(I;\, H^1(\Omega)).$$
-\begin{hq}
-	Giả sử $\bar{u}_0\in W(I)$ là thác triển của $u_0\in H^1(\Omega)$, $f\in L^2(I;\, H^{-1}(\Omega))$. Dạng song tuyến tính $\alpha(u, v)$ dưới dạng \eqref{2.5} thỏa mãn \eqref{2.6} và điều kiện ổn định \eqref{2.8} thì luôn tồn tại một nghiệm duy nhất $\bar{u}\in X$ của bài toán biến phân \eqref{2.9} thỏa mãn \cite[trang 150]{b1}
-	\begin{align}\label{2.10}
-	\left\|\bar{u} \right\|_{W(I)}\leq c\left[\left\| f\right\|_{L^2(I;\, H^{-1}(\Omega))}+\left\|\bar{u}_0 \right\|_{W(I)}+\left\| \varphi\right\|_{L^2(S)}\right].
-	\end{align}
-\end{hq}
-
-\subsection{Phương pháp phần tử hữu hạn}
-\qquad Giả sử $X_h\subset X$ và $Y_h\subset Y$ là các không gian hữu hạn chiều. Dễ dàng nhận thấy $X\subset Y$ và chúng ta giả sử $X_h\subset Y_h$. Tìm $u_h\in X_h$ của phương trình biến phân \eqref{2.9} sao cho
-\begin{align}\label{2.11}
-	\alpha(\bar{u}_h, v_h)=\beta(v_h)-\alpha(\bar{u}_0, v_h),\; \forall v_h \in Y_h.
-\end{align}
-Trước khi chúng ta chứng minh tính duy nhất nghiệm của bài toán biến phân \eqref{2.11} cũng như sai số, ta xét rời rạc Galerkin của bài toán biến phân \eqref{2.2} tìm $w_h\in Y_h$ thỏa mãn
-\begin{align}\label{2.12}
-	\int_{Q}\sum_{i, j=1}^{d}a_{ji}\frac{\partial w_h}{\partial x_i}\frac{\partial v_h}{\partial x_j}dxdt=\int_{Q}\phi v_hdxdt,\; \forall v_h\in Y_h.
-\end{align}
-Tương tự \eqref{2.2}, phương trình biến phân \eqref{2.12} cũng có nghiệm duy nhất, chúng ta định nghĩa xấp xỉ toán tử Newton như sau
-$$\mathnormal{N}_h\phi=w_h,\;\mathnormal{N}_h: L^2(I;\, H^{-1}(\Omega))\to Y_h\subset L^2(I;\, H^1(\Omega)).$$
-Sử dụng \eqref{2.3} và \eqref{2.12}, chúng ta có
-\begin{align*}
-	\left\|w_h\right\|_{L^2(I;\, H^1(\Omega))}^2&=\int_{Q}\sum_{i, j=1}^{d}a_{ji}\frac{\partial w_h}{\partial x_i}\frac{\partial w_h}{\partial x_j}dxdt=\int_Q\phi w_hdxdt\\
-	&=\int_Q\sum_{i, j=1}^{d}a_{ji}\frac{\partial w}{\partial x_i}\frac{\partial w_h}{\partial x_j}dxdt\leq \left\|w\right\|_{L^2(I;\, H^1(\Omega))}\left\|w_h\right\|_{L^2(I;\, H^1(\Omega))}, 
-\end{align*}
-từ đó ta suy ra
-\begin{align}\label{2.13}
-	\left\|\mathnormal{N}_h\phi\right\|_{L^2(I;\, H^1(\Omega))}\leq \left\|\mathnormal{N}\phi\right\|_{L^2(I;\, H^1(\Omega))},\; \forall \phi\in L^2(I;\, H^1(\Omega)).
-\end{align}
-Thay vì sử dụng chuẩn ở \eqref{2.7}, chúng ta sẽ dụng chuẩn năng lượng phụ thuộc lưới
-\begin{align}\label{2.14}
-	\left\|u\right\|_{X_h}^2= \left\|\mathnormal{N}_hu_t\right\|_{L^2(I;\, H^1(\Omega))}^2+\left\|u\right\|_{L^2(I;\, H^1(\Omega))}^2.
-\end{align}
-Từ \eqref{2.7}, \eqref{2.13}, \eqref{2.14}, ta suy ra được
-$$\left\|u\right\|_{X_h}\leq \left\|u\right\|_{X}, \; \forall u\in X.$$
-Bây giờ chúng ta sẽ chứng minh điều kiện ổn định rời rạc
-\begin{dl}\label{dl2.2}
-	Giả sử $X_h\subset X, Y_h\subset Y$ và $X_h\subset Y_h$, chúng ta có đánh giá ổn định rời rạc như sau
-	\begin{align}\label{2.15}
-	\frac{1}{2\sqrt{2}}\left\|u_h\right\|_{X_h}\leq \sup_{0\neq v\in Y_h}\frac{\alpha(u_h, v_h)}{\left\|v_h\right\|_{L^2(I;\, H^1(\Omega))}}.
-	\end{align}
-\end{dl}
-\begin{proof}
-	Chứng minh tương tự \cref{dl2.1} đối với trường hợp liên tục. Vì $u_h\in X_h\subset X$, chúng ta định nghĩa $\mathnormal{N}_hu_{t, h}=w_h\in Y_h$ là nghiệm duy nhất của phương trình biến phân Galerkin \eqref{2.12}
-	$$\int_{Q}\sum_{i, j=1}^{d}a_{ji}\frac{\partial w_h}{\partial x_i}\frac{\partial v_h}{\partial x_j}dxdt=\int_{Q}u_{t, h}v_hdxdt,\, v_h\in Y_h,$$
-	$$\left\|u_h\right\|_{X_h}^2= \left\|w_h\right\|_{L^2(I;\, H^1(\Omega))}^2+\left\|u_h\right\|_{L^2(I;\, H^1(\Omega))}^2.$$
-	Bởi vì $X_h\subset Y_h$, chúng ta có $u_h+w_h\in Y_h$ thỏa mãn
-	$$\left\|u_h+w_h\right\|_{L^2(I;\, H^1(\Omega))}^2\leq2\left[\left\|u_h\right\|_{L^2(I;\, H^1(\Omega))}^2+\left\|w_h\right\|_{L^2(I;\, H^1(\Omega))}^2\right]=2\left\|u_h\right\|_{X_h}^2.$$
-	Hơn nữa, do $u_h(x, 0)=0$, ta có
-	\begin{align*}
-	\alpha(u_h, u_h)&=\int_{Q}\partial_tu_hu_hdxdt+\int_{Q}\sum_{i, j=1}^{d}a_{ij}\frac{\partial u_h}{\partial x_i}\frac{\partial u_h}{\partial x_j}dxdt\\
-	&=\frac{1}{2}\left\|u_h(T)\right\|_{L^2(\Omega)}^2+\left\|u_h\right\|_{L^2(I;\, H^1(\Omega))}^2\geq \left\|u_h\right\|_{L^2(I;\, H^1(\Omega))}^2.
-	\end{align*}
-	Ta lại có
-	\begin{align*}
-	\alpha(u_h, w_h)&=\int_{Q}u_{t, h}w_hdxdt+\int_{Q}\sum_{i, j=1}^{d}a_{ji}\frac{\partial u_h}{\partial x_i}\frac{\partial w_h}{\partial x_j}dxdt\\
-	&=\int_{Q}\sum_{i, j=1}^{d}a_{ji}\frac{\partial w_h}{\partial x_i}\frac{\partial w_h}{\partial x_j}dxdt+\int_{Q}\sum_{i, j=1}^{d}a_{ji}\frac{\partial u_h}{\partial x_i}\frac{\partial w_h}{\partial x_j}dxdt\\
-	&\geq\left\|w_h\right\|_{L^2(I;\, H^1(\Omega))}^2-\left\|u_h\right\|_{L^2(I;\, H^1(\Omega))}\left\|w_h\right\|_{L^2(I;\, H^1(\Omega))}\\
-	&\geq \left\|w_h\right\|_{L^2(I;\, H^1(\Omega))}^2-\frac{1}{2}\left\|u_h\right\|_{L^2(I;\, H^1(\Omega))}^2-\frac{1}{2}\left\|w_h\right\|_{L^2(I;\, H^1(\Omega))}^2\\
-	&=\frac{1}{2}\left\|w_h\right\|_{L^2(I;\, H^1(\Omega))}^2-\frac{1}{2}\left\|u_h\right\|_{L^2(I;\, H^1(\Omega))}^2.
-	\end{align*}
-	Vì vậy,
-	\begin{align*}
-	\alpha(u_h, u_h+w_h)&\geq \frac{1}{2}\left[\left\|w_h\right\|_{L^2(I;\, H^1(\Omega))}^2+\left\|u_h\right\|_{L^2(I;\, H^1(\Omega))}^2\right]=\frac{1}{2}\left\|u_h\right\|^2_{X_h}\\
-	&\geq \frac{1}{2\sqrt{2}}\left\|u_h\right\|_{X_h}\left\|u_h+w_h\right\|_{L^2(I;\,H^1(\Omega))}.
-	\end{align*}
-	Từ đó ta có điều phải chứng minh.
-\end{proof}
-\noindent Điều kiện ổn định rời rạc \eqref{2.15} suy ra sự tồn tại nghiệm duy nhất của bài toán biến phân \eqref{2.11}. Kết hợp bài toán biến phân Galerkin \eqref{2.11} với \eqref{2.9} và $Y_h\subset Y$, chúng ta có tính trực giao Galerkin như sau
-\begin{align}\label{2.16}
-	\alpha(u-u_h, v_h)=0,\; \forall v_h\in Y_h.
-\end{align}
-\begin{dl}\label{dl2.3}
-	Giả sử $\bar{u}\in X$ và $\bar{u}_h\in X_h$ lần lượt là nghiệm duy nhất của phương trình biến phân \eqref{2.12} và \eqref{2.10} tương ứng, ta có đánh giá sai số như sau 
-	$$\left\|u-u_h\right\|_{X_h}\leq 5\inf_{z_h\in X_h}\left\|u-z_h\right\|_{X_h}$$
-\end{dl}
-\begin{proof}
-	Từ điều kiện ổn định \eqref{2.15}, sử dụng tính trực giao Galerkin \eqref{2.16} và bất đẳng thức \eqref{2.6}, với mọi $z_h\in X_h$ ta có
-	\begin{align*}
-	\frac{1}{2\sqrt{2}}\left\|u_h-z_h\right\|_{X_h}&\leq \sup_{0\neq v_h\in Y_h}\frac{\alpha(u_h-z_h, v_h)}{\left\|v_h\right\|_{L^2(I;\,H^1(\Omega))}}\\
-	&\leq \sup_{0\neq v_h\in Y_h}\frac{\alpha(u_h-u, v_h)+\alpha(u-z_h, v_h)}{\left\|v_h\right\|_{L^2(I;\,H^1(\Omega))}}\\
-	&=\sup_{0\neq v_h\in Y_h}\frac{\alpha(u-z_h, v_h)}{\left\|v_h\right\|_{L^2(I;\,H^1(\Omega))}}\leq \sqrt{2}\left\|u-z_h\right\|_X.
-	\end{align*}
-	Mặt khác
-	$$\left\|u-u_h\right\|_{X_h}\leq \left\|u-z_h\right\|_{X_h}+\left\|z_h-u_h\right\|_{X_h}.$$
-	Từ đó suy ra điều phải chứng minh.
-\end{proof}
-\noindent Chúng ta có không gian phần tử hữu hạn không thời gian $X_h\subset Y_h$ và miền của nó $Q=\Omega\times I\subset \mathbb{R}^{d+1}$. Xét miền rời rạc $Q_h$ từ các phần tử địa phương $q_l$, với $q_l$ là các tam giác $(d=1)$ và các tứ diện $(d=2)$,
-$$Q_h=\cup_{l=1}^{N}\bar{q}_l.$$
-Ký hiệu $\left\lbrace (x_k, t_k)\right\rbrace_{k=1}^M $ là tọa độ các đỉnh với $(x_k, t_k)\in \mathbb{R}^{d+1}$. Phần tử tham chiếu $q\in \mathbb{R}^{d+1}$ được ánh xạ từ phần từ địa phương $q_l$, với $q$ là duy nhất
-$$\begin{pmatrix}x\\t\end{pmatrix}=\begin{pmatrix}x_k\\t_k\end{pmatrix}+J_l\begin{pmatrix}\xi\\\tau\end{pmatrix}, \; \begin{pmatrix}\xi\\\tau\end{pmatrix}\in q.$$
-Diện tích (Thể tích) $\Delta_l=|q_l|$ của phần tử $q_l$ được tính như sau
-$$\Delta_l=\int_{q_l}dxdt=\det J_l\int_q d\xi d\tau=|q|\det J_l,$$
-và độ dài lưới địa phương
-$$h_l=\Delta_l^{\frac{1}{d+1}},\; h_{xt}:=\max_{l=1, ..., N}h_l.$$
-Và chúng ta có
-$$|q|=\begin{cases}
-	\frac{1}{2},& \text{với } d=1,\\[0.3cm]
-	\frac{1}{6},& \text{với } d=2.
-\end{cases}$$
-Chúng ta định nghĩa một không gian phần tử hữu hạn không thời gian $S^1_h(Q_h)=\text{span}\{\varphi_k\}_{k=1}^M$ với $\varphi$ là các hàm liên tục và tuyến tính từng khúc. Chúng ta định nghĩa các không gian hữu hạn $X_h, Y_h$ thỏa mãn \cref{dl2.2} như sau
-$$X_h=S^1_h(Q_h)\cap X,\; Y_h=S^1_h(Q_h)\cap Y.$$
-Theo \cref{dl2.3}, chúng ta có đánh giá sai số như sau
-\begin{dl}\label{dl2.4}
-	Giả sử $\bar{u}\in X$ và $\bar{u}_h\in X_h=S^1_h(Q_h)\cap X$ lần lượt là nghiệm duy nhất của phương trình biến phân \eqref{2.9} và \eqref{2.11}. Giả sử $\bar{u}\in H^2(Q)$. Ta có đánh giá sai số sau
-	\begin{equation}\label{2.17}
-	\left\|\bar{u}-\bar{u}_h \right\|_{L_2(I, H^1(\Omega))}\leq ch_{xt}\left|\bar{u}\right|_{H^2(Q)},
-	\end{equation}
-	với $h_{xt}$ là bước lưới.
-\end{dl}
-\begin{proof}
-	Từ định nghĩa chuẩn năng lượng và \cref{dl2.3}, chúng ta sẽ có
-	$$\left\|\bar{u}-\bar{u}_h\right\|_{L_2(I;\, H^1(\Omega))}\leq \left\|\bar{u}-\bar{u}_h\right\|_{X_h}\leq 5\inf_{z_h\in X_h}\left\|\bar{u}-z_h\right\|_{X}.$$
-	Giả sử $z_h=P_h\bar{u}\in X_h$ với phép chiếu $P_h: X_h\to X_h$, ta có
-	\begin{align*}
-	\int_{Q}\left[P_h\bar{u}_t v_{t, h}+\sum_{i, j=1}^d a_{ji}\frac{\partial P_h\bar{u}}{\partial x_i}\frac{\partial v_h}{\partial x_j}\right]dxdt=\int_{Q}\left[\bar{u}_tv_{t, h}+\sum_{i, j=1}^d a_{ji}\frac{\partial \bar{u}}{\partial x_i}\frac{\partial v_h}{\partial x_j}\right]dxdt,\\\forall v_h\in X_h.
-	\end{align*}
-	Ta sử dụng chuẩn năng lượng sau, chú ý rằng $v(x, 0)=0, \, x\in \Omega$ và $\frac{\partial v}{\partial \mathcal{N}}(x, t)=0,\,x\in \Gamma$
-	$$\left\|v\right\|_{H^1(Q)}^2:=\int_{Q}\left[\left|v_t\right|^2+\sum_{i, j=1}^d a_{ji}\frac{\partial v}{\partial x_i}\frac{\partial v}{\partial x_j}\right]dxdt.$$
-	Ta sử dụng \textit{Bổ đề Cea}, ta có
-	$$\left\|\bar{u}-P_h\bar{u}_h\right\|_{L_2(I;\,H^1(\Omega))}\leq\left\|\bar{u}-P_h\bar{u}_h\right\|_{H^1(Q)}\leq \inf_{v_h\in X_h}\left\|\bar{u}-v_h\right\|_{H^1(Q_h)}\leq ch_{xt}\left|\bar{u}\right|_{H^2(Q)}.$$
-	Hơn nữa
-	\begin{align*}
-	\left\|\bar{u}_t-P_h\bar{u}_{t, h}\right\|_{L_2(I;\, H^{-1}(\Omega))}&=\sup_{0\neq v\in L_2(I;\, H^1(\Omega))}\frac{\left\langle\bar{u}_t-P_h\bar{u}_{t, h}, v \right\rangle_Q}{\left\|v\right\|_{L_2(I;\, H_0^1(\Omega))}}\\
-	&\leq \sup_{0\neq v\in L_2(I;\, H^1(\Omega))}\frac{\left\|\bar{u}_t-P_h\bar{u}_{t, h}\right\|_{L_2(Q)}\left\|v\right\|_{L_2(Q)}}{\left\|v\right\|_{L_2(I;\, H^1(\Omega))}}\\
-	&\leq \left\|\bar{u}_t-P_h\bar{u}_{t, h}\right\|_{L_2(Q)}\leq \left\|\bar{u}-P_h\bar{u}_h\right\|_{H^1(Q)}\leq ch_{xt}\left|\bar{u}\right|_{H^2(Q)}.
-	\end{align*}
-	Chúng ta có
-	\begin{align*}
-	\left\|\bar{u}-\bar{u}_h\right\|_{L_2(I;\, H^1(\Omega))}&\leq c\left\|\bar{u}-z_h\right\|_{X}=c\left\|\bar{u}-P_h\bar{u}_h\right\|_{L_2(I;\,H^1(\Omega))}\\&+c\left\|\bar{u}_t-P_h\bar{u}_{t, h}\right\|_{L_2(I;\, H^{-1}(\Omega))}\leq ch_{xt}\left|\bar{u}\right|_{H^2(Q)}.
-	\end{align*}
-	Vậy định lý được chứng minh.
-\end{proof}
-\begin{hq}\label{hq2.3}
-	Giả sử $\bar{u}\in X$ và $\bar{u}_h\in X_h=S^1_h(Q_h)\cap X$ lần lượt là nghiệm duy nhất của phương trình biến phân \eqref{2.10} và \eqref{2.12}. Giả sử rằng $\bar{u}\in H^s(Q)$ với $s\in[1, 2]$. Khi đó, ta có đánh giá sai số sau đây
-	\begin{align}\label{2.18}
-	\left\|\bar{u}-\bar{u}_h \right\|_{L_2(I, H^1_0(\Omega))}\leq ch^{s-1}_{xt}\left|\bar{u}\right|_{H^s(Q)}.
-	\end{align}
-\end{hq}
-
-
 \section{Numerical results}
-\qquad Chọn miền $\Omega=[0, 1]^2$, $T=1$ và
-$a(x, t)=1+x^2+y^2+t^2.$ Giả sử chúng ta muốn mô phỏng và đánh giá sai số bài toán xác định nguồn nhiệt trong quá trình truyền nhiệt với nhiệt độ cho bởi
+Let $\Omega=[0, 1]^2$, $T=1$ and
+$a(x, t)=1+x^2+y^2+t^2$ and we want to re-simulate the process of conduction heat transfer and identifying the heat source
 $$u(x, t)=\text{e}^t\sin(\pi x) \sin(\pi y).$$
-
-Quan sát trên biên
-$$\left.\omega(x, t)\right|_{x=0}=\left(2-t^2\right)\sin(\pi t),\qquad \left.\omega(x, t)\right|_{x=1}=\left(1-t^2\right)\sin(\pi t).$$
-Vế phải có dạng sau
+The form of the heat source
 $$F(x, t)=f(x, t)h(x, t)+g(x, t),$$
-với
+where
 $$h(x, t)=2+x^2+y^2+t^2.$$
-Chia đều trục không gian và thời gian với số bước là $64$, lúc đó ta có bước thời gian là $\Delta t=\Delta x=1/64$. Ta chọn $f^*=0$, $\gamma=10^{-5}$.
+Set $f^*=0$, $\gamma=10^{-6}$.
 \\
-Chúng ta mô phỏng các ví dụ tìm lại các hàm $f(x, t)$ sau:
+$f(.)$:
 $$f(x, t)=\phi(t)\sin(\pi x) \sin(\pi y)$$
-với
+where
 \begin{itemize}
-	\item Ví dụ 1: $\phi(t)=\sin(\pi t)$
-	\item Ví dụ 2: 
+	\item Example 1: $\phi(t)=\sin(\pi t)$
+	\item Example 2: 
 	$\phi(t)=
 	\begin{cases}
 	2t, & t\in [0, 0.5],\\
 	2(1-t), & t \in [0.5, 1],
 	\end{cases}$
-	\item Ví dụ 3:
+	\item Example 3:
 	$\phi(t)=
 	\begin{cases}
 	1, & t\in [0.25, 0.75],\\
@@ -588,11 +327,8 @@ với
 	\end{cases}$
 \end{itemize}
 
-
-\newpage
 \section{Conclusion}
 
-\newpage
 \bibliography{references}{}
 \bibliographystyle{plain}
 

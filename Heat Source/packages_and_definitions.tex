@@ -1,5 +1,5 @@
 % packages
-\usepackage[utf8]{vietnam}
+%\usepackage[utf8]{vietnam}
 \usepackage{amsmath, amssymb, amsthm}
 \usepackage{color, graphicx, cases}
 \usepackage{hyperref}
@@ -15,38 +15,30 @@
 \numberwithin{equation}{section}
 \everymath{\displaystyle}
 
-%\usepackage{fancyhdr}
-%\pagestyle{fancy}
-%\lhead{HỒ ĐỨC NHÂN}
-%\chead{}
-%\rhead{ĐỒ ÁN TỐT NGHIỆP}
-%\lfoot{}
-%\cfoot{\thepage}
-%\rfoot{}
 
 \usepackage[a4paper,left=35mm,top=31mm,right=20mm,bottom=30mm]{geometry}
 \renewcommand{\baselinestretch}{1.5}
 
 % new definitions
-\newtheorem{dl}{Định lý}[section]
-\newtheorem{md}{Mệnh đề}[section]
-\newtheorem{hq}{Hệ quả}[section]
+\newtheorem{dl}{Theorem}[section]
+\newtheorem{md}{Proposition}[section]
+\newtheorem{hq}{Corollary}[section]
+\newtheorem{cy}{Remark}[section]
 
 \theoremstyle{definition}
-\newtheorem{dn}{Định nghĩa}[section]
-\newtheorem{vd}{Ví dụ}[section]
-\newtheorem{cy}{Chú ý}[section]
-\newtheorem{bt}{Bài toán}[section]
-\newtheorem{nx}{Nhận xét}[section]
+\newtheorem{dn}{Definition}[section]
+\newtheorem{vd}{Example}[section]
+\newtheorem{bt}{Problem}[section]
+\newtheorem{nx}{Comment}[section]
 
 % reference
 \usepackage{cleveref}
-\crefname{dl}{\textbf{Định lý}}{}
-\crefname{md}{\textbf{Mệnh đề}}{}
-\crefname{hq}{\textbf{Hệ quả}}{}
+\crefname{dl}{\textbf{Theorem}}{}
+\crefname{md}{\textbf{Proposition}}{}
+\crefname{hq}{\textbf{Corollary}}{}
 
-\crefname{dn}{\textbf{Định nghĩa}}{}
-\crefname{vd}{\textbf{Ví dụ}}{}
-\crefname{cy}{\textbf{Chú ý}}{}
-\crefname{bt}{\textbf{Bài toán}}{}
-\crefname{nx}{\textbf{Nhận xét}}{}
+\crefname{dn}{\textbf{Definition}}{}
+\crefname{vd}{\textbf{Example}}{}
+\crefname{cy}{\textbf{Remark}}{}
+\crefname{bt}{\textbf{Problems}}{}
+\crefname{nx}{\textbf{Comment}}{}
