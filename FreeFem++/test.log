@@ -1,0 +1,698 @@
+-- FreeFem++ v  3.610001 (date jeu. 12 juil. 2018 15:05:23)
+ Load: lg_fem lg_mesh lg_mesh3 eigenvalue
+    1 : load "ff-IpOpt"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\ff-IpOpt = 0)
+    2 : load "medit"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\medit = 0)
+    3 :
+    4 : real T = 1;
+    5 : int nn = 50;
+    6 : int Nx = nn, Ny = nn;
+    7 : int[int] labs = [1, 2, 0, 4];
+    8 : mesh Th = square(Nx, Ny, [x, T * y], label = labs);
+    9 : fespace Vh(Th, P1);
+   10 :
+   11 :
+   12 : // ***** DATA *****//
+   13 : Vh ue = exp(y) * sin(pi * x);
+   14 : Vh uD = 0;
+   15 : Vh u0 = sin(pi * x);
+   16 :
+   17 : Vh fe = sin(pi * x) * sin(pi * y);
+   18 :
+   19 : Vh q = 2 + x * y;
+   20 : Vh g = (1 + pi^2) * ue(x, y) - fe(x, y) * q(x,y);
+   21 : real gamma = 1e-6;
+   22 :
+   23 : // The final overdetermination
+   24 : real[int] w(Nx + 1);
+   25 : for (int i = 0; i <= Nx; i++){
+   26 :     w[i] = ue(i * 1.0 / Nx, T);
+   27 : }
+   28 :
+   29 :
+   30 :
+   31 :
+   32 :
+   33 : // ***** Functions to modify matrix ***** //
+   34 :
+   35 : // ** Change the time direction
+   36 : func real[int] FlipTimeDirection(real[int] mat){
+   37 :     Vh res;
+   38 :     for (int i = 0; i <= Ny/2; i++){
+   39 :         for (int j = 0; j <= Nx; j++){
+   40 :             res[][i * (Nx + 1) + j] = mat[(Ny - i) * (Nx + 1) + j];
+   41 :             res[][(Ny - i) * (Nx + 1) + j] = mat[i * (Nx + 1) + j];
+   42 :         }
+   43 :     }
+   44 :     return res[];
+   45 : }
+   46 :
+   47 : // ** To change vec(t) into vec(x, t) depending on the mesh
+   48 : func real[int] TimeToQ(real[int] mat){
+   49 :     Vh res = 0;
+   50 :     for (int i = 0; i <= Ny; i++){
+   51 :         for (int j = 0; j <= Nx; j++)
+   52 :         res[][i * (Nx + 1) + j] = mat[i];
+   53 :     }
+   54 :     return res[];
+   55 : }
+   56 :
+   57 : // ** To change vec(x) into vec(x, t) depending on the mesh
+   58 : func real[int] SpaceToQ(real[int] mat){
+   59 :     Vh res = 0;
+   60 :     for (int i = 0; i <= Nx; i++){
+   61 :         for (int j = 0; j <= Ny; j++)
+   62 :         res[][j * (Nx + 1) + i] = mat[i];
+   63 :     }
+   64 :     return res[];
+   65 : }
+   66 :
+   67 : // ** Get values from final time (t = T)
+   68 : func real[int] GetFinalTime(real[int] mat){
+   69 :     real[int] res(Nx + 1);
+   70 :     for (int i = 0; i <= Nx; i++){
+   71 :         res[i] = mat[Ny * (Nx + 1) + i];
+   72 :     }
+   73 :     return res;
+   74 : }
+   75 :
+   76 : // ** Get values from initial time (t = 0)
+   77 : func real[int] GetInitialTime(real[int] mat){
+   78 :     real[int] res(Nx + 1);
+   79 :     for (int i = 0; i <= Nx; i++){
+   80 :         res[i] = mat[i];
+   81 :     }
+   82 :     return res;
+   83 : }
+   84 :
+   85 : // ** Integrate on space
+   86 : //   The result is a vector with respect to (t)
+   87 : func real[int] IntegralOnSpace(real[int] mat){
+   88 :     real[int] res(Ny + 1);
+   89 :     Vh temp = 0;
+   90 :     for (int i = 0; i <= Ny; i++){
+   91 :         for (int j = 0; j <= Nx; j++){
+   92 :             temp[][j] = mat[i * (Nx + 1) + j];
+   93 :         }
+   94 :         res[i] = int1d(Th, 1)(temp);
+   95 :     }
+   96 :     return res;
+   97 : }
+   98 :
+   99 : // ** Inner product on time domain of vec1(t) and vec2(t)
+  100 : func real InnerProductOnTime(real[int] vec1, real[int] vec2){
+  101 :     real[int] vec(Ny + 1);
+  102 :     for (int i = 0; i <= Ny; i++){
+  103 :         vec[i] = vec1[i] * vec2[i];
+  104 :     }
+  105 :
+  106 :     // Take int1d on x = 0 (label = 4);
+  107 :     Vh res = 0;
+  108 :     for (int i = 0; i <= Ny; i++){
+  109 :         res[][i * (Nx + 1)] = vec[i];
+  110 :     }
+  111 :
+  112 :     return int1d(Th, 4)(res);
+  113 : }
+  114 :
+  115 : // ** Inner product on time domain of vec1(x) and vec2(x)
+  116 : func real InnerProductOnSpace(real[int] vec1, real[int] vec2){
+  117 :     real[int] vec(Nx + 1);
+  118 :     for (int i = 0; i <= Nx; i++){
+  119 :         vec[i] = vec1[i] * vec2[i];
+  120 :     }
+  121 :
+  122 :     // Take int1d on x = 0 (label = 4);
+  123 :     Vh res = 0;
+  124 :     for (int i = 0; i <= Nx; i++){
+  125 :         res[][i] = vec[i];
+  126 :     }
+  127 :
+  128 :     return int1d(Th, 1)(res);
+  129 : }
+  130 :
+  131 :
+  132 :
+  133 :
+  134 : // ***** State and Adjoint problems ***** //
+  135 :
+  136 : // * State problem
+  137 : func real[int] StateProblem(real[int] ff){
+  138 :     Vh u, v, f; f[] = ff;
+  139 :     Vh rsh = q * f + g;
+  140 :
+  141 :     solve SpaceTime(u, v, solver = sparsesolver) =
+  142 :           int2d(Th)(dy(u)  * v + dx(u)  * dx(v))
+  143 :         + int2d(Th)(dy(u0) * v + dx(u0) * dx(v))
+  144 :         - int2d(Th)(rsh * v)
+  145 :         + on(1, 2, 4, u = 0);
+  146 :
+  147 :     u = u + u0;
+  148 :     return u[];
+  149 : }
+  150 :
+  151 :
+  152 :
+  153 : // * Adjoint problem
+  154 : func real[int] AdjointProblem(real[int] uu){
+  155 :     Vh p, v;
+  156 :     real[int] delta = GetFinalTime(uu) - w;
+  157 :     Vh pT = 0;
+  158 :     for (int i = 0; i <= Nx; i++){
+  159 :         pT[][i] = delta[i];
+  160 :     }
+  161 :     //cout << "delta min and max: " << delta.min << ", " << delta.max << endl;
+  162 :     cout << "pT min and max: " << pT[].min << ", " << pT[].max << endl;
+  163 :     solve SpaceTime(p, v, solver = sparsesolver) =
+  164 :           int2d(Th)(dy(p) * v + dx(p) * dx(v))
+  165 :         + int2d(Th)(dy(pT) * v + dx(pT) * dx(v))
+  166 :         + on(2, 4, p = 0) + on(1, p = 0);
+  167 :     Vh res = p + pT;
+  168 :     //return p[];
+  169 :     return FlipTimeDirection(res[]);
+  170 : }
+  171 :
+  172 :
+  173 : // Tikhonov functional
+  174 : func real J(real[int] ff) {
+  175 :     Vh f; f[] = ff;
+  176 :     Vh u; u[] = StateProblem(ff);
+  177 :     real[int] delta = GetFinalTime(u[]) - w;
+  178 :     return 0.5 * InnerProductOnTime(delta, delta) + 0.5 * gamma * int2d(Th)(f * f);
+  179 : }
+  180 :
+  181 :
+  182 : // Gradient of Tikhonov funtional
+  183 : func real[int] GradJ(real[int] ff) {
+  184 :     real[int] uu = StateProblem(ff);
+  185 :     Vh p; p[] = AdjointProblem(uu);
+  186 :     Vh qp = p * q;
+  187 :     real[int] res = qp[] + gamma * ff;
+  188 :     return res;
+  189 : }
+  190 :
+  191 : func real Draw(real[int] f1, real[int] f2){
+  192 :     Vh ff1 = 0; ff1[] = TimeToQ(f1);
+  193 :     Vh ff2 = 0; ff2[] = TimeToQ(f2);
+  194 :     /*for (int i = 0; i <= Ny; i++){
+  195 :         ff1[][i * (Nx + 1)] = f1[i];
+  196 :         ff2[][i * (Nx + 1)+2] = f2[i];
+  197 :     }*/
+  198 :     plot(ff1, ff2, wait = true, dim = 3);
+  199 :     return 1;
+  200 : }
+  201 :
+  202 : Vh fh = 0;
+  203 : //fh = ffe;
+  204 : IPOPT(J, GradJ, fh[], tol = 1e-5);
+  205 : real[int] test = fe[] - fh[];
+  206 : cout << "(ffe - fh) min and max: " << test.min << ", " << test.max << endl;
+  207 : plot(fh, fe, wait = true, dim = 3);
+  208 : //cout << fh[] << endl;
+  209 :
+  210 : /*
+  211 :
+  212 : //******************************
+  213 : // CG method
+  214 :
+  215 : Vh uh, ph;
+  216 : real[int] fh(Ny + 1), rh(Ny + 1), dh(Ny + 1), rhold(Ny + 1);
+  217 : //fh = 0.1*ffe;
+  218 : uh[] = StateProblem2() + StateProblem1(TimeToQ(fh));
+  219 : plot(uh, ue, wait = 1, dim=3d);
+  220 :
+  221 : for (int iter = 0; iter < 100; iter++){
+  222 :     cout << endl << endl << endl << endl;
+  223 :     cout << "==========================>>>>>>>>>>>>>> " << iter << endl;
+  224 :     real[int] test = ffe - fh;
+  225 :     cout << "(ffe - fh) min and max: " << test.min << ", " << test.max << endl;
+  226 :     Draw(ffe, fh);
+  227 :     //cout << endl << fh << endl << endl;
+  228 :     cout << endl << "Adjoint problem" << endl;
+  229 :     ph[] = AdjointProblem(uh[]);
+  230 :
+  231 :     //plot(uh, ue, wait = 1, dim=3d);
+  232 :
+  233 :     rhold = rh;
+  234 :     Vh qp = q * ph;
+  235 :     rh = -IntegralOnSpace(qp[]) - gamma * fh;
+  236 :     cout << endl << rh << endl << endl;
+  237 :     if (iter > 0){
+  238 :         real beta = InnerProductOnTime(rh, rh) / InnerProductOnTime(rhold, rhold);
+  239 :         dh = rh + beta * dh;
+  240 :         cout << "beta: "  << beta << endl;
+  241 :     }else{
+  242 :         dh = rh;
+  243 :     }
+  244 :
+  245 :     cout << endl << "Solution udh" << endl;
+  246 :     Vh udh; udh[] = StateProblem1(TimeToQ(dh));
+  247 :     real[int] tem = GetFinalTime(udh[]);
+  248 :
+  249 :     real alpha = InnerProductOnTime(rh, rh) / (InnerProductOnSpace(tem, tem) + gamma * InnerProductOnTime(dh, dhº=`O));
+  250 :     cout << endl << endl;
+  251 :     cout << "rh ===>>> " << rh.min <<", " << rh.max << endl;
+  252 :     cout << "alpha: " << alpha << endl;
+  253 :     cout << "Norm (rh, rh): " << InnerProductOnTime(rh, rh) << ", " << InnerProductOnTime(dh, rh)<< endl;
+  254 :     Vh temp; temp[] = FlipTimeDirection(udh[]);
+  255 :     cout << "Mau 1: " << int1d(Th, 1)(temp * temp) << ", " << InnerProductOnSpace(tem, tem) << endl;
+  256 :     cout << "Mau 2: " << gamma * InnerProductOnTime(dh, dh) << endl;
+  257 :
+  258 :     fh = fh + alpha * dh;
+  259 :     uh = uh + alpha * udh;
+  260 : }
+  261 :
+  262 :
+  263 : plot(ue, dim=3, wait =1);
+  264 : plot(uh, dim=3, wait =1);
+  265 : plot(uh, ue, dim=3, wait =1);
+  266 :
+  267 : //
+  268 : //******************************
+  269 :
+  270 :
+  271 :
+  272 : //Vh fh = 0;
+  273 : //IPOPT(J, GradJ, fh[], tol = 1e-6);
+  274 : //NLCG(GradJ, fh[], nbiter = 1000, eps = -1e-6);
+  275 : //LinearCG(GradJ, f[], eps = 1e-6);
+  276 :
+  277 : //cout << "J: " << J(fh[]) << endl;
+  278 :
+  279 :
+  280 : //savemesh(Th, "IP1.mesh");
+  281 : //savesol("IP1.sol", Th, f);
+  282 : //savemesh(Th, "IPe.mesh");
+  283 : //savesol("IPe.sol", Th, fe);
+  284 :
+  285 : //plot(fe, wait = true, dim = 3);
+  286 : //plot(fh, wait = true, dim = 3);
+  287 : //plot(fh, fe, wait = true, dim = 3);
+  288 :
+  289 : //Vh delta = fh - fe;
+  290 :
+  291 : //cout << "kq: " << fe[].min << ", " << fe[].max << endl;
+  292 : //cout << "kq: " << fh[].min << ", " << fh[].max << endl;
+  293 : //cout << "delta: " << delta[].min << ", " << delta[].max << endl;
+  294 : //cout << "ss: " << sqrt(int2d(Th)(delta^2)) << endl;
+  295 : */ sizestack + 1024 =8104  ( 7080 )
+ 
+  -- Square mesh : nb vertices  =2601 ,  nb triangles = 5000 ,  nb boundary edges 200
+ 
+IPOPT Note : No hessian given ==> LBFGS hessian approximation enabled
+ 
+******************************************************************************
+This program contains Ipopt, a library for large-scale nonlinear optimization.
+ Ipopt is released as open source code under the Eclipse Public License (EPL).
+         For more information visit http://projects.coin-or.org/Ipopt
+******************************************************************************
+ 
+This is Ipopt version 3.12.4, running with linear solver mumps.
+NOTE: Other linear solvers might be more efficient (see Ipopt documentation).
+ 
+Number of nonzeros in equality constraint Jacobian...:        0
+Number of nonzeros in inequality constraint Jacobian.:        0
+Number of nonzeros in Lagrangian Hessian.............:        0
+ 
+  -- Solve :
+          min -1.88923e-034  max 1.64518
+pT min and max: -0.0731052, 5.14529e-032
+  -- Solve :
+          min -0.0600912  max 6.00551e-034
+Total number of variables............................:     2601
+                     variables with only lower bounds:        0
+                variables with lower and upper bounds:        0
+                     variables with only upper bounds:        0
+Total number of equality constraints.................:        0
+Total number of inequality constraints...............:        0
+        inequality constraints with only lower bounds:        0
+   inequality constraints with lower and upper bounds:        0
+        inequality constraints with only upper bounds:        0
+ 
+  -- Solve :
+          min -1.88923e-034  max 1.64518
+pT min and max: -0.0731052, 5.14529e-032
+  -- Solve :
+          min -0.0600912  max 6.00551e-034
+  -- Solve :
+          min -1.88923e-034  max 1.64518
+iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+   0 1.3369573e-003 0.00e+000 1.84e-001   0.0 0.00e+000    -  0.00e+000 0.00e+000   0
+  -- Solve :
+          min -1.88927e-034  max 1.668
+  -- Solve :
+          min -1.88927e-034  max 1.668
+pT min and max: -0.0504207, 5.20958e-032
+  -- Solve :
+          min -0.0413806  max 4.13628e-034
+   1 6.3338924e-004 0.00e+000 1.26e-001 -11.0 1.84e-001    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -1.88934e-034  max 1.7182
+  -- Solve :
+          min -1.88934e-034  max 1.7182
+pT min and max: -0.00383011, 0.00349933
+  -- Solve :
+          min -0.00190049  max 0.00168104
+   2 3.4890430e-006 0.00e+000 9.73e-003 -11.0 4.05e-001    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -1.88934e-034  max 1.71844
+  -- Solve :
+          min -1.88934e-034  max 1.71844
+pT min and max: -0.00286261, 0.00257791
+  -- Solve :
+          min -0.00136122  max 0.00128922
+   3 1.9280199e-006 0.00e+000 7.17e-003 -11.0 3.02e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -1.88934e-034  max 1.71849
+  -- Solve :
+          min -1.88934e-034  max 1.71849
+pT min and max: -0.000520081, 0.00029274
+  -- Solve :
+          min -8.97244e-005  max 8.01155e-005
+   4 3.2964395e-008 0.00e+000 1.09e-003 -11.0 9.04e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -1.88934e-034  max 1.71839
+  -- Solve :
+          min -1.88934e-034  max 1.71839
+pT min and max: -0.000389961, 0.000197962
+  -- Solve :
+          min -5.54954e-005  max 5.24309e-005
+   5 1.8598130e-008 0.00e+000 8.11e-004 -11.0 1.52e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -1.88934e-034  max 1.71826
+  -- Solve :
+          min -1.88934e-034  max 1.71826
+pT min and max: -0.000116793, 5.88532e-005
+  -- Solve :
+          min -9.38088e-006  max 2.99219e-006
+   6 5.4741831e-009 0.00e+000 2.38e-004 -11.0 4.97e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -1.88934e-034  max 1.71825
+  -- Solve :
+          min -1.88934e-034  max 1.71825
+pT min and max: -6.94052e-005, 6.72382e-005
+  -- Solve :
+          min -9.25779e-006  max 1.1536e-005
+   7 4.9644772e-009 0.00e+000 1.47e-004 -11.0 1.78e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -1.88934e-034  max 1.71831
+  -- Solve :
+          min -1.88934e-034  max 1.71831
+pT min and max: -3.77624e-005, 2.75437e-005
+  -- Solve :
+          min -4.3727e-006  max 5.18019e-006
+   8 4.6027108e-009 0.00e+000 7.98e-005 -11.0 2.75e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -1.88934e-034  max 1.71825
+  -- Solve :
+          min -1.88934e-034  max 1.71825
+pT min and max: -2.88142e-005, 1.44913e-005
+  -- Solve :
+          min -1.56504e-005  max 1.56172e-037
+   9 4.5383808e-009 0.00e+000 7.21e-005 -11.0 1.71e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -1.88934e-034  max 1.71909
+  -- Solve :
+          min -1.88934e-034  max 1.71909
+  -- Solve :
+          min -1.88934e-034  max 1.71909
+  -- Solve :
+          min -1.88934e-034  max 1.71909
+  -- Solve :
+          min -1.88934e-034  max 1.71909
+  -- Solve :
+          min -1.88934e-034  max 1.71867
+  -- Solve :
+          min -1.88934e-034  max 1.71846
+  -- Solve :
+          min -1.88934e-034  max 1.71836
+  -- Solve :
+          min -1.88934e-034  max 1.71831
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+pT min and max: -2.33545e-005, 2.32536e-005
+  -- Solve :
+          min -9.22435e-038  max 9.23997e-006
+iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+  10 4.5108448e-009 0.00e+000 5.96e-005 -11.0 6.11e-002    -  1.00e+000 3.12e-002f  6
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+pT min and max: -2.39011e-005, 1.61472e-005
+  -- Solve :
+          min -2.82713e-038  max 2.82726e-006
+  11 4.4593200e-009 0.00e+000 4.81e-005 -11.0 2.08e-003    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+pT min and max: -2.33102e-005, 8.69116e-006
+  -- Solve :
+          min -3.83902e-006  max 1.2013e-006
+  12 4.4540592e-009 0.00e+000 4.69e-005 -11.0 8.54e-003    -  1.00e+000 5.00e-001f  2
+  -- Solve :
+          min -1.88934e-034  max 1.71834
+  -- Solve :
+          min -1.88934e-034  max 1.71834
+  -- Solve :
+          min -1.88934e-034  max 1.71834
+  -- Solve :
+          min -1.88934e-034  max 1.71834
+  -- Solve :
+          min -1.88934e-034  max 1.71834
+  -- Solve :
+          min -1.88934e-034  max 1.7183
+  -- Solve :
+          min -1.88934e-034  max 1.71829
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+pT min and max: -1.99655e-005, 1.13869e-005
+  -- Solve :
+          min -4.29871e-006  max 1.47605e-006
+  13 4.4490279e-009 0.00e+000 4.02e-005 -11.0 7.65e-002    -  1.00e+000 6.25e-002f  5
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+pT min and max: -1.46269e-005, 7.94556e-006
+  -- Solve :
+          min -4.345e-006  max 4.34177e-038
+  14 4.4407896e-009 0.00e+000 2.94e-005 -11.0 2.51e-002    -  1.00e+000 5.00e-001f  2
+  -- Solve :
+          min -1.88934e-034  max 1.71832
+  -- Solve :
+          min -1.88934e-034  max 1.71832
+  -- Solve :
+          min -1.88934e-034  max 1.71832
+  -- Solve :
+          min -1.88934e-034  max 1.71832
+  -- Solve :
+          min -1.88934e-034  max 1.71832
+  -- Solve :
+          min -1.88934e-034  max 1.7183
+  -- Solve :
+          min -1.88934e-034  max 1.71829
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+pT min and max: -1.34747e-005, 3.45336e-006
+  -- Solve :
+          min -3.71291e-006  max 3.70737e-038
+  15 4.4367393e-009 0.00e+000 2.70e-005 -11.0 4.88e-002    -  1.00e+000 1.25e-001f  4
+  -- Solve :
+          min -1.88934e-034  max 1.71826
+  -- Solve :
+          min -1.88934e-034  max 1.71826
+  -- Solve :
+          min -1.88934e-034  max 1.71826
+  -- Solve :
+          min -1.88934e-034  max 1.71826
+  -- Solve :
+          min -1.88934e-034  max 1.71826
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+pT min and max: -9.44298e-006, 6.86748e-006
+  -- Solve :
+          min -4.33774e-006  max 4.33706e-038
+  16 4.4349919e-009 0.00e+000 1.89e-005 -11.0 3.26e-002    -  1.00e+000 2.50e-001f  3
+  -- Solve :
+          min -1.88934e-034  max 1.7186
+  -- Solve :
+          min -1.88934e-034  max 1.7186
+  -- Solve :
+          min -1.88934e-034  max 1.7186
+  -- Solve :
+          min -1.88934e-034  max 1.7186
+  -- Solve :
+          min -1.88934e-034  max 1.7186
+  -- Solve :
+          min -1.88934e-034  max 1.71844
+  -- Solve :
+          min -1.88934e-034  max 1.71836
+  -- Solve :
+          min -1.88934e-034  max 1.71832
+  -- Solve :
+          min -1.88934e-034  max 1.7183
+  -- Solve :
+          min -1.88934e-034  max 1.71829
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+pT min and max: -8.99782e-006, 6.93468e-006
+  -- Solve :
+          min -5.95919e-007  max 3.48808e-007
+  17 4.4296388e-009 0.00e+000 1.80e-005 -11.0 7.85e-002    -  1.00e+000 1.56e-002f  7
+  -- Solve :
+          min -1.88934e-034  max 1.71826
+  -- Solve :
+          min -1.88934e-034  max 1.71826
+  -- Solve :
+          min -1.88934e-034  max 1.71826
+  -- Solve :
+          min -1.88934e-034  max 1.71826
+  -- Solve :
+          min -1.88934e-034  max 1.71826
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+pT min and max: -8.88114e-006, 6.7204e-006
+  -- Solve :
+          min -8.86164e-007  max 1.38236e-007
+  18 4.4296246e-009 0.00e+000 1.78e-005 -11.0 3.56e-002    -  1.00e+000 1.56e-002f  7
+  -- Solve :
+          min -1.88934e-034  max 1.71834
+  -- Solve :
+          min -1.88934e-034  max 1.71834
+  -- Solve :
+          min -1.88934e-034  max 1.71834
+  -- Solve :
+          min -1.88934e-034  max 1.71834
+  -- Solve :
+          min -1.88934e-034  max 1.71834
+  -- Solve :
+          min -1.88934e-034  max 1.71831
+  -- Solve :
+          min -1.88934e-034  max 1.7183
+  -- Solve :
+          min -1.88934e-034  max 1.71829
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+pT min and max: -7.88564e-006, 7.49365e-006
+  -- Solve :
+          min -2.65457e-007  max 1.58945e-006
+  19 4.4290272e-009 0.00e+000 1.57e-005 -11.0 1.39e-001    -  1.00e+000 1.56e-002f  7
+  -- Solve :
+          min -1.88934e-034  max 1.71825
+  -- Solve :
+          min -1.88934e-034  max 1.71825
+  -- Solve :
+          min -1.88934e-034  max 1.71825
+  -- Solve :
+          min -1.88934e-034  max 1.71825
+  -- Solve :
+          min -1.88934e-034  max 1.71825
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71827
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+pT min and max: -7.89212e-006, 6.08789e-006
+  -- Solve :
+          min -5.66401e-007  max 1.49569e-006
+iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+  20 4.4288616e-009 0.00e+000 1.77e-005 -11.0 5.52e-002    -  1.00e+000 3.12e-002f  6
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+  -- Solve :
+          min -1.88934e-034  max 1.71828
+pT min and max: -3.45196e-006, 4.47174e-006
+  -- Solve :
+          min -2.55005e-007  max 9.10921e-007
+  21 4.4272290e-009 0.00e+000 9.39e-006 -11.0 2.22e-002    -  1.00e+000 1.00e+000f  1
+ 
+Number of Iterations....: 21
+ 
+                                   (scaled)                 (unscaled)
+Objective...............:  4.4272290464314220e-009   4.4272290464314220e-009
+Dual infeasibility......:  9.3859048199861420e-006   9.3859048199861420e-006
+Constraint violation....:  0.0000000000000000e+000   0.0000000000000000e+000
+Complementarity.........:  0.0000000000000000e+000   0.0000000000000000e+000
+Overall NLP error.......:  9.3859048199861420e-006   9.3859048199861420e-006
+ 
+ 
+Number of objective function evaluations             = 101
+Number of objective gradient evaluations             = 22
+Number of equality constraint evaluations            = 0
+Number of inequality constraint evaluations          = 0
+Number of equality constraint Jacobian evaluations   = 0
+Number of inequality constraint Jacobian evaluations = 0
+Number of Lagrangian Hessian evaluations             = 0
+Total CPU secs in IPOPT (w/o function evaluations)   =      0.911
+Total CPU secs in NLP function evaluations           =      7.485
+ 
+EXIT: Optimal Solution Found.
+ 
+ 
+*** Ipopt succeeded
+(ffe - fh) min and max: -0.590948, 0.996023
+times: compile 0.722s, execution 8.559s,  mpirank:0
+ ######## We forget of deleting   5141 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
+ CodeAlloc : nb ptr  3806,  size :420584 mpirank: 0
+Ok: Normal End
+ try getConsole D:\Study\HUST\FEM\heatsource\FreeFem++\test.edp
