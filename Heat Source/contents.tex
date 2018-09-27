@@ -27,14 +27,18 @@ where
 \end{align*}
 with $\lambda_1$ và $\lambda_2$ are positive constants.
 \\
-The direct problem is to determine $u$ when all data $a_{ji}, i, j=\overline{1, d}, \,u_0, \,\varphi$ and $F$ in \cref{1.1,1.2,1.3} are given. On the other hand, the inverse problem is to identify a missed data such as the right hand side $F$ when some additional observation on the solution $u$ are available. 
+The direct problem is to determine $u$ when all data $a_{ji}, i, j=\overline{1, d}, \,u_0, \,\varphi$ and $F$ in \cref{1.1,1.2,1.3} are given. On the other hand, the inverse problem (IP) is to identify a missed data such as the right hand side $F$ when some additional observation on the solution $u$ are available. 
 \\
-Consider the right hand side of equation \eqref{1.1} following the form $F(x, t)=f(.)q(x, t)+g(x, t)$, with $f(.)$ is either $f(x, t)$, $f(x)$ or $f(t)$. The problem here is to find $f(.)$ when $\omega(x, t)=u(x, t)$ is given on $Q$.
-\\ To solve this problem, we need to minimize the least square functional 
-$$J_{\gamma}(f)=\frac{1}{2}\left\|\ell u(f)-\omega\right\|_{L^2(Q)}^2.$$
+Consider the right hand side of equation \eqref{1.1} following the form $F(x, t)=f(.)q(x, t)+g(x, t)$, with $q, g$ are given and $f(.)$ is either $f(x, t)$, $f(x)$ or $f(t)$. Denote $N_o$ is the number of measurements and $\ell_k u =\omega_k, k=\overline{1, N_0}$ is the value of $kth$ observation on the solution $u$ we get. We have different inverse problems depending on either the form of $F$ or the observation on the solution $u$: 
+\begin{itemize}
+	\item IP1: Find $f(.)$ if $u$ is given on $Q$. So that $N_o=1$ and $\ell_ku(x, t)=u(x, t)=\omega_k(x, t), \; (x, t)\in Q$.
+	\item IP2: Find $f(.)$ if $\ell_ku=\int_\Omega w_k(x)u(x, t)dx=\omega_k(t)$ and $w_k(x)>0, \forall x\in \Omega$ are given. This observation called \textit{integral observation}. Furthermore, an observation derives from integral observation called \textit{point observation} if $w_k(x)$ is a dirac delta function $\delta_k(x-x_k)$, so that $\ell_k(t)=\int_\Omega\delta_k(x-x_k)u(x, t)dx=u(x_k, t)=\omega_k(t)$.
+\end{itemize}
+To solve this problem, we need to minimize the least square functional 
+$$J_{\gamma}(f)=\frac{1}{2}\sum_{k=1}^{N_{o}}\left\|\ell_k u(f)-\omega_k\right\|_{L^2(*)}^2.$$
 However, this minimization problem is unstable and there might be many minimizers to it. Therefore, we minimize the Tikhonov functional instead
-$$J_{\gamma}(f)=\frac{1}{2}\left\|\ell u-\omega\right\|_{L^2(Q)}^2+\frac{\gamma}{2}\left\|f-f^*\right\|_{L^2(*)}^2,$$
-with $\gamma>0$ being a regularization parameter, $f^*$ is an a prior estimation of $f$ and $\left\|.\right\|_{L^2(*)}$ depends on $f(*)$ appropriately.
+$$J_{\gamma}(f)=\frac{1}{2}\sum_{k=1}^{N_{o}}\left\|\ell_k u(f)-\omega_k\right\|_{L^2(*)}^2+\frac{\gamma}{2}\left\|f-f^*\right\|_{L^2(**)}^2,$$
+with $\gamma>0$ being a regularization parameter, $f^*$ is an a prior estimation of $f$ and $\left\|.\right\|_{L^2(*)}$ and $\left\|.\right\|_{L^2(**)}$ respectively depends on $w_k(*)$ and $f(**)$ appropriately.
 
 \section{Variational problem}
 To introduce the concept of weak form, we use the standard Sobolev spaces $H^1(\Omega),\, H^1_0(\Omega),\, H^{1, 0}(Q)$ and $H^{1, 1}(Q)$. Further, for a Banach space $B$, we define
@@ -55,15 +59,15 @@ and
 	\left\|u\right\|_{L^2(0, T; B)} \leq c_d \left(\left\|F\right\|_{L^2(Q)}+\left\|u_0\right\|_{L^2(\Omega)}+\left\|\varphi\right\|_{L^2(S)}\right)
 \end{align}
 We suppose that $F$ has the form $F(x, t)=f(x, t)q(x, t)+g(x, t)$ with $f\in L^2(Q),\, q\in L^\infty(Q)$ and $g\in L^2(Q)$. We hope to recover $f(x, t)$ from the observation. Since the solution $u(x, t)$ depends on the function $f(x, t)$, so we denote it by $u(x, t, f)$ or $u(f)$. Identify $f(x, t)$ satisfying 
-$$\ell u(f)=\omega(x, t),$$
-where $\ell u(f)$ is the observation on the solution depending on $f$. So we minimize the Tikhonov functional
+$$\ell_k u(f)=\omega_k,\; \forall k = \overline{1, N_o}$$
+where $\ell_k u(f)$ is the observation on the solution depending on $f$. From now on, \color{red} we suppose to solve IP1 problem, \color{black} so that we need to minimize the Tikhonov functional
 \begin{align}\label{2.4}
-	J_{\gamma}(f)=\frac{1}{2}\left\|\ell u(f)-\omega\right\|_{L^2(Q)}^2+\frac{\gamma}{2}\left\|f-f^*\right\|_{L^2(Q)}^2.
+	J_{\gamma}(f)=\frac{1}{2}\sum_{k=1}^{N_o}\left\|\ell_k u(f)-\omega_k\right\|_{L^2(Q)}^2+\frac{\gamma}{2}\left\|f-f^*\right\|_{L^2(Q)}^2.
 \end{align}
 We will prove that $J_\gamma$ is Frechet differentiable and drive a formula for its gradient. In doing so, we need the adjoint problem
 \begin{align}\label{2.5}
 	\begin{cases}
-		-\frac{\partial p}{\partial t}-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial p}{\partial x_i}\right)=\ell u(f)-\omega, & (x, t)\in Q,\\
+		-\frac{\partial p}{\partial t}-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial p}{\partial x_i}\right)=\sum_{k=1}^{N_o}\ell_k u(f)-\omega_k, & (x, t)\in Q,\\
 		u(x, t)=0, & (x, t)\in S\\
 		p(x, T)=0, & x\in \Omega.
 	\end{cases}
