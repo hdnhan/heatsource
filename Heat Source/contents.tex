@@ -5,10 +5,10 @@
 \justifying
 
 \thispagestyle{empty}
-	
+
 \newpage
 \section{Introduction}
-Consider a physical domain $\Omega \subset \mathbb{R}^d,\, d\in \mathbb{N^+}$ be bounded with the boundary $\Gamma$ and donate $I:=(0,\, T),\, Q:=\Omega\times I$ and $ S:=\Gamma \times I$ with $T>0$ given. 
+Consider a physical domain $\Omega \subset \mathbb{R}^d,\, d\in \mathbb{N^+}$ be bounded with the boundary $\Gamma$ and donate $Q:=\Omega\times (0,\, T)$ and $ S:=\Gamma \times (0,\, T)$ with $T>0$ given. 
 \\
 Consider the heat equation
 \begin{align}\label{1.1}
@@ -23,17 +23,17 @@ where
 \begin{align*}
 	&a_{ij}\in L^{\infty}(Q),\, a_{ij}=a_{ji},\; \forall i, j\in \{1, 2, ..., d\},\\
 	&\lambda_1\left\|\xi\right\|^2\leq \sum_{i, j=1}^{d}a_{ij}\xi_i\xi_j\leq \lambda_2\left\|\xi\right\|^2,\; \forall \xi\in\mathbb{R}^d,\\
-	&\varphi\in L^2(S),\; u_0\in L^2(\Omega),\; F\in L^2(I;\, H^{-1}(\Omega)),
+	&\varphi\in L^2(S),\; u_0\in L^2(\Omega),\; F\in L^2(0,\, T;\, H^{-1}(\Omega)),
 \end{align*}
 with $\lambda_1$ và $\lambda_2$ are positive constants.
 \\
-The direct problem is to determine $u$ when the coefficients of the questions \eqref{1.1} and the data $u_0, \varphi$ and $F$ are given. The inverse problem is to identify a missed data such as the right hand side $F$ when some additional observation on the solution $u$ are available. 
+The direct problem is to determine $u$ when all data $a_{ji}, i, j=\overline{1, d}, \,u_0, \,\varphi$ and $F$ in \cref{1.1,1.2,1.3} are given. On the other hand, the inverse problem is to identify a missed data such as the right hand side $F$ when some additional observation on the solution $u$ are available. 
 \\
-Consider the structure $F(x, t)=f(.)q(x, t)+g(x, t)$, with $f(.)$ is either $f(x, t)$, $f(x)$ or $f(t)$. The problem here is to find $f(.)$ when $\ell u(f)=u(x, t)=\omega(x, t)$ is given on $Q$.
+Consider the right hand side of equation \eqref{1.1} following the form $F(x, t)=f(.)q(x, t)+g(x, t)$, with $f(.)$ is either $f(x, t)$, $f(x)$ or $f(t)$. The problem here is to find $f(.)$ when $\omega(x, t)=u(x, t)$ is given on $Q$.
 \\ To solve this problem, we need to minimize the least square functional 
 $$J_{\gamma}(f)=\frac{1}{2}\left\|\ell u(f)-\omega\right\|_{L^2(Q)}^2.$$
 However, this minimization problem is unstable and there might be many minimizers to it. Therefore, we minimize the Tikhonov functional instead
-$$J_{\gamma}(f)=\frac{1}{2}\left\|u-\omega\right\|_{L^2(Q)}^2+\frac{\gamma}{2}\left\|f-f^*\right\|_{L^2(*)}^2,$$
+$$J_{\gamma}(f)=\frac{1}{2}\left\|\ell u-\omega\right\|_{L^2(Q)}^2+\frac{\gamma}{2}\left\|f-f^*\right\|_{L^2(*)}^2,$$
 with $\gamma>0$ being a regularization parameter, $f^*$ is an a prior estimation of $f$ and $\left\|.\right\|_{L^2(*)}$ depends on $f(*)$ appropriately.
 
 \section{Variational problem}
@@ -43,22 +43,24 @@ with the norm
 $$\left\|u\right\|_{L^2(0, T; B)}=\int_0^T\left\|u(t)\right\|^2_Bdt.$$
 In the sequel, we shall use the space $W(0, T)$ define as
 $$W(0, T)=\left\{u: u\in L^2(0, T; H^1(\Omega)), u_t\in L^2\left(0, T; \left(H^1(\Omega)\right)'\right) \right\}$$
-Suppose that $F\in L^2(Q)$, a week solution in $W(0, T)$ of the problem \eqref{1.1} - \eqref{1.3} is a function $u(x, t)\in W(0, T)$ satisfying the identity
+Suppose that $F\in L^2(Q)$, a week solution in $W(0, T)$ of the problem \cref{1.1,1.2,1.3} is a function $u(x, t)\in W(0, T)$ satisfying the identity
 \begin{align}\label{2.1}
-	\int_{Q}\left[\frac{\partial u}{\partial t}v+\sum_{i, j=1}^{d}a_{ji}\frac{\partial u}{\partial x_i}\frac{\partial v}{\partial x_j}\right]dxdt=\int_{Q}Fvdxdt+\int_{S}\varphi vdsdt.
+	\int_{Q}\left[\frac{\partial u}{\partial t}v+\sum_{i, j=1}^{d}a_{ji}\frac{\partial u}{\partial x_i}\frac{\partial v}{\partial x_j}\right]dxdt=\int_{Q}Fvdxdt,\;\forall v \in L^2\left(0, T; H^1(\Omega)\right).
 \end{align}
 and 
 \begin{align}\label{2.2}
-	u(x, 0)=u_0, x\in \Omega.
+	u(x, 0)=u_0,\; x\in \Omega.
 \end{align}
 \begin{align}\label{2.3}
 	\left\|u\right\|_{L^2(0, T; B)} \leq c_d \left(\left\|F\right\|_{L^2(Q)}+\left\|u_0\right\|_{L^2(\Omega)}+\left\|\varphi\right\|_{L^2(S)}\right)
 \end{align}
-We suppose that $F$ has the form $F(x, t)=f(x, t)q(x, t)+g(x, t)$ with $f\in L^2(Q),\, q\in L^\infty(Q)$ and $g\in L^2(Q)$. We hope to recover $f(x, t)$ from the observation. Since the solution $u(x, t)$ depends on the function $f(x, t)$, so we denote it by $u(x, t, f)$ or $u(f)$. To identify $f(x, t)$, we minimize the Tikhonov functional
+We suppose that $F$ has the form $F(x, t)=f(x, t)q(x, t)+g(x, t)$ with $f\in L^2(Q),\, q\in L^\infty(Q)$ and $g\in L^2(Q)$. We hope to recover $f(x, t)$ from the observation. Since the solution $u(x, t)$ depends on the function $f(x, t)$, so we denote it by $u(x, t, f)$ or $u(f)$. Identify $f(x, t)$ satisfying 
+$$\ell u(f)=\omega(x, t),$$
+where $\ell u(f)$ is the observation on the solution depending on $f$. So we minimize the Tikhonov functional
 \begin{align}\label{2.4}
 	J_{\gamma}(f)=\frac{1}{2}\left\|\ell u(f)-\omega\right\|_{L^2(Q)}^2+\frac{\gamma}{2}\left\|f-f^*\right\|_{L^2(Q)}^2.
 \end{align}
-We will prove that $J_\gamma$ is Frechet differentiable and drive a formula for its gradient. Want to do so, we need the adjoint problem
+We will prove that $J_\gamma$ is Frechet differentiable and drive a formula for its gradient. In doing so, we need the adjoint problem
 \begin{align}\label{2.5}
 	\begin{cases}
 		-\frac{\partial p}{\partial t}-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial p}{\partial x_i}\right)=\ell u(f)-\omega, & (x, t)\in Q,\\
@@ -66,7 +68,7 @@ We will prove that $J_\gamma$ is Frechet differentiable and drive a formula for 
 		p(x, T)=0, & x\in \Omega.
 	\end{cases}
 \end{align}
-By changing the time direction, meaning $\overline{p}(x, t)=p(x, T-t)$, we will get a Neumann problem for parabolic equations.
+By changing the time direction, meaning $\overline{p}(x, t)=p(x, T-t)$, we will get a Dirichlet problem for parabolic equations.
 \begin{dl}
 	The functional $J_\gamma$ is Frechet differentiable and its gradient $\nabla J_\gamma$ at $f$ has the form 
 	\begin{align}\label{2.6}
@@ -214,7 +216,7 @@ $$|q|=\begin{cases}
 	\frac{1}{2},& d=1,\\[0.1cm]
 	\frac{1}{6},& d=2.
 \end{cases}$$
-phương trình biến phân xấp xỉ
+%phương trình biến phân xấp xỉ
 \begin{align}\label{3.2}
 	\int_{Q}\left[\frac{\partial u_h}{t}v_h+\sum_{i, j=1}^{d}a_{ji}\frac{\partial u_h}{\partial x_i}\frac{\partial v_h}{\partial x_j}\right]dxdt=\int_{Q}Fv_hdxdt+\int_{S}\varphi v_hdsdt, \forall v_h\in Y_h.
 \end{align}
