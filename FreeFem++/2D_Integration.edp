@@ -1,0 +1,160 @@
+load "ff-IpOpt"
+load "msh3"
+load "medit"
+
+real T = 1;
+int nn = 20;
+int Nx = nn, Ny = nn, Nz = nn; 
+int[int] labs = [1, 2, 3, 4, 5, 0];
+mesh3 Th = cube(Nx, Ny, Nz, [x, y, T * z], label = labs);
+fespace Vh(Th, P1);
+
+
+
+// ***** DATA ***** //
+Vh ue = exp(z) * sin(pi * x) * sin(pi * y);
+Vh uD = 0;
+Vh u0 = ue(x, y, 0);
+
+Vh fe = sin(pi * x) * sin(pi * y) * sin(pi * z);
+Vh q = 2 + x^2 + y^2 + z^2;
+Vh g = (1 + 2 * pi^2) * ue - fe * q;
+real gamma = 1e-5;
+
+
+
+//  Integrate on space
+//   The result is a vector with respect to (t)
+func real[int] IntegralOnSpace(real[int] mat){
+    real[int] res(Nz + 1);
+    Vh temp = 0;
+    for (int i = 0; i <= Nz; i++){
+        for (int j = 0; j <= Ny; j++){
+            for (int k = 0; k <= Nx; k++){
+                temp[][j * (Nx + 1) + k] = mat[i * (Ny + 1) * (Nx + 1) + j * (Nx + 1) + k];    
+            }
+        }
+        res[i] = int2d(Th, 5)(temp);
+    }
+    return res;
+}
+
+// The integration observation
+Vh omg = 1 + x^2 + y^2 + z^2; // omega
+Vh we = omg * ue;
+real[int] lue = IntegralOnSpace(we[]);
+
+
+
+// ***** Functions to modify matrix ***** //
+
+// ** Change the time direction
+func real[int] FlipTimeDirection(real[int] mat){
+    Vh u;
+    for (int i = 0; i <= Nz/2; i++){
+        for (int j = 0; j <= Ny; j++){
+            for (int k = 0; k <= Nx; k++){
+                u[][i * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k] = mat[(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k];
+                u[][(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k] = mat[i * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k];
+            }
+        }
+    }
+    return u[];
+}
+
+// To change vec(t) into vec(x, t) depending on the mesh
+func real[int] TimeToQ(real[int] mat){
+    Vh res = 0;
+    for (int i = 0; i <= Nz; i++){
+        for (int j = 0; j <= Ny; j++)
+            for (int k = 0; k <= Nx; k++){
+                res[][i * (Ny + 1) * (Nx + 1) + j * (Nx + 1) + k] = mat[i];
+            }  
+    }
+    return res[];
+}
+
+// Inner product on time domain of vec1(t) and vec2(t)
+func real InnerProductOnTime(real[int] vec1, real[int] vec2){
+    mesh Th1 = square(Nx, Nz);
+    real[int] vec(Nz + 1);
+    for (int i = 0; i <= Nz; i++){
+        vec[i] = vec1[i] * vec2[i];
+    }
+
+    // Take int1d on x = 0 (label = 4);
+    Vh res = 0;
+    for (int i = 0; i <= Nz; i++){
+        res[][i * (Nx + 1)] = vec[i];
+    }
+
+    return int1d(Th1, 4)(res);
+}
+
+
+
+// ***** State and Adjoint problems ***** //
+
+// State equation:
+func real[int] StateProblem(real[int] ff){
+    Vh u, v, f; f[] = ff;
+    Vh rsh = f * q + g;
+
+    solve SpaceTime(u, v, solver = sparsesolver) = 
+          int3d(Th)(dz(u)  * v + dx(u)  * dx(v) + dy(u)  * dy(v)) 
+        - int3d(Th)(rsh * v) 
+        + on(1, 2, 3, 4, u = uD) + on(5, u = u0);
+
+    return u[];
+}
+
+
+// Adjoint equation
+func real[int] AdjointProblem(real[int] uu){
+    Vh p, v, u; u[] = uu;
+    Vh wh = omg * u;
+    real[int] del = IntegralOnSpace(wh[]) - lue;
+    Vh delta; delta[] = TimeToQ(del);
+    Vh rhs = omg * delta;
+    rhs[] = FlipTimeDirection(rhs[]);
+
+    solve SpaceTime(p, v, solver = sparsesolver) =
+          int3d(Th)(dz(p) * v + dx(p) * dx(v) + dy(p) * dy(v))
+        - int3d(Th)(rhs * v)
+        + on(1, 2, 3, 4, 5, p = 0);
+
+    return FlipTimeDirection(p[]);
+}
+
+
+
+// Tikhonov functional
+func real J(real[int] ff) {
+    Vh f; f[] = ff;
+    Vh u; u[] = StateProblem(ff);
+    Vh wh = omg * u; 
+    real[int] del = IntegralOnSpace(wh[]) - lue;
+    return 0.5 * InnerProductOnTime(del, del) + 0.5 * gamma * int3d(Th)(f^2);
+}
+
+
+// Gradient of Tikhonov funtional
+func real[int] GradJ(real[int] ff) {
+    Vh p; p[] = AdjointProblem(StateProblem(ff));
+    Vh qp = p * q;
+    real[int] res = qp[] + gamma * ff;
+    return res;
+}
+
+
+
+Vh fh = 0;
+IPOPT(J, GradJ, fh[], tol = 1e-4);
+
+cout << "J: " << J(fh[]) << endl; 
+Vh delta = fh - fe;
+
+cout << "fe min and max: " << fe[].min << ", " << fe[].max << endl;
+cout << "fh min and max: " << fh[].min << ", " << fh[].max << endl;
+cout << "(fh-fe) min and max: " << delta[].min << ", " << delta[].max << endl;
+cout << "erorr L2: " << sqrt(int3d(Th)(delta * delta)) << endl;

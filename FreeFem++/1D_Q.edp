@@ -1,0 +1,111 @@
+load "ff-IpOpt"
+load "medit"
+
+real T = 1;
+int nn = 50;
+int Nx = nn, Ny = nn; 
+int[int] labs = [1, 2, 0, 4];
+mesh Th = square(Nx, Ny, [x, T * y], label = labs);
+fespace Vh(Th, P1);
+
+
+
+// ***** DATA ***** //
+Vh ue = exp(y) * sin(pi * x);
+Vh uD = 0;
+Vh u0 = ue(x, 0);
+
+Vh fe = sin(pi * x) * sin(pi * y);
+Vh q = 2 + x^2 + y^2;
+Vh g = (1 + pi^2) * ue - fe * q;
+real gamma = 1e-5;
+
+// The overdetermination
+real[int] w((Nx + 1) * (Ny + 1) + 1);
+for (int i = 0; i <= Ny; i++){
+    for (int j = 0; j <= Nx; j++){
+        w[i * (Nx + 1) + j] = ue(j * 1.0 / Nx, i * 1.0 / Ny);
+    }
+}
+
+
+
+// ***** Functions to modify matrix ***** //
+
+// ** Change the time direction
+func real[int] FlipTimeDirection(real[int] mat){
+    Vh res;
+    for (int i = 0; i <= Ny/2; i++){
+        for (int j = 0; j <= Nx; j++){
+            res[][i * (Nx + 1) + j] = mat[(Ny - i) * (Nx + 1) + j];
+            res[][(Ny - i) * (Nx + 1) + j] = mat[i * (Nx + 1) + j];
+        }
+    }
+    return res[];
+}
+
+
+
+// State equation:
+func real[int] StateProblem(real[int] ff){
+    Vh u, v, f; f[] = ff;
+    Vh rsh = f * q + g;
+
+    solve SpaceTime(u, v, solver = sparsesolver) = 
+          int2d(Th)(dy(u)  * v + dx(u)  * dx(v)) 
+        //+ int2d(Th)(dy(u0) * v + dx(u0) * dx(v))
+        - int2d(Th)(rsh * v) 
+        + on(2, 4, u = uD) + on(1, u = u0);
+
+    //u = u + u0;
+    return u[];
+}
+
+
+// Adjoint equation
+func real[int] AdjointProblem(real[int] uu){
+    Vh p, v;
+    Vh temp; temp[] = uu - w; 
+    Vh rsh; rsh[] =  FlipTimeDirection(temp[]);
+
+    solve SpaceTime(p, v, solver = sparsesolver) =
+          int2d(Th)(dy(p) * v + dx(p) * dx(v))
+        - int2d(Th)(rsh * v)
+        + on(1, 2, 4, p = 0);
+
+    return FlipTimeDirection(p[]);
+}
+
+
+// Tikhonov functional
+func real J(real[int] ff) {
+    Vh f; f[] = ff;
+    Vh u; u[] = StateProblem(ff); 
+    Vh temp; temp[] = u[] - w;
+    return 0.5 * int2d(Th)(temp^2) + 0.5 * gamma * int2d(Th)(f^2);
+}
+
+
+// Gradient of Tikhonov funtional
+func real[int] GradJ(real[int] ff) {
+    Vh p; p[] = AdjointProblem(StateProblem(ff));
+    Vh pq = p * q;
+    real[int] res = pq[] + gamma * ff;
+    return res;
+}
+
+
+
+Vh fh = 0;
+IPOPT(J, GradJ, fh[], tol = 1e-5);
+
+cout << "J: " << J(fh[]) << endl; 
+Vh del = fh - fe;
+
+cout << "fe min and max: " << fe[].min << ", " << fe[].max << endl;
+cout << "fh min and max: " << fh[].min << ", " << fh[].max << endl;
+cout << "(fh-fe) min and max: " << del[].min << ", " << del[].max << endl;
+cout << "erorr L2: " << sqrt(int2d(Th)(del * del)) << endl;
+plot(fe, dim = 3, wait = 1);
+plot(fh, dim = 3, wait = 1);
+plot(fe, fh, dim = 3, wait = 1);

@@ -1,0 +1,32 @@
+int nn = 100;
+int Nx = nn;
+int Ny = nn;
+mesh Th = square(Nx, Ny);
+real[int] x0 = [0.5];
+real[int] y0 = [0.5];
+fespace Vh(Th, P1);
+
+Vh f =  Nx/(2*(cosh(Nx*(x-x0[0])))^2) * Ny/(2*(cosh(Ny*(y-y0[0])))^2);
+Vh u, v;
+solve Laplace(u,v) =    
+	int2d(Th)( dx(u) * dx(v) + dy(u) * dy(v))  
+	- int2d(Th)(f * v)  
+	+ on(1,2,3,4,u=0) ;
+
+
+matrix D = interpolate(Vh, x0, y0);
+real[int] c = [1.0];
+Vh b; b[] = D * c;
+b[] = -b[];
+
+Vh uu, vv;
+solve laplace(uu,vv) =    
+	int2d(Th)( dx(uu)*dx(vv) + dy(uu)*dy(vv))
+	+ b[]  
+	+ on(1,2,3,4,uu=0);
+
+cout << "min and max u = " << u[].min << ", "<< u[].max <<  endl; 
+cout << "min and max uu = " << uu[].min << ", "<< uu[].max <<  endl; 
+plot(u, dim=3, fill=1,wait=1); 
+plot(uu, dim=3, fill=1,wait=1);
+plot(u, uu, dim=3, fill=0,wait=1); 

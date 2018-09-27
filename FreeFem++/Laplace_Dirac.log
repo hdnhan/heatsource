@@ -1,0 +1,49 @@
+-- FreeFem++ v  3.610001 (date jeu. 12 juil. 2018 15:05:23)
+ Load: lg_fem lg_mesh lg_mesh3 eigenvalue
+    1 : int nn = 100;
+    2 : int Nx = nn;
+    3 : int Ny = nn;
+    4 : mesh Th = square(Nx, Ny);
+    5 : real[int] x0 = [0.5];
+    6 : real[int] y0 = [0.5];
+ *** Warning  The identifier y0 hide a Global identifier
+ 
+    7 : fespace Vh(Th, P1);
+    8 :
+    9 : Vh f =  Nx/(2*(cosh(Nx*(x-x0[0])))^2) * Ny/(2*(cosh(Ny*(y-y0[0])))^2);
+   10 : Vh u, v;
+   11 : solve Laplace(u,v) =
+   12 :         int2d(Th)( dx(u) * dx(v) + dy(u) * dy(v))
+   13 :         - int2d(Th)(f * v)
+   14 :         + on(1,2,3,4,u=0) ;
+   15 :
+   16 :
+   17 : matrix D = interpolate(Vh, x0, y0);
+   18 : real[int] c = [1.0];
+   19 : Vh b; b[] = D * c;
+   20 : b[] = -b[];
+   21 :
+   22 : Vh uu, vv;
+   23 : solve laplace(uu,vv) =
+   24 :         int2d(Th)( dx(uu)*dx(vv) + dy(uu)*dy(vv))
+   25 :         + b[]
+   26 :         + on(1,2,3,4,uu=0);
+   27 :
+   28 : cout << "min and max u = " << u[].min << ", "<< u[].max <<  endl;
+   29 : cout << "min and max uu = " << uu[].min << ", "<< uu[].max <<  endl;
+   30 : plot(u, dim=3, fill=1,wait=1);
+   31 : plot(uu, dim=3, fill=1,wait=1);
+   32 : plot(u, uu, dim=3, fill=0,wait=1);  sizestack + 1024 =3856  ( 2832 )
+ 
+  -- Square mesh : nb vertices  =10201 ,  nb triangles = 20000 ,  nb boundary edges 400
+  -- Solve :
+          min 1.09817e-064  max 0.635561
+  -- Solve :
+          min 1.09395e-064  max 0.892012
+min and max u = 1.09817e-064, 0.635561
+min and max uu = 1.09395e-064, 0.892012
+times: compile 0.164s, execution 3.999s,  mpirank:0
+ ######## We forget of deleting   53 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
+ CodeAlloc : nb ptr  2966,  size :384848 mpirank: 0
+Ok: Normal End
+ try getConsole D:\Study\HUST\FEM\heatsource\FreeFem++\Laplace_Dirac.edp

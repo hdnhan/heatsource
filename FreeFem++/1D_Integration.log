@@ -1,0 +1,1308 @@
+-- FreeFem++ v  3.610001 (date jeu. 12 juil. 2018 15:05:23)
+ Load: lg_fem lg_mesh lg_mesh3 eigenvalue
+    1 : load "ff-IpOpt"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\ff-IpOpt = 0)
+    2 : load "medit"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\medit = 0)
+    3 :
+    4 : real T = 1;
+    5 : int nn = 50;
+    6 : int Nx = nn, Ny = nn;
+    7 : int[int] labs = [1, 2, 0, 4];
+    8 : mesh Th = square(Nx, Ny, [x, T * y], label = labs);
+    9 : fespace Vh(Th, P1);
+   10 :
+   11 :
+   12 : // ***** DATA ***** //
+   13 : Vh ue = exp(y) * sin(pi * x);
+   14 : Vh uD = 0;
+   15 : Vh u0 = ue(x, 0);
+   16 :
+   17 : Vh fe = sin(pi * x) * sin(pi * y);
+   18 :
+   19 : Vh q = 2 + x^2 + y^2;
+   20 : Vh g = (1 + pi^2) * ue - fe * q;
+   21 : real gamma = 1e-6;
+   22 :
+   23 :
+   24 :
+   25 : // ** Integrate on space
+   26 : //   The result is a vector with respect to (t)
+   27 : func real[int] IntegralOnSpace(real[int] mat){
+   28 :     real[int] res(Ny + 1);
+   29 :     Vh temp = 0;
+   30 :     for (int i = 0; i <= Ny; i++){
+   31 :         for (int j = 0; j <= Nx; j++){
+   32 :             temp[][j] = mat[i * (Nx + 1) + j];
+   33 :         }
+   34 :         res[i] = int1d(Th, 1)(temp);
+   35 :     }
+   36 :     return res;
+   37 : }
+   38 :
+   39 : // The integration observation
+   40 : Vh omg = 1 + x^2 + y^2; // omega
+   41 : Vh we = omg * ue;
+   42 : real[int] lue = IntegralOnSpace(we[]);
+   43 :
+   44 :
+   45 :
+   46 : // ***** Functions to modify matrix ***** //
+   47 :
+   48 : // ** Change the time direction
+   49 : func real[int] FlipTimeDirection(real[int] mat){
+   50 :     Vh res;
+   51 :     for (int i = 0; i <= Ny/2; i++){
+   52 :         for (int j = 0; j <= Nx; j++){
+   53 :             res[][i * (Nx + 1) + j] = mat[(Ny - i) * (Nx + 1) + j];
+   54 :             res[][(Ny - i) * (Nx + 1) + j] = mat[i * (Nx + 1) + j];
+   55 :         }
+   56 :     }
+   57 :     return res[];
+   58 : }
+   59 :
+   60 : // ** To change vec(t) into vec(x, t) depending on the mesh
+   61 : func real[int] TimeToQ(real[int] mat){
+   62 :     Vh res = 0;
+   63 :     for (int i = 0; i <= Ny; i++){
+   64 :         for (int j = 0; j <= Nx; j++)
+   65 :         res[][i * (Nx + 1) + j] = mat[i];
+   66 :     }
+   67 :     return res[];
+   68 : }
+   69 :
+   70 : // ** Inner product on time domain of vec1(t) and vec2(t)
+   71 : func real InnerProductOnTime(real[int] vec1, real[int] vec2){
+   72 :     real[int] vec(Ny + 1);
+   73 :     for (int i = 0; i <= Ny; i++){
+   74 :         vec[i] = vec1[i] * vec2[i];
+   75 :     }
+   76 :
+   77 :     // Take int1d on x = 0 (label = 4);
+   78 :     Vh res = 0;
+   79 :     for (int i = 0; i <= Ny; i++){
+   80 :         res[][i * (Nx + 1)] = vec[i];
+   81 :     }
+   82 :
+   83 :     return int1d(Th, 4)(res);
+   84 : }
+   85 :
+   86 :
+   87 :
+   88 : // ***** State and Adjoint problems ***** //
+   89 :
+   90 : // * State problem
+   91 : func real[int] StateProblem(real[int] ff){
+   92 :     Vh u, v, f; f[] = ff;
+   93 :     Vh rsh = q * f + g;
+   94 :
+   95 :     solve SpaceTime(u, v, solver = sparsesolver) =
+   96 :           int2d(Th)(dy(u)  * v + dx(u)  * dx(v))
+   97 :         //+ int2d(Th)(dy(u0) * v + dx(u0) * dx(v))
+   98 :         - int2d(Th)(rsh * v)
+   99 :         + on(2, 4, u = uD) + on(1, u = u0);
+  100 :
+  101 :     //u = u + u0;
+  102 :     return u[];
+  103 : }
+  104 :
+  105 :
+  106 : // * Adjoint problem
+  107 : func real[int] AdjointProblem(real[int] uu){
+  108 :     Vh p, v, u; u[] = uu;
+  109 :     Vh wh = omg * u;
+  110 :     real[int] del = IntegralOnSpace(wh[]) - lue;
+  111 :     Vh delta; delta[] = TimeToQ(del);
+  112 :     Vh rhs = omg * delta;
+  113 :     rhs[] = FlipTimeDirection(rhs[]);
+  114 :
+  115 :     solve SpaceTime(p, v, solver = sparsesolver) =
+  116 :           int2d(Th)(dy(p) * v + dx(p) * dx(v))
+  117 :         - int2d(Th)(rhs * v)
+  118 :         + on(1, 2, 4, p = 0);
+  119 :     return FlipTimeDirection(p[]);
+  120 : }
+  121 :
+  122 :
+  123 : // Tikhonov functional
+  124 : func real J(real[int] ff) {
+  125 :     Vh f; f[] = ff;
+  126 :     Vh u; u[] = StateProblem(ff);
+  127 :     Vh wh = omg * u;
+  128 :     real[int] del = IntegralOnSpace(wh[]) - lue;
+  129 :     return 0.5 * InnerProductOnTime(del, del) + 0.5 * gamma * int2d(Th)(f^2);
+  130 : }
+  131 :
+  132 :
+  133 : // Gradient of Tikhonov funtional
+  134 : func real[int] GradJ(real[int] ff) {
+  135 :     Vh p; p[] = AdjointProblem(StateProblem(ff));
+  136 :     Vh qp = p * q;
+  137 :     real[int] res = qp[] + gamma * ff;
+  138 :     return res;
+  139 : }
+  140 :
+  141 :
+  142 :
+  143 : Vh fh = 0;
+  144 : IPOPT(J, GradJ, fh[], tol = 1e-5);
+  145 :
+  146 : cout << "J: " << J(fh[]) << endl;
+  147 : Vh delta = fh - fe;
+  148 :
+  149 : cout << "fe min and max: " << fe[].min << ", " << fe[].max << endl;
+  150 : cout << "fh min and max: " << fh[].min << ", " << fh[].max << endl;
+  151 : cout << "(fh-fe) min and max: " << delta[].min << ", " << delta[].max << endl;
+  152 : cout << "erorr L2: " << sqrt(int2d(Th)(delta * delta)) << endl;
+  153 : plot(fe, dim = 3, wait = 1);
+  154 : plot(fh, dim = 3, wait = 1);
+  155 : plot(fe, fh, dim = 3, wait = 1); sizestack + 1024 =8808  ( 7784 )
+ 
+  -- Square mesh : nb vertices  =2601 ,  nb triangles = 5000 ,  nb boundary edges 200
+ 
+IPOPT Note : No hessian given ==> LBFGS hessian approximation enabled
+ 
+******************************************************************************
+This program contains Ipopt, a library for large-scale nonlinear optimization.
+ Ipopt is released as open source code under the Eclipse Public License (EPL).
+         For more information visit http://projects.coin-or.org/Ipopt
+******************************************************************************
+ 
+This is Ipopt version 3.12.4, running with linear solver mumps.
+NOTE: Other linear solvers might be more efficient (see Ipopt documentation).
+ 
+Number of nonzeros in equality constraint Jacobian...:        0
+Number of nonzeros in inequality constraint Jacobian.:        0
+Number of nonzeros in Lagrangian Hessian.............:        0
+ 
+  -- Solve :
+          min 3.13913e-032  max 2.6289
+  -- Solve :
+          min -0.0592746  max 6.38059e-035
+Total number of variables............................:     2601
+                     variables with only lower bounds:        0
+                variables with lower and upper bounds:        0
+                     variables with only upper bounds:        0
+Total number of equality constraints.................:        0
+Total number of inequality constraints...............:        0
+        inequality constraints with only lower bounds:        0
+   inequality constraints with lower and upper bounds:        0
+        inequality constraints with only upper bounds:        0
+ 
+  -- Solve :
+          min 3.13913e-032  max 2.6289
+  -- Solve :
+          min -0.0592746  max 6.38059e-035
+  -- Solve :
+          min 3.13913e-032  max 2.6289
+iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+   0 1.8784078e-002 0.00e+000 1.64e-001   0.0 0.00e+000    -  0.00e+000 0.00e+000   0
+  -- Solve :
+          min 3.13912e-032  max 2.65351
+  -- Solve :
+          min 3.13912e-032  max 2.65351
+  -- Solve :
+          min -0.0480909  max 4.53524e-035
+   1 1.2932707e-002 0.00e+000 1.31e-001 -11.0 1.64e-001    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min 3.13906e-032  max 2.72291
+  -- Solve :
+          min 3.13906e-032  max 2.72291
+  -- Solve :
+          min -0.00575075  max 0.00403253
+   2 2.2590062e-004 0.00e+000 1.39e-002 -11.0 7.82e-001    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min 3.13905e-032  max 2.71464
+  -- Solve :
+          min 3.13905e-032  max 2.71464
+  -- Solve :
+          min -0.00226332  max 0.00175645
+   3 3.6665451e-005 0.00e+000 5.42e-003 -11.0 1.03e-001    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min 3.13904e-032  max 2.71642
+  -- Solve :
+          min 3.13904e-032  max 2.71642
+  -- Solve :
+          min -0.000266105  max 0.000440405
+   4 2.1113799e-006 0.00e+000 1.03e-003 -11.0 6.99e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min 3.13905e-032  max 2.71512
+  -- Solve :
+          min 3.13905e-032  max 2.71512
+  -- Solve :
+          min -0.000107173  max 0.000354122
+   5 9.3619540e-007 0.00e+000 8.30e-004 -11.0 1.30e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min 3.13907e-032  max 2.71519
+  -- Solve :
+          min 3.13907e-032  max 2.71519
+  -- Solve :
+          min -8.52253e-005  max 0.000138615
+   6 3.6204863e-007 0.00e+000 3.30e-004 -11.0 2.59e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min 3.13909e-032  max 2.71455
+  -- Solve :
+          min 3.13909e-032  max 2.71455
+  -- Solve :
+          min -0.000138652  max 4.05561e-005
+   7 3.0428877e-007 0.00e+000 4.21e-004 -11.0 1.78e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min 3.13909e-032  max 2.71503
+  -- Solve :
+          min 3.13909e-032  max 2.71503
+  -- Solve :
+          min -3.05167e-005  max 2.81719e-005
+   8 2.2469787e-007 0.00e+000 8.54e-005 -11.0 5.64e-003    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min 3.13909e-032  max 2.71504
+  -- Solve :
+          min 3.13909e-032  max 2.71504
+  -- Solve :
+          min -2.33401e-005  max 1.95323e-005
+   9 2.1758335e-007 0.00e+000 5.81e-005 -11.0 1.71e-003    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min 3.13909e-032  max 2.71502
+  -- Solve :
+          min 3.13909e-032  max 2.71502
+  -- Solve :
+          min -7.2828e-006  max 2.85252e-005
+iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+  10 2.1270340e-007 0.00e+000 6.82e-005 -11.0 4.27e-003    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min 3.1391e-032  max 2.71499
+  -- Solve :
+          min 3.1391e-032  max 2.71499
+  -- Solve :
+          min -8.32637e-006  max 9.6229e-006
+  11 2.0748588e-007 0.00e+000 2.34e-005 -11.0 4.26e-003    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min -1.39738e-005  max 8.29542e-006
+  12 2.0623430e-007 0.00e+000 3.80e-005 -11.0 2.96e-003    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min -8.58985e-006  max 5.29413e-006
+  13 2.0513743e-007 0.00e+000 2.03e-005 -11.0 4.42e-003    -  1.00e+000 5.00e-001f  2
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min -4.23795e-006  max 4.76501e-006
+  14 2.0451276e-007 0.00e+000 1.18e-005 -11.0 7.12e-004    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min 3.1391e-032  max 2.71499
+  -- Solve :
+          min 3.1391e-032  max 2.71499
+  -- Solve :
+          min 3.1391e-032  max 2.71499
+  -- Solve :
+          min 3.1391e-032  max 2.71499
+  -- Solve :
+          min 3.1391e-032  max 2.71499
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min -4.23795e-006  max 4.76501e-006
+  15 2.0451276e-007 0.00e+000 1.18e-005 -11.0 3.28e-004    -  1.00e+000 4.66e-010f 32
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min -3.40528e-006  max 1.35703e-005
+  16 2.0395889e-007 0.00e+000 4.17e-005 -11.0 8.92e-004    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min 3.1391e-032  max 2.71496
+  -- Solve :
+          min 3.1391e-032  max 2.71496
+  -- Solve :
+          min 3.1391e-032  max 2.71496
+  -- Solve :
+          min 3.1391e-032  max 2.71496
+  -- Solve :
+          min 3.1391e-032  max 2.71496
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min -3.40528e-006  max 1.35703e-005
+  17 2.0395889e-007 0.00e+000 4.17e-005 -11.0 1.29e-003    -  1.00e+000 1.16e-010f 34
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min -2.73911e-006  max 9.47934e-006
+  18 2.0392892e-007 0.00e+000 2.92e-005 -11.0 6.18e-004    -  1.00e+000 2.50e-001f  3
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min -2.73911e-006  max 9.47934e-006
+  19 2.0392892e-007 0.00e+000 2.92e-005 -11.0 5.94e-004    -  1.00e+000 5.82e-011f 35
+  -- Solve :
+          min 3.13911e-032  max 2.71448
+  -- Solve :
+          min 3.13911e-032  max 2.71448
+  -- Solve :
+          min 3.13911e-032  max 2.71448
+  -- Solve :
+          min 3.13911e-032  max 2.71448
+  -- Solve :
+          min 3.13911e-032  max 2.71448
+  -- Solve :
+          min 3.1391e-032  max 2.71475
+  -- Solve :
+          min 3.1391e-032  max 2.71489
+  -- Solve :
+          min 3.1391e-032  max 2.71496
+  -- Solve :
+          min 3.1391e-032  max 2.71499
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min -2.73911e-006  max 9.47934e-006
+iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+  20 2.0392892e-007 0.00e+000 2.92e-005 -11.0 1.08e-002    -  1.00e+000 2.84e-014f 46
+  -- Solve :
+          min 3.13911e-032  max 2.71448
+  -- Solve :
+          min 3.13911e-032  max 2.71448
+  -- Solve :
+          min 3.13911e-032  max 2.71448
+  -- Solve :
+          min 3.13911e-032  max 2.71448
+  -- Solve :
+          min 3.13911e-032  max 2.71448
+  -- Solve :
+          min 3.1391e-032  max 2.71475
+  -- Solve :
+          min 3.1391e-032  max 2.71489
+  -- Solve :
+          min 3.1391e-032  max 2.71496
+  -- Solve :
+          min 3.1391e-032  max 2.71499
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min -2.73911e-006  max 9.47934e-006
+  21 2.0392892e-007 0.00e+000 2.92e-005 -11.0 1.08e-002    -  1.00e+000 2.84e-014f 46
+  -- Solve :
+          min 3.13911e-032  max 2.71448
+  -- Solve :
+          min 3.13911e-032  max 2.71448
+  -- Solve :
+          min 3.13911e-032  max 2.71448
+  -- Solve :
+          min 3.13911e-032  max 2.71448
+  -- Solve :
+          min 3.13911e-032  max 2.71448
+  -- Solve :
+          min 3.1391e-032  max 2.71475
+  -- Solve :
+          min 3.1391e-032  max 2.71489
+  -- Solve :
+          min 3.1391e-032  max 2.71496
+  -- Solve :
+          min 3.1391e-032  max 2.71499
+  -- Solve :
+          min 3.1391e-032  max 2.71501
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min -2.73911e-006  max 9.47934e-006
+  22 2.0392892e-007 0.00e+000 2.92e-005 -11.0 1.08e-002    -  1.00e+000 1.42e-014f 47
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min -2.73911e-006  max 9.47934e-006
+  23 2.0392892e-007 0.00e+000 2.92e-005 -11.0 2.92e-005    -  1.00e+000 1.46e-011f 37
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min -2.73911e-006  max 9.47934e-006
+  24 2.0392892e-007 0.00e+000 2.92e-005 -11.0 2.92e-005    -  1.00e+000 7.28e-012f 38
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min -2.73911e-006  max 9.47934e-006
+  25 2.0392892e-007 0.00e+000 2.92e-005 -11.0 2.92e-005    -  1.00e+000 9.09e-013f 41
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min 3.1391e-032  max 2.71503
+  -- Solve :
+          min -2.73911e-006  max 9.47934e-006
+  26 2.0392892e-007 0.00e+000 2.92e-005 -11.0 2.92e-005    -  1.00e+000 9.09e-013f 41
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min 3.1391e-032  max 2.71502
+  -- Solve :
+          min -2.73033e-006  max 7.65989e-006
+  27 2.0400329e-007 0.00e+000 2.37e-005 -11.0 2.92e-005    -  1.00e+000 1.00e+000w  1
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min 3.1391e-032  max 2.715
+  -- Solve :
+          min -2.57028e-006  max 1.53373e-006
+  28 2.0448562e-007 0.00e+000 5.92e-006 -11.0 1.35e-004    -  1.00e+000 1.00e+000w  1
+ 
+Number of Iterations....: 28
+ 
+                                   (scaled)                 (unscaled)
+Objective...............:  2.0448562011378365e-007   2.0448562011378365e-007
+Dual infeasibility......:  5.9184230548909609e-006   5.9184230548909609e-006
+Constraint violation....:  0.0000000000000000e+000   0.0000000000000000e+000
+Complementarity.........:  0.0000000000000000e+000   0.0000000000000000e+000
+Overall NLP error.......:  5.9184230548909609e-006   5.9184230548909609e-006
+ 
+ 
+Number of objective function evaluations             = 467
+Number of objective gradient evaluations             = 29
+Number of equality constraint evaluations            = 0
+Number of inequality constraint evaluations          = 0
+Number of equality constraint Jacobian evaluations   = 0
+Number of inequality constraint Jacobian evaluations = 0
+Number of Lagrangian Hessian evaluations             = 0
+Total CPU secs in IPOPT (w/o function evaluations)   =      0.971
+Total CPU secs in NLP function evaluations           =     22.891
+ 
+EXIT: Optimal Solution Found.
+ 
+ 
+*** Ipopt succeeded
+  -- Solve :
+          min 3.1391e-032  max 2.715
+J: 2.04486e-007
+fe min and max: 0, 1
+fh min and max: -0.000380842, 0.95832
+(fh-fe) min and max: -0.109482, 0.166839
+erorr L2: 0.0656806
+times: compile 0.378s, execution 26.131s,  mpirank:0
+ ######## We forget of deleting   20660 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
+ CodeAlloc : nb ptr  3633,  size :413528 mpirank: 0
+Ok: Normal End
+ try getConsole D:\Study\HUST\FEM\heatsource\FreeFem++\1D_Integration.edp
