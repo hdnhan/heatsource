@@ -3,7 +3,7 @@ load "msh3"
 load "medit"
 
 real T = 1;
-int nn = 20;
+int nn = 40;
 int Nx = nn, Ny = nn, Nz = nn; 
 int[int] labs = [1, 2, 3, 4, 5, 0];
 mesh3 Th = cube(Nx, Ny, Nz, [x, y, T * z], label = labs);
@@ -40,19 +40,19 @@ func real[int] IntegralOnSpace(real[int] mat){
 }
 
 // The integration observation
-real x0 = 0.5; // point
-real y0 = 0.5; // point
-Vh omg = Nx / (2 * (cosh(Nx * (x - x0)))^2) * Ny / (2 * (cosh(Ny * (y - y0)))^2);
+real xx0 = 0.5; // point
+real yy0 = 0.5; // point
+Vh omg = Nx / (2 * (cosh(Nx * (x - xx0)))^2) * Ny / (2 * (cosh(Ny * (y - yy0)))^2);
 real[int] lue(Nz + 1);
 
 // either
-//Vh we = omg * ue;
-//lue = IntegralOnSpace(we[]);
+Vh we = omg * ue;
+lue = IntegralOnSpace(we[]);
 
 // or
-for (int i = 0; i <= Nz; i++){
-    lue[i] = ue(x0, y0, 1.0 * i / Ny);
-}
+//for (int i = 0; i <= Nz; i++){
+//    lue[i] = ue(xx0, yy0, 1.0 * i / Ny);
+//}
 
 
 
@@ -64,8 +64,8 @@ func real[int] FlipTimeDirection(real[int] mat){
     for (int i = 0; i <= Nz/2; i++){
         for (int j = 0; j <= Ny; j++){
             for (int k = 0; k <= Nx; k++){
-                u[][i * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k] = mat[(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k];
-                u[][(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k] = mat[i * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k];
+                u[][i * (Nx + 1) * (Ny + 1) + j * (Nx + 1) + k] = mat[(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Nx + 1) + k];
+                u[][(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Nx + 1) + k] = mat[i * (Nx + 1) * (Ny + 1) + j * (Nx + 1) + k];
             }
         }
     }
@@ -84,16 +84,18 @@ func real[int] TimeToQ(real[int] mat){
     return res[];
 }
 
+
+mesh Th1 = square(Nx, Nz);
+fespace Vh1(Th1, P1);
 // Inner product on time domain of vec1(t) and vec2(t)
 func real InnerProductOnTime(real[int] vec1, real[int] vec2){
-    mesh Th1 = square(Nx, Nz);
     real[int] vec(Nz + 1);
     for (int i = 0; i <= Nz; i++){
         vec[i] = vec1[i] * vec2[i];
     }
 
     // Take int1d on x = 0 (label = 4);
-    Vh res = 0;
+    Vh1 res = 0;
     for (int i = 0; i <= Nz; i++){
         res[][i * (Nx + 1)] = vec[i];
     }
@@ -158,7 +160,7 @@ func real[int] GradJ(real[int] ff) {
 
 
 
-Vh fh = 0;
+Vh fh = fe;
 IPOPT(J, GradJ, fh[], tol = 1e-3);
 
 cout << "J: " << J(fh[]) << endl; 

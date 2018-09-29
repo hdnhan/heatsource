@@ -17,7 +17,9 @@ solve Laplace(u,v) =
 matrix D = interpolate(Vh, x0, y0);
 real[int] c = [1.0];
 Vh b; b[] = D * c;
+cout << b[] << endl;
 b[] = -b[];
+cout << "min and max: " << b[].min << ", " << b[].max << endl;
 
 Vh uu, vv;
 solve laplace(uu,vv) =    
