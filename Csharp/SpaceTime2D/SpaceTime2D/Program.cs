@@ -4,12 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpaceTime2D
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
+namespace SpaceTime2D {
+    class Program {
+        static void Main(string[] args) {
             // DATA
             double axx(double x, double y, double t) => 1;
             double ayy(double x, double y, double t) => 1;
@@ -18,7 +15,7 @@ namespace SpaceTime2D
             double u(double x, double y, double t) => Math.Cos(Math.PI * t) * Math.Sin(Math.PI * x) * Math.Sin(Math.PI * y);
             double F(double x, double y, double t) => -Math.PI * Math.Sin(Math.PI * t) * Math.Sin(Math.PI * x) * Math.Sin(Math.PI * y)
                                                                   + 2 * Math.PI * Math.PI * u(x, y, t);
-            double dxu(double x, double y, double t) => Math.PI*Math.Cos(Math.PI * t) * Math.Cos(Math.PI * x) * Math.Sin(Math.PI * y);
+            double dxu(double x, double y, double t) => Math.PI * Math.Cos(Math.PI * t) * Math.Cos(Math.PI * x) * Math.Sin(Math.PI * y);
             double dyu(double x, double y, double t) => Math.PI * Math.Cos(Math.PI * t) * Math.Sin(Math.PI * x) * Math.Cos(Math.PI * y);
 
             // Ex 2:
@@ -28,7 +25,7 @@ namespace SpaceTime2D
             double dxu0(double x, double y) => Math.PI * Math.Cos(Math.PI * x) * Math.Sin(Math.PI * y);
             double dyu0(double x, double y) => Math.PI * Math.Sin(Math.PI * x) * Math.Cos(Math.PI * y);
 
-            int nn = 20;
+            int nn = 32;
             int Nx = nn;
             int Ny = nn;
             int Nt = nn;
@@ -40,10 +37,10 @@ namespace SpaceTime2D
             double ht = T / Nt; // time step
             double jacobi = hx * hy * ht; // Jacobi = 6 * volume(elem)
 
-            // Domain 2D
+            // Domain 3D
             double[,] node = new double[(Nx + 1) * (Ny + 1) * (Nt + 1), 3];
             int[,] elem = new int[6 * Nx * Ny * Nt, 4];
-            int[] dirichlet = new int[(Nx + 1) * (Ny + 1) * (Nt + 1) - (Nx - 1) * (Ny - 1) * Nt ]; // Dirichlet boundary
+            int[] dirichlet = new int[(Nx + 1) * (Ny + 1) * (Nt + 1) - (Nx - 1) * (Ny - 1) * Nt]; // Dirichlet boundary
 
 
             Operators oprs = new Operators();
@@ -55,8 +52,7 @@ namespace SpaceTime2D
             double[] uh = sfem.SolveFEM(node, elem, dirichlet, jacobi, axx, ayy, dxu0, dyu0, F);
 
             double[] del = new double[node.GetLength(0)];
-            for (int i = 0; i < node.GetLength(0); i++)
-            {
+            for (int i = 0; i < node.GetLength(0); i++) {
                 uh[i] = uh[i] + u0(node[i, 0], node[i, 1]);
                 del[i] = u(node[i, 0], node[i, 1], node[i, 2]) - uh[i];
             }

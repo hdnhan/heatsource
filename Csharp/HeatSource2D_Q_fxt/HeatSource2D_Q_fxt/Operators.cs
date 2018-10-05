@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 
 namespace HeatSource2D_Q_fxt {
     class Operators {
-        // Phần định nghĩa các toán tử trong vector hay ma trận
 
-        // Tạo vector có giá trị toàn là 1 (one)
         public double[] Ones(int LengthOfVector) {
             double[] res = new double[LengthOfVector];
             for (int i = 0; i < LengthOfVector; i++) {
@@ -17,17 +15,13 @@ namespace HeatSource2D_Q_fxt {
             return res;
         }
 
-        // Tạo ma trận có giá trị toàn là 0 (zero)
-        public double[,] Zeros(int row, int col) {
-            double[,] res = new double[row + 1, col + 1];
-            for (int i = 0; i <= row; i++) {
-                for (int j = 0; j <= col; j++)
-                    res[i, j] = 0;
+        public double[] Zeros(int LengthOfVector) {
+            double[] res = new double[LengthOfVector];
+            for (int i = 0; i < LengthOfVector; i++) {
+                res[i] = 0;
             }
             return res;
         }
-
-        // Phần định nghĩa các toán tử trong vector hay ma trận
 
         // Substract
         // z = x-y
@@ -39,7 +33,7 @@ namespace HeatSource2D_Q_fxt {
             return res;
         }
 
-        // C = A-B
+        // C = A - B
         public double[,] Sub(double[,] A, double[,] B) {
             double[,] res = new double[A.GetLength(0), A.GetLength(1)];
             for (int i = 0; i < A.GetLength(0); i++) {
@@ -70,7 +64,7 @@ namespace HeatSource2D_Q_fxt {
 
 
         //Add
-        // z = x+y
+        // z = x + y
         public double[] Add(double[] x, double[] y) {
             double[] res = new double[x.Length];
             for (int i = 0; i < x.Length; i++) {
@@ -79,7 +73,7 @@ namespace HeatSource2D_Q_fxt {
             return res;
         }
 
-        // C = A+B
+        // C = A + B
         public double[,] Add(double[,] A, double[,] B) {
             double[,] res = new double[A.GetLength(0), A.GetLength(1)];
             for (int i = 0; i < A.GetLength(0); i++) {
@@ -108,7 +102,7 @@ namespace HeatSource2D_Q_fxt {
         }
 
 
-        // y = a*x
+        // y = a * x
         public double[] Mul(double a, double[] x) {
             double[] res = new double[x.Length];
             for (int i = 0; i < x.Length; i++) {
@@ -117,7 +111,7 @@ namespace HeatSource2D_Q_fxt {
             return res;
         }
 
-        // Y = a*X
+        // Y = a * X
         public double[,] Mul(double a, double[,] X) {
             double[,] res = new double[X.GetLength(0), X.GetLength(1)];
             for (int i = 0; i < X.GetLength(0); i++) {
@@ -128,7 +122,7 @@ namespace HeatSource2D_Q_fxt {
             return res;
         }
 
-        // y = A*x
+        // y = A * x
         public double[] Mul(double[,] A, double[] x) {
             double[] res = new double[x.Length];
             for (int i = 0; i < A.GetLength(0); i++) {
@@ -139,7 +133,7 @@ namespace HeatSource2D_Q_fxt {
             return res;
         }
 
-        // a*mapA 
+        // a * mapA 
         public Dictionary<Tuple<int, int>, double> Mul(double a, Dictionary<Tuple<int, int>, double> mapA) {
             var res = new Dictionary<Tuple<int, int>, double>();
             foreach (KeyValuePair<Tuple<int, int>, double> KeyValue in mapA) {
@@ -148,7 +142,7 @@ namespace HeatSource2D_Q_fxt {
             return res;
         }
 
-        // mapA*x
+        // mapA * x
         public double[] Mul(Dictionary<Tuple<int, int>, double> mapA, double[] x) {
             double[] res = new double[x.Length];
             foreach (KeyValuePair<Tuple<int, int>, double> KeyValue in mapA) {
@@ -157,7 +151,7 @@ namespace HeatSource2D_Q_fxt {
             return res;
         }
 
-        // mapA'*x
+        // mapA' * x (A transpose)
         public double[] MulI(Dictionary<Tuple<int, int>, double> mapA, double[] x) {
             double[] res = new double[x.Length];
             foreach (KeyValuePair<Tuple<int, int>, double> KeyValue in mapA) {
@@ -167,7 +161,7 @@ namespace HeatSource2D_Q_fxt {
         }
 
 
-        // z = x'*y
+        // z = x' * y
         public double InnerProduct(double[] x, double[] y) {
             double res = 0;
             for (int i = 0; i < x.Length; i++) {
@@ -177,27 +171,7 @@ namespace HeatSource2D_Q_fxt {
         }
 
 
-        // Lấy một cột từ ma trận A
-        public double[] ColumnOfMatrix(double[,] A, int index) {
-            double[] res = new double[A.GetLength(0)];
-            for (int i = 0; i < res.Length; i++) {
-                res[i] = A[i, index];
-            }
-            return res;
-        }
-
-        // Lấy một hàng từ ma trận A
-        public double[] RowOfMatrix(double[,] A, int index) {
-            double[] res = new double[A.GetLength(1)];
-            for (int i = 0; i < res.Length; i++) {
-                res[i] = A[index, i];
-            }
-            return res;
-        }
-
-
-
-        // flip time direction
+        // flip time direction f(x, y, t)
         public double[] flip(double[] f, int Nx, int Ny, int Nt) {
             double[] res = new double[f.Length];
             for (int nt = 0; nt <= Nt / 2; nt++) {
@@ -211,25 +185,21 @@ namespace HeatSource2D_Q_fxt {
             return res;
         }
 
-
-        // Thay đổi giá trị của một cột nào đó
-        public void ChangeValueOfColumn(ref double[,] Original, int ColumnIndex, double[] InsertValue) {
-            for (int i = 0; i < InsertValue.Length; i++) {
-                Original[i, ColumnIndex] = InsertValue[i];
-            }
-        }
-
-        // Thay đổi nghiệm từ vecto thành ma trận
-        public double[,] Sol_Vec2Mat(double[] uh, int Nx, int Nt) {
-            double[,] res = new double[Nx + 1, Nt + 1];
-            for (int nt = 0; nt <= Nt; nt++) {
-                for (int nx = 0; nx <= Nx; nx++) {
-                    res[nx, nt] = uh[nx + nt * (Nx + 1)];
-                }
+        // flip time direction f(t)
+        public double[] flip(double[] f, int Nt) {
+            double[] res = new double[f.Length];
+            for (int nt = 0; nt <= Nt / 2; nt++) {
+                res[nt] = f[Nt - nt];
+                res[Nt - nt] = f[nt];
             }
             return res;
         }
 
+
+
+
+
+        // Delete after using all of these functions
         // In ra ma trận
         public void Print(double[,] A) {
             Console.WriteLine();

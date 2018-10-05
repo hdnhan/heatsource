@@ -1,61 +1,56 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6730 64-bit) (preloaded format=pdflatex 2018.7.22)  27 SEP 2018 15:22
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630 64-bit) (preloaded format=pdflatex 2018.7.14)  5 OCT 2018 17:21
 entering extended mode
 **./contents.tex
 (contents.tex
-LaTeX2e <2018-04-01> patch level 5
-
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\base\article.cl
-s"
+LaTeX2e <2017-04-15>
+Babel <3.18> and hyphenation patterns for 75 language(s) loaded.
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\base\article.cls"
 Document Class: article 2014/09/29 v1.4h Standard LaTeX document class
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\base\size10.clo
-"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\base\size10.clo"
 File: size10.clo 2014/09/29 v1.4h Standard LaTeX file (size option)
 )
-\c@part=\count80
-\c@section=\count81
-\c@subsection=\count82
-\c@subsubsection=\count83
-\c@paragraph=\count84
-\c@subparagraph=\count85
-\c@figure=\count86
-\c@table=\count87
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
 \abovecaptionskip=\skip41
 \belowcaptionskip=\skip42
 \bibindent=\dimen102
-) (packages_and_definitions.tex
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsmath\amsmath
-.sty"
+)
+(packages_and_definitions.tex
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsmath\amsmath.sty
+"
 Package: amsmath 2017/09/02 v2.17a AMS math features
 \@mathmargin=\skip43
 
 For additional information on amsmath, use the `?' option.
-
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsmath\amstext
-.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsmath\amstext.sty
+"
 Package: amstext 2000/06/29 v2.01 AMS text
-
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsmath\amsgen.
-sty"
+ ("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsmath\amsgen.sty
+"
 File: amsgen.sty 1999/11/30 v2.0 generic functions
 \@emptytoks=\toks14
 \ex@=\dimen103
 ))
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsmath\amsbsy.
-sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsmath\amsbsy.sty"
 Package: amsbsy 1999/11/29 v1.2d Bold Symbols
 \pmbraise@=\dimen104
-)
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsmath\amsopn.
-sty"
+) ("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsmath\amsopn.st
+y"
 Package: amsopn 2016/03/08 v2.02 operator names
 )
-\inf@bad=\count88
+\inf@bad=\count87
 LaTeX Info: Redefining \frac on input line 213.
-\uproot@=\count89
-\leftroot@=\count90
+\uproot@=\count88
+\leftroot@=\count89
 LaTeX Info: Redefining \overline on input line 375.
-\classnum@=\count91
-\DOTSCASE@=\count92
+\classnum@=\count90
+\DOTSCASE@=\count91
 LaTeX Info: Redefining \ldots on input line 472.
 LaTeX Info: Redefining \dots on input line 475.
 LaTeX Info: Redefining \cdots on input line 596.
@@ -64,15 +59,15 @@ LaTeX Info: Redefining \cdots on input line 596.
 \big@size=\dimen105
 LaTeX Font Info:    Redeclaring font encoding OML on input line 712.
 LaTeX Font Info:    Redeclaring font encoding OMS on input line 713.
-\macc@depth=\count93
-\c@MaxMatrixCols=\count94
+\macc@depth=\count92
+\c@MaxMatrixCols=\count93
 \dotsspace@=\muskip10
-\c@parentequation=\count95
-\dspbrk@lvl=\count96
+\c@parentequation=\count94
+\dspbrk@lvl=\count95
 \tag@help=\toks15
-\row@=\count97
-\column@=\count98
-\maxfields@=\count99
+\row@=\count96
+\column@=\count97
+\maxfields@=\count98
 \andhelp@=\toks16
 \eqnshift@=\dimen106
 \alignsep@=\dimen107
@@ -87,20 +82,19 @@ LaTeX Font Info:    Redeclaring font encoding OMS on input line 713.
 LaTeX Info: Redefining \[ on input line 2817.
 LaTeX Info: Redefining \] on input line 2818.
 )
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\amssym
-b.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\amssymb.st
+y"
 Package: amssymb 2013/01/14 v3.01 AMS font symbols
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\amsfon
-ts.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\amsfonts.s
+ty"
 Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
 \symAMSa=\mathgroup4
 \symAMSb=\mathgroup5
 LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 (Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
 ))
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amscls\amsthm.s
-ty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amscls\amsthm.sty"
 Package: amsthm 2017/10/31 v2.20.4
 \thm@style=\toks19
 \thm@bodyfont=\toks20
@@ -111,40 +105,38 @@ Package: amsthm 2017/10/31 v2.20.4
 \thm@postskip=\skip47
 \thm@headsep=\skip48
 \dth@everypar=\toks24
-)
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\color.
-sty"
+) ("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\color.st
+y"
 Package: color 2016/07/10 v1.1e Standard LaTeX Color (DPC)
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics-cfg\co
-lor.cfg"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics-cfg\color.
+cfg"
 File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
 Package color Info: Driver file: pdftex.def on input line 147.
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics-def\pd
-ftex.def"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics-def\pdftex
+.def"
 File: pdftex.def 2018/01/08 v1.0l Graphics/color driver for pdftex
 ))
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\graphi
-cx.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\graphicx.s
+ty"
 Package: graphicx 2017/06/01 v1.1a Enhanced LaTeX Graphics (DPC,SPQR)
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\keyval
-.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\keyval.sty
+"
 Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
 \KV@toks@=\toks25
 )
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\graphi
-cs.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\graphics.s
+ty"
 Package: graphics 2017/06/25 v1.2c Standard LaTeX Graphics (DPC,SPQR)
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\trig.s
-ty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\trig.sty"
 Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
 )
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics-cfg\gr
-aphics.cfg"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics-cfg\graphi
+cs.cfg"
 File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
 )
 Package graphics Info: Driver file: pdftex.def on input line 99.
@@ -152,21 +144,20 @@ Package graphics Info: Driver file: pdftex.def on input line 99.
 \Gin@req@height=\dimen112
 \Gin@req@width=\dimen113
 )
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\cases\cases.sty
-"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\cases\cases.sty"
 Package: cases 2002/05/02 ver 2.5 
 )
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\hyperref\hyperr
-ef.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\hyperref\hyperref.s
+ty"
 Package: hyperref 2018/02/06 v6.86b Hypertext links for LaTeX
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\generic\oberdiek\hobs
-ub-hyperref.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\generic\oberdiek\hobsub-h
+yperref.sty"
 Package: hobsub-hyperref 2016/05/16 v1.14 Bundle oberdiek, subset hyperref (HO)
 
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\generic\oberdiek\hobs
-ub-generic.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\generic\oberdiek\hobsub-g
+eneric.sty"
 Package: hobsub-generic 2016/05/16 v1.14 Bundle oberdiek, subset generic (HO)
 Package: hobsub 2016/05/16 v1.14 Construct package bundles (HO)
 Package: infwarerr 2016/05/16 v1.4 Providing info/warning/error messages (HO)
@@ -184,7 +175,7 @@ Package etexcmds Info: Could not find \expanded.
 (etexcmds)             In the latter case, load this package earlier.
 Package: kvsetkeys 2016/05/16 v1.17 Key value parser (HO)
 Package: kvdefinekeys 2016/05/16 v1.4 Define keys (HO)
-Package: pdftexcmds 2018/01/30 v0.27 Utility functions of pdfTeX for LuaTeX (HO
+Package: pdftexcmds 2018/01/21 v0.26 Utility functions of pdfTeX for LuaTeX (HO
 )
 Package pdftexcmds Info: LuaTeX not detected.
 Package pdftexcmds Info: \pdf@primitive is available.
@@ -206,32 +197,30 @@ Package: atbegshi 2016/06/09 v1.18 At begin shipout hook (HO)
 Package: refcount 2016/05/16 v3.5 Data extraction from label references (HO)
 Package: hycolor 2016/05/16 v1.8 Color options for hyperref/bookmark (HO)
 )
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\generic\ifxetex\ifxet
-ex.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\generic\ifxetex\ifxetex.s
+ty"
 Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
 )
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\auxhoo
-k.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\auxhook.st
+y"
 Package: auxhook 2016/05/16 v1.4 Hooks for auxiliary files (HO)
 )
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\kvopti
-ons.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\kvoptions.
+sty"
 Package: kvoptions 2016/05/16 v3.12 Key value format for package options (HO)
 )
 \@linkdim=\dimen114
-\Hy@linkcounter=\count100
-\Hy@pagecounter=\count101
+\Hy@linkcounter=\count99
+\Hy@pagecounter=\count100
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\hyperref\pd1enc
-.def"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\hyperref\pd1enc.def
+"
 File: pd1enc.def 2018/02/06 v6.86b Hyperref: PDFDocEncoding definition (HO)
-Now handling font encoding PD1 ...
-... no UTF-8 mapping file for font encoding PD1
 )
-\Hy@SavedSpaceFactor=\count102
+\Hy@SavedSpaceFactor=\count101
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\00miktex\hyperr
-ef.cfg"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\00miktex\hyperref.c
+fg"
 File: hyperref.cfg 2002/06/06 v1.2 hyperref configuration of TeXLive
 )
 Package hyperref Info: Hyper figures OFF on input line 4509.
@@ -241,15 +230,14 @@ Package hyperref Info: Plain pages OFF on input line 4524.
 Package hyperref Info: Backreferencing OFF on input line 4529.
 Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
 Package hyperref Info: Bookmarks ON on input line 4762.
-\c@Hy@tempcnt=\count103
-
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\url\url.sty"
+\c@Hy@tempcnt=\count102
+ ("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\url\url.sty"
 \Urlmuskip=\muskip11
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
 )
 LaTeX Info: Redefining \url on input line 5115.
 \XeTeXLinkMargin=\dimen115
-\Fld@menulength=\count104
+\Fld@menulength=\count103
 \Field@Width=\dimen116
 \Fld@charsize=\dimen117
 Package hyperref Info: Hyper figures OFF on input line 6369.
@@ -261,20 +249,20 @@ Package hyperref Info: Link coloring with OCG OFF on input line 6394.
 Package hyperref Info: PDF/A mode OFF on input line 6399.
 LaTeX Info: Redefining \ref on input line 6439.
 LaTeX Info: Redefining \pageref on input line 6443.
-\Hy@abspage=\count105
-\c@Item=\count106
-\c@Hfootnote=\count107
+\Hy@abspage=\count104
+\c@Item=\count105
+\c@Hfootnote=\count106
 )
 Package hyperref Info: Driver (autodetected): hpdftex.
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\hyperref\hpdfte
-x.def"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\hyperref\hpdftex.de
+f"
 File: hpdftex.def 2018/02/06 v6.86b Hyperref driver for pdfTeX
-\Fld@listcount=\count108
-\c@bookmark@seq@number=\count109
+\Fld@listcount=\count107
+\c@bookmark@seq@number=\count108
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\rerunf
-ilecheck.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\rerunfilec
+heck.sty"
 Package: rerunfilecheck 2016/05/16 v1.8 Rerun checks for auxiliary files (HO)
 Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 82.
@@ -283,27 +271,24 @@ Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 )
 Package hyperref Info: Option `colorlinks' set `true' on input line 11.
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\tools\array.sty
-"
-Package: array 2018/04/30 v2.4h Tabular extension package (FMi)
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\tools\array.sty"
+Package: array 2016/10/06 v2.4d Tabular extension package (FMi)
 \col@sep=\dimen118
-\ar@mcellbox=\box28
 \extrarowheight=\dimen119
 \NC@list=\toks26
 \extratabsurround=\skip50
 \backup@length=\skip51
-\ar@cellbox=\box29
 )
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\multirow\multir
-ow.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\multirow\multirow.s
+ty"
 Package: multirow 2016/11/25 v2.2 Span multiple rows of a table
 \multirow@colwidth=\skip52
-\multirow@cntb=\count110
+\multirow@cntb=\count109
 \multirow@dima=\skip53
 \bigstrutjot=\dimen120
 )
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\booktabs\bookta
-bs.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\booktabs\booktabs.s
+ty"
 Package: booktabs 2005/04/14 v1.61803 publication quality tables
 \heavyrulewidth=\dimen121
 \lightrulewidth=\dimen122
@@ -315,20 +300,20 @@ Package: booktabs 2005/04/14 v1.61803 publication quality tables
 \cmidrulesep=\dimen128
 \cmidrulekern=\dimen129
 \defaultaddspace=\dimen130
-\@cmidla=\count111
-\@cmidlb=\count112
+\@cmidla=\count110
+\@cmidlb=\count111
 \@aboverulesep=\dimen131
 \@belowrulesep=\dimen132
-\@thisruleclass=\count113
-\@lastruleclass=\count114
+\@thisruleclass=\count112
+\@lastruleclass=\count113
 \@thisrulewidth=\dimen133
 )
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\caption\caption
-.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\caption\caption.sty
+"
 Package: caption 2018/05/01 v3.3-147 Customizing captions (AR)
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\caption\caption
-3.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\caption\caption3.st
+y"
 Package: caption3 2018/05/27 v1.8a caption3 kernel (AR)
 Package caption3 Info: TeX engine: e-TeX on input line 64.
 \captionmargin=\dimen134
@@ -339,21 +324,19 @@ Package caption3 Info: TeX engine: e-TeX on input line 64.
 \caption@parindent=\dimen139
 \caption@hangindent=\dimen140
 )
-\c@ContinuedFloat=\count115
+\c@ContinuedFloat=\count114
 Package caption Info: hyperref package is loaded.
 )
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\caption\subcapt
-ion.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\caption\subcaption.
+sty"
 Package: subcaption 2018/05/01 v1.1-162 Sub-captions (AR)
-\c@subfigure=\count116
-\c@subtable=\count117
+\c@subfigure=\count115
+\c@subtable=\count116
 )
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\ms\ragged2e.sty
-"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\ms\ragged2e.sty"
 Package: ragged2e 2009/05/21 v2.1 ragged2e Package (MS)
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\ms\everysel.sty
-"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\ms\everysel.sty"
 Package: everysel 2011/10/28 v1.2 EverySelectfont Package (MS)
 )
 \CenteringLeftskip=\skip54
@@ -371,12 +354,12 @@ Package: everysel 2011/10/28 v1.2 EverySelectfont Package (MS)
 \RaggedRightParindent=\skip66
 \JustifyingParindent=\skip67
 )
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\geometry\geomet
-ry.sty"
-Package: geometry 2018/04/16 v5.8 Page Geometry
-\Gm@cnth=\count118
-\Gm@cntv=\count119
-\c@Gm@tempcnt=\count120
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\geometry\geometry.s
+ty"
+Package: geometry 2010/09/12 v5.6 Page Geometry
+\Gm@cnth=\count117
+\Gm@cntv=\count118
+\c@Gm@tempcnt=\count119
 \Gm@bindingoffset=\dimen141
 \Gm@wd@mp=\dimen142
 \Gm@odd@mp=\dimen143
@@ -387,19 +370,19 @@ Package: geometry 2018/04/16 v5.8 Page Geometry
 \Gm@layoutvoffset=\dimen148
 \Gm@dimlist=\toks27
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\geometry\geomet
-ry.cfg"))
-\c@dl=\count121
-\c@md=\count122
-\c@hq=\count123
-\c@cy=\count124
-\c@dn=\count125
-\c@vd=\count126
-\c@bt=\count127
-\c@nx=\count128
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\geometry\geometry.c
+fg"))
+\c@dl=\count120
+\c@md=\count121
+\c@hq=\count122
+\c@cy=\count123
+\c@dn=\count124
+\c@vd=\count125
+\c@bt=\count126
+\c@nx=\count127
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\cleveref\clever
-ef.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\cleveref\cleveref.s
+ty"
 Package: cleveref 2018/03/27 v0.21.4 Intelligent cross-referencing
 Package cleveref Info: `hyperref' support loaded on input line 2370.
 LaTeX Info: Redefining \cref on input line 2370.
@@ -431,27 +414,27 @@ LaTeX Font Info:    ... okay on input line 4.
 LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 4.
 LaTeX Font Info:    ... okay on input line 4.
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\context\base\supp-pdf
-.mkii"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\context\base\supp-pdf.mki
+i"
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count129
+\scratchcounter=\count128
 \scratchdimen=\dimen149
-\scratchbox=\box30
-\nofMPsegments=\count130
-\nofMParguments=\count131
+\scratchbox=\box28
+\nofMPsegments=\count129
+\nofMParguments=\count130
 \everyMPshowfont=\toks28
-\MPscratchCnt=\count132
+\MPscratchCnt=\count131
 \MPscratchDim=\dimen150
-\MPnumerator=\count133
-\makeMPintoPDFobject=\count134
+\MPnumerator=\count132
+\makeMPintoPDFobject=\count133
 \everyMPtoPDFconversion=\toks29
 )
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\epstop
-df-base.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\epstopdf-b
+ase.sty"
 Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\grfext
-.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\oberdiek\grfext.sty
+"
 Package: grfext 2016/05/16 v1.2 Manage graphics extensions (HO)
 )
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
@@ -461,18 +444,18 @@ Package grfext Info: Graphics extension search list:
 G,.JBIG2,.JB2,.eps]
 (grfext)             \AppendGraphicsExtensions on input line 456.
 )
-\AtBeginShipoutBox=\box31
+\AtBeginShipoutBox=\box29
 Package hyperref Info: Link coloring ON on input line 4.
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\hyperref\namere
-f.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\hyperref\nameref.st
+y"
 Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\generic\oberdiek\gett
-itlestring.sty"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\generic\oberdiek\gettitle
+string.sty"
 Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
-\c@section@level=\count135
+\c@section@level=\count134
 )
 LaTeX Info: Redefining \ref on input line 4.
 LaTeX Info: Redefining \pageref on input line 4.
@@ -522,98 +505,127 @@ LaTeX Info: Redefining \selectfont on input line 4.
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
 LaTeX Font Info:    Try loading font information for U+msa on input line 11.
-
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\umsa.f
-d"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd"
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
 LaTeX Font Info:    Try loading font information for U+msb on input line 11.
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\umsb.f
-d"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\umsb.fd"
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
+Missing character: There is no Ã in font cmr10!
+Missing character: There is no   in font cmr10!
 LaTeX Font Info:    Try loading font information for OMS+cmr on input line 34.
 
-("C:\Users\Chien Le\AppData\Local\Programs\MiKTeX 2.9\tex\latex\base\omscmr.fd"
+("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\base\omscmr.fd"
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 34.
- [1
 
-{C:/Users/Chien Le/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
-[2]
+[1
+
+{C:/Users/nhan/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}] [2]
 LaTeX Font Info:    Font shape `OMS/cmr/m/it' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 116.
- [3] [4]
-Underfull \hbox (badness 10000) in paragraph at lines 179--181
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 117.
+
+[3] [4]
+Underfull \hbox (badness 10000) in paragraph at lines 180--182
 
  []
 
 [5]
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 209.
+(hyperref)                removing `math shift' on input line 210.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `subscript' on input line 210.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                \kern 1.66702pt
-(hyperref)                removed on input line 209.
+(hyperref)                removed on input line 210.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `superscript' on input line 209.
+(hyperref)                removing `subscript' on input line 210.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 209.
+(hyperref)                removing `superscript' on input line 210.
 
-[6] [7] [8] (contents.bbl
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `math shift' on input line 210.
+
+[6] [7]
+Missing character: There is no Ã in font cmr10!
+Missing character: There is no   in font cmr10!
+ [8] [9]
+<../FreeFem++/fhx.png, id=157, 421.575pt x 316.18124pt>
+File: ../FreeFem++/fhx.png Graphic file (type png)
+<use ../FreeFem++/fhx.png>
+Package pdftex.def Info: ../FreeFem++/fhx.png  used on input line 349.
+(pdftex.def)             Requested size: 330.76329pt x 248.07738pt.
+<../FreeFem++/fhy.png, id=158, 421.575pt x 316.18124pt>
+File: ../FreeFem++/fhy.png Graphic file (type png)
+<use ../FreeFem++/fhy.png>
+Package pdftex.def Info: ../FreeFem++/fhy.png  used on input line 350.
+(pdftex.def)             Requested size: 330.76329pt x 248.07738pt.
+ [10 <../FreeFem++/fhx.png (PNG copy)>]
+<../FreeFem++/fht.png, id=163, 421.575pt x 316.18124pt>
+File: ../FreeFem++/fht.png Graphic file (type png)
+<use ../FreeFem++/fht.png>
+Package pdftex.def Info: ../FreeFem++/fht.png  used on input line 351.
+(pdftex.def)             Requested size: 330.76329pt x 248.07738pt.
+ (contents.bbl
 
 LaTeX Warning: Empty `thebibliography' environment on input line 3.
 
 )
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 341.
- [9]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 341.
- (contents.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 341.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 341.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 358.
+ [11 <../FreeFem++/fhy.png (PNG copy)> <../FreeFem++/fht.png (PNG copy)>]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 358.
+
+(contents.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 358.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 358.
 Package rerunfilecheck Info: File `contents.out' has not changed.
-(rerunfilecheck)             Checksum: 19A7B2C8C50186D73AB16B6A5856E966;413.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 341.
+(rerunfilecheck)             Checksum: FE17D1ABB8EDFC3FAD3FBFA9533F2221;575.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 358.
  ) 
 Here is how much of TeX's memory you used:
- 9746 strings out of 492973
- 161567 string characters out of 3125361
- 279306 words of memory out of 3000000
- 13469 multiletter control sequences out of 15000+200000
+ 9868 strings out of 493305
+ 163429 string characters out of 3130237
+ 271717 words of memory out of 3000000
+ 13261 multiletter control sequences out of 15000+200000
  11550 words of font info for 45 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 38i,15n,38p,472b,474s stack positions out of 5000i,500n,10000p,200000b,50000s
-<C:/Users/Chien Le/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfo
-nts/cm/cmbx10.pfb><C:/Users/Chien Le/AppData/Local/Programs/MiKTeX 2.9/fonts/ty
-pe1/public/amsfonts/cm/cmbx12.pfb><C:/Users/Chien Le/AppData/Local/Programs/MiK
-TeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/Chien Le/AppData/Lo
-cal/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/Chi
-en Le/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi12.p
-fb><C:/Users/Chien Le/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsf
-onts/cm/cmmi5.pfb><C:/Users/Chien Le/AppData/Local/Programs/MiKTeX 2.9/fonts/ty
-pe1/public/amsfonts/cm/cmmi7.pfb><C:/Users/Chien Le/AppData/Local/Programs/MiKT
-eX 2.9/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/Chien Le/AppData/Loca
-l/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Users/Chien L
-e/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:
-/Users/Chien Le/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/c
-m/cmsy10.pfb><C:/Users/Chien Le/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/p
-ublic/amsfonts/cm/cmsy7.pfb><C:/Users/Chien Le/AppData/Local/Programs/MiKTeX 2.
-9/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/Chien Le/AppData/Local/Pro
-grams/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/Chien Le/A
-ppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/symbols/msbm10.pfb
->
-Output written on contents.pdf (9 pages, 222856 bytes).
+ 38i,20n,38p,454b,475s stack positions out of 5000i,500n,10000p,200000b,50000s
+<C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/
+cm/cmbx10.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/publ
+ic/amsfonts/cm/cmbx12.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/font
+s/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/nhan/AppData/Local/Programs/MiK
+TeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/nhan/AppData/Local/
+Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/nhan/Ap
+pData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Us
+ers/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi7
+.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfon
+ts/cm/cmmi8.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/pu
+blic/amsfonts/cm/cmr10.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fon
+ts/type1/public/amsfonts/cm/cmr5.pfb><C:/Users/nhan/AppData/Local/Programs/MiKT
+eX 2.9/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/nhan/AppData/Local/Pro
+grams/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/nhan/AppDa
+ta/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users
+/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy8.pf
+b><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/
+cm/cmti10.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/publ
+ic/amsfonts/symbols/msbm10.pfb>
+Output written on contents.pdf (11 pages, 299558 bytes).
 PDF statistics:
- 205 PDF objects out of 1000 (max. 8388607)
- 47 named destinations out of 1000 (max. 500000)
- 57 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 233 PDF objects out of 1000 (max. 8388607)
+ 52 named destinations out of 1000 (max. 500000)
+ 96 words of extra memory for PDF output out of 10000 (max. 10000000)
 

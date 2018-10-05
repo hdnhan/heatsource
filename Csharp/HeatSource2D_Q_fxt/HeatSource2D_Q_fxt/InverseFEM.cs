@@ -11,7 +11,7 @@ namespace HeatSource2D_Q_fxt {
         Func<double, double, double> one2 = (x, y) => 1;
         Func<double, double, double, double> one3 = (x, y, t) => 1;
 
-        public double[] CG(double[,] node, int[,] elem, int[] dirichlet, int Nx, int Ny, int Nt, double jacobi, double[] omega, double gamma, double eps, 
+        public double[] CG(double[,] node, int[,] elem, int[] dirichlet, int Nx, int Ny, int Nt, double T, double jacobi, double[] omega, double gamma, double eps, 
             Func<double, double, double, double> axx, Func<double, double, double, double> ayy,
             Func<double, double, double> u0, Func<double, double, double> dxu0, Func<double, double, double> dyu0,
             Func<double, double, double, double> f, Func<double, double, double, double> q, Func<double, double, double, double> g) {
@@ -40,13 +40,12 @@ namespace HeatSource2D_Q_fxt {
             for (int i = 0; i < NoN; i++) {
                 uh[i] += u0(node[i, 0], node[i, 1]);
             }
-            //uh = oprs.Add(uh, sfem.SolveFEM(node, elem, dirichlet, jacobi, axx, ayy, zero2, zero2, fe, q));
+            
             double[] del_lu = oprs.Sub(uh, omega);
-            //Console.WriteLine("del_lu min and max: " + del_lu.Min() + ", " + del_lu.Max());
 
             for (int iter = 0; iter < 50; iter++) {
                 // solution of adjoint problem
-                double[] p = AdjointProblem(node, elem, Nx, Ny, Nt, dirichlet, jacobi, axx, ayy, del_lu);
+                double[] p = AdjointProblem(node, elem, Nx, Ny, Nt, T, dirichlet, jacobi, axx, ayy, del_lu);
 
                 rold = r;
                 r = GradJ(node, p, q, fh, gamma);
@@ -97,11 +96,15 @@ namespace HeatSource2D_Q_fxt {
         }
 
 
-        public double[] AdjointProblem(double[,] node, int[,] elem, int Nx, int Ny, int Nt, int[] dirichlet, double jacobi,
+        public double[] AdjointProblem(double[,] node, int[,] elem, int Nx, int Ny, int Nt, double T,int[] dirichlet, double jacobi,
             Func<double, double, double, double> axx, Func<double, double, double, double> ayy, double[] del_lu) {
             Operators oprs = new Operators();
             FEM sfem = new FEM();
-            double[] p = sfem.SolveFEM(node, elem, dirichlet, jacobi, axx, ayy, zero2, zero2, oprs.flip(del_lu, Nx, Ny, Nt), one3);
+
+            double axxT(double x, double y, double t) => axx(x, y, T - t);
+            double ayyT(double x, double y, double t) => ayy(x, y, T - t);
+
+            double[] p = sfem.SolveFEM(node, elem, dirichlet, jacobi, axxT, ayyT, zero2, zero2, oprs.flip(del_lu, Nx, Ny, Nt), one3);
             return oprs.flip(p, Nx, Ny, Nt);
         }
 

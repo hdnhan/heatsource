@@ -8,8 +8,7 @@ namespace HeatSource2D_QT_fx {
     class FEM {
         public double[] SolveFEM(double[,] node, int[,] elem, int[] dirichlet, int Nx, int Ny, double jacobi,
             Func<double, double, double, double> axx, Func<double, double, double, double> ayy,
-            Func<double, double, double> dxu0, Func<double, double, double> dyu0,
-            double[] f, Func<double, double, double, double> q) {
+            double[] U0, double[] f, Func<double, double, double, double> q) {
 
             Operators oprs = new Operators();
             Solvers slvs = new Solvers();
@@ -21,7 +20,7 @@ namespace HeatSource2D_QT_fx {
             // A * uh = b  
             Dictionary<Tuple<int, int>, double> A = new Dictionary<Tuple<int, int>, double>();
             double[] b = new double[NoN]; // Left hand side of the equation
-            LinearEquation(A, ref b, node, elem, Nx, Ny, jacobi, axx, ayy, dxu0, dyu0, f, q);
+            LinearEquation(A, ref b, node, elem, Nx, Ny, jacobi, axx, ayy, U0, f, q);
 
             // Remove nodes on dirichlet boundary
             for (int i = 0; i < dirichlet.Length; i++) {
@@ -40,8 +39,7 @@ namespace HeatSource2D_QT_fx {
 
         public void LinearEquation(Dictionary<Tuple<int, int>, double> A, ref double[] b, double[,] node, int[,] elem, int Nx, int Ny, double jacobi,
            Func<double, double, double, double> axx, Func<double, double, double, double> ayy,
-           Func<double, double, double> dxu0, Func<double, double, double> dyu0,
-           double[] f, Func<double, double, double, double> q) {
+           double[] U0, double[] f, Func<double, double, double, double> q) {
 
             int NoE = elem.GetLength(0);
             for (int noe = 0; noe < NoE; noe++) {
@@ -50,8 +48,10 @@ namespace HeatSource2D_QT_fx {
                 double[] t = new double[] { node[elem[noe, 0], 2], node[elem[noe, 1], 2], node[elem[noe, 2], 2], node[elem[noe, 3], 2] };
                 double[] ff = new double[] { f[elem[noe, 0] % ((Nx + 1) * (Ny + 1))], f[elem[noe, 1] % ((Nx + 1) * (Ny + 1))],
                     f[elem[noe, 2] % ((Nx + 1) * (Ny + 1))], f[elem[noe, 3] % ((Nx + 1) * (Ny + 1))]};
+                double[] UU0 = new double[] { U0[elem[noe, 0] % ((Nx + 1) * (Ny + 1))], U0[elem[noe, 1] % ((Nx + 1) * (Ny + 1))],
+                    U0[elem[noe, 2] % ((Nx + 1) * (Ny + 1))], U0[elem[noe, 3] % ((Nx + 1) * (Ny + 1))]};
 
-                double[,] loc = local(x, y, t, jacobi, axx, ayy, dxu0, dyu0, ff, q);
+                double[,] loc = local(x, y, t, jacobi, axx, ayy, UU0, ff, q);
                 for (int i = 0; i < 4; i++) {
                     b[elem[noe, i]] += loc[4, i];
                     for (int j = 0; j < 4; j++) {
@@ -67,8 +67,7 @@ namespace HeatSource2D_QT_fx {
 
         public double[,] local(double[] x, double[] y, double[] t, double jacobi,
             Func<double, double, double, double> axx, Func<double, double, double, double> ayy,
-            Func<double, double, double> dxu0, Func<double, double, double> dyu0,
-            double[] f, Func<double, double, double, double> q) {
+            double[] U0, double[] f, Func<double, double, double, double> q) {
 
             double[,] res = new double[5, 4];
             Solvers slvs = new Solvers();
@@ -115,10 +114,14 @@ namespace HeatSource2D_QT_fx {
             }
 
             double fq_hat(double xi, double eta, double zeta) => f[0] * q(x[0], y[0], t[0]) * (1 - xi - eta - zeta) +
-                f[1] * q(x[1], y[1], t[1]) * xi + f[2] * q(x[2], y[2], t[2]) * eta + f[3] * q(x[3], y[3], t[3]) * zeta;
-            //double fq_hat(double xi, double eta, double zeta) => q(x_hat(xi, eta, zeta), y_hat(xi, eta, zeta), t_hat(xi, eta, zeta));
-            double dxu0_hat(double xi, double eta, double zeta) => axx_hat(xi, eta, zeta) * dxu0(x_hat(xi, eta, zeta), y_hat(xi, eta, zeta));
-            double dyu0_hat(double xi, double eta, double zeta) => ayy_hat(xi, eta, zeta) * dyu0(x_hat(xi, eta, zeta), y_hat(xi, eta, zeta));
+                                                                 f[1] * q(x[1], y[1], t[1]) * xi +
+                                                                 f[2] * q(x[2], y[2], t[2]) * eta +
+                                                                 f[3] * q(x[3], y[3], t[3]) * zeta;
+            double dxU0 = D_xi_x * (U0[1] - U0[0]) + D_eta_x * (U0[2] - U0[0]) + D_zeta_x * (U0[3] - U0[0]);
+            double dyU0 = D_xi_y * (U0[1] - U0[0]) + D_eta_y * (U0[2] - U0[0]) + D_zeta_y * (U0[3] - U0[0]);
+
+            double dxu0_hat(double xi, double eta, double zeta) => axx_hat(xi, eta, zeta) * dxU0 / jacobi;
+            double dyu0_hat(double xi, double eta, double zeta) => ayy_hat(xi, eta, zeta) * dyU0 / jacobi;
 
             double F0(double xi, double eta, double zeta) => fq_hat(xi, eta, zeta) * (1 - xi - eta - zeta)
                 - sgn * dxu0_hat(xi, eta, zeta) * grad_varphi[0, 0] / jacobi
@@ -145,9 +148,10 @@ namespace HeatSource2D_QT_fx {
 
         public void Domain(ref double[,] node, ref int[,] elem, ref int[] dirichlet,
             double[] xlim, double[] ylim, double T, int Nx, int Ny, int Nt) {
+
             double hx = (xlim[1] - xlim[0]) / Nx;
             double hy = (ylim[1] - ylim[0]) / Ny;
-            double ht = T / Nt; // time step
+            double ht = T / Nt;
 
             // nodes
             int i = 0;

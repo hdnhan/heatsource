@@ -16,7 +16,7 @@ Vh ue = exp(z) * sin(pi * x) * sin(pi * y);
 Vh uD = 0;
 Vh u0 = ue(x, y, 0);
 
-Vh fe = sin(pi * x) * sin(pi * y) * sin(pi * z);
+Vh fe = sin(pi * x) * (2 * y * ( y < 0.5) + 2 * (1 - y) * (y >= 0.5)) * ((z >= 0.25) * (z <= 0.75));
 Vh q = 2 + x^2 + y^2 + z^2;
 Vh g = (1 + 2 * pi^2) * ue - fe * q;
 real gamma = 1e-5;
@@ -113,11 +113,13 @@ func real[int] StateProblem(real[int] ff){
     Vh rsh = f * q + g;
 
     solve SpaceTime(u, v, solver = sparsesolver) = 
-          int3d(Th)(dz(u)  * v + dx(u)  * dx(v) + dy(u)  * dy(v)) 
+          int3d(Th)(dz(u)  * v + dx(u)  * dx(v) + dy(u)  * dy(v))
+        +  int3d(Th)(dz(u0)  * v + dx(u0)  * dx(v) + dy(u0)  * dy(v)) 
         - int3d(Th)(rsh * v) 
-        + on(1, 2, 3, 4, u = uD) + on(5, u = u0);
-
+        + on(1, 2, 3, 4, u = uD) + on(5, u = 0);
+    u = u + u0;
     return u[];
+    
 }
 
 
@@ -161,7 +163,8 @@ func real[int] GradJ(real[int] ff) {
 
 
 Vh fh = fe;
-IPOPT(J, GradJ, fh[], tol = 1e-3);
+IPOPT(J, GradJ, fh[], tol = 0.5e-3);
+savesol("2D_Points_fh.sol", Th, fh);
 
 cout << "J: " << J(fh[]) << endl; 
 Vh delta = fh - fe;

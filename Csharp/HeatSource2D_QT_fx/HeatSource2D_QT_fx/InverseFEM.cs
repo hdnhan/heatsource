@@ -12,8 +12,7 @@ namespace HeatSource2D_QT_fx {
         Func<double, double, double, double> one3 = (x, y, t) => 1;
 
         public double[] CG(double[,] node, int[,] elem, int[] dirichlet, int Nx, int Ny, int Nt, double hx, double hy, double ht, double jacobi, double[] omega, double gamma, double eps,
-            Func<double, double, double, double> axx, Func<double, double, double, double> ayy,
-            Func<double, double, double> u0, Func<double, double, double> dxu0, Func<double, double, double> dyu0,
+            Func<double, double, double, double> axx, Func<double, double, double, double> ayy, Func<double, double, double> u0, double[] U0,
             Func<double, double, double> f, Func<double, double, double, double> q, Func<double, double, double, double> g) {
 
             Operators oprs = new Operators();
@@ -28,29 +27,30 @@ namespace HeatSource2D_QT_fx {
             double[] rold = new double[omega.Length];
             double[] d = new double[omega.Length];
 
-            /*
-            double[] fe = new double[NoN];
-            for (int i = 0; i < NoN; i++) {
-                fe[i] = f(node[i, 0], node[i, 1], node[i, 2]);
-            }*/
-
             double errorold, error = 0;
 
             // solution of problem (coz fh = 0)                 
-            double[] uh = sfem.SolveFEM(node, elem, dirichlet, Nx, Ny, jacobi, axx, ayy, dxu0, dyu0, oprs.Ones(omega.Length), g);
+            double[] uh = sfem.SolveFEM(node, elem, dirichlet, Nx, Ny, jacobi, axx, ayy, U0, oprs.Ones(omega.Length), g);
             for (int i = 0; i < NoN; i++) {
                 uh[i] += u0(node[i, 0], node[i, 1]);
             }
-            //uh = oprs.Add(uh, sfem.SolveFEM(node, elem, dirichlet, jacobi, axx, ayy, zero2, zero2, fe, q));
+            double[] fe = new double[omega.Length];
+            for (int ny = 0; ny <= Ny; ny++) {
+                for (int nx = 0; nx <= Nx; nx++) {
+                    fe[ny * (Nx + 1) + nx] = f(nx * hx, ny * hy);
+                }
+            }
+            //uh = oprs.Add(uh, sfem.SolveFEM(node, elem, dirichlet, Nx, Ny, jacobi, axx, ayy, oprs.Zeros(fe.Length), fe, q));
             double[] del_lu = delta_lu(uh, omega, Nx, Ny, Nt);
-            //Console.WriteLine("del_lu min and max: " + del_lu.Min() + ", " + del_lu.Max());
+            //Console.WriteLine("del: " + del_lu.Min() + ", " + del_lu.Max());
+            for (int iter = 0; iter < 100; iter++) {
 
-            for (int iter = 0; iter < 50; iter++) {
                 // solution of adjoint problem
-                double[] p = AdjointProblem(node, elem, Nx, Ny, Nt, dirichlet, jacobi, axx, ayy, del_lu);
+                double[] p = AdjointProblem(node, elem, Nx, Ny, Nt, ht, dirichlet, jacobi, axx, ayy, del_lu);
 
                 rold = r;
                 r = GradJ(Nx, Ny, Nt, hx, hy, ht, p, q, fh, gamma);
+
                 if (iter > 0) {
                     double beta = slvs.NormL2(r, Nx, Ny, hx, hy) / slvs.NormL2(rold, Nx, Ny, hx, hy);
                     d = oprs.Add(r, oprs.Mul(beta, d));
@@ -58,23 +58,16 @@ namespace HeatSource2D_QT_fx {
                     d = r;
                 }
 
-                double[] udh = sfem.SolveFEM(node, elem, dirichlet, Nx, Ny, jacobi, axx, ayy, zero2, zero2, d, q);
+                double[] udh = sfem.SolveFEM(node, elem, dirichlet, Nx, Ny, jacobi, axx, ayy, oprs.Zeros(omega.Length), d, q);
                 double[] Ad = delta_lu(udh, oprs.Zeros((Nx + 1) * (Ny + 1)), Nx, Ny, Nt);
                 double alpha = slvs.NormL2(r, Nx, Ny, hx, hy) / (slvs.NormL2(Ad, Nx, Ny, hx, hy) + gamma * slvs.NormL2(d, Nx, Ny, hx, hy));
 
                 fhold = fh;
                 fh = oprs.Add(fh, oprs.Mul(alpha, d));
 
-                double[] del = new double[omega.GetLength(0)];
-                for (int ny = 0; ny <= Ny; ny++) {
-                    for (int nx = 0; nx <= Nx; nx++) {
-                        del[ny * (Nx + 1) + nx] = fh[ny * (Nx + 1) + nx] - f(nx * hx, ny * hy);
-                        //del[ny * (Nx + 1) + nx] = test1(nx * hx, ny * hy);
-                    }
-                }
                 errorold = error;
-                error = Math.Sqrt(slvs.NormL2(del, Nx, Ny, hx, hy));
-
+                error = slvs.ErrorL2(f, fh, Nx, Ny, hx, hy);
+                
                 Console.WriteLine(iter + ": ErrorL2: " + error.ToString("e") + ", DeltaError: " + (errorold - error).ToString("e"));
                 Console.WriteLine("J: " + J(Nx, Ny, hx, hy, del_lu, fh, gamma).ToString("e"));
 
@@ -89,14 +82,14 @@ namespace HeatSource2D_QT_fx {
                         break;
                     }
                 }
-                del_lu = oprs.Add(del_lu, oprs.Mul(alpha, udh));
+                del_lu = oprs.Add(del_lu, oprs.Mul(alpha, Ad));
                 Console.WriteLine();
             }
             return fh;
         }
 
 
-        public double[] GradJ(int Nx, int Ny, int Nt, double hx, double hy, double ht, 
+        public double[] GradJ(int Nx, int Ny, int Nt, double hx, double hy, double ht,
             double[] p, Func<double, double, double, double> q, double[] fh, double gamma) {
             Solvers slvs = new Solvers();
 
@@ -118,11 +111,23 @@ namespace HeatSource2D_QT_fx {
         }
 
 
-        public double[] AdjointProblem(double[,] node, int[,] elem, int Nx, int Ny, int Nt, int[] dirichlet, double jacobi,
+        public double[] AdjointProblem(double[,] node, int[,] elem, int Nx, int Ny, int Nt, double ht, int[] dirichlet, double jacobi,
             Func<double, double, double, double> axx, Func<double, double, double, double> ayy, double[] del_lu) {
             Operators oprs = new Operators();
             FEM sfem = new FEM();
-            double[] p = sfem.SolveFEM(node, elem, dirichlet, Nx, Ny, jacobi, axx, ayy, zero2, zero2, oprs.flip(del_lu, Nt), one3);
+
+            double axxT(double x, double y, double t) => axx(x, y, ht * Nt - t);
+            double ayyT(double x, double y, double t) => ayy(x, y, ht * Nt - t);
+
+            double[] p = sfem.SolveFEM(node, elem, dirichlet, Nx, Ny, jacobi, axxT, ayyT, del_lu, oprs.Zeros(del_lu.Length), one3);
+
+            for (int nt = 0; nt <= Nt; nt++) {
+                for (int ny = 0; ny <= Ny; ny++) {
+                    for (int nx = 0; nx <= Nx; nx++) {
+                        p[nt * (Nx + 1) * (Ny + 1) + ny * (Nx + 1) + nx] += del_lu[ny * (Nx + 1) + nx];
+                    }
+                }
+            }
             return oprs.flip(p, Nx, Ny, Nt);
         }
 

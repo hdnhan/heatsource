@@ -22,7 +22,7 @@ UNC paths are not supported.  Defaulting to Windows directory.
    16 : Vh uD = 0;
    17 : Vh u0 = ue(x, y, 0);
    18 :
-   19 : Vh fe = sin(pi * x) * sin(pi * y) * sin(pi * z);
+   19 : Vh fe = sin(pi * x) * (2 * y * ( y < 0.5) + 2 * (1 - y) * (y >= 0.5)) * ((z >= 0.25) * (z <= 0.75));
    20 : Vh q = 2 + x^2 + y^2 + z^2;
    21 : Vh g = (1 + 2 * pi^2) * ue - fe * q;
    22 : real gamma = 1e-5;
@@ -70,8 +70,8 @@ UNC paths are not supported.  Defaulting to Windows directory.
    64 :     for (int i = 0; i <= Nz/2; i++){
    65 :         for (int j = 0; j <= Ny; j++){
    66 :             for (int k = 0; k <= Nx; k++){
-   67 :                 u[][i * (Nx + 1) * (Ny + 1) + j * (Nx + 1) + k] = mat[(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Nx + 1) + k];
-   68 :                 u[][(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Nx + 1) + k] = mat[i * (Nx + 1) * (Ny + 1) + j * (Nx + 1) + k];
+   67 :                 u[][i * (Nx + 1) * (Ny + 1) + j * (Nx + 1) + k] = mat[(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Nx +2-norm 1) + k];
+   68 :                 u[][(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Nx + 1) + k] = mat[i * (Nx + 1) * (Ny + 1) + j * (Nx +2-norm 1) + k];
    69 :             }
    70 :         }
    71 :     }
@@ -120,62 +120,64 @@ UNC paths are not supported.  Defaulting to Windows directory.
   114 :
   115 :     solve SpaceTime(u, v, solver = sparsesolver) =
   116 :           int3d(Th)(dz(u)  * v + dx(u)  * dx(v) + dy(u)  * dy(v))
-  117 :         - int3d(Th)(rsh * v)
-  118 :         + on(1, 2, 3, 4, u = uD) + on(5, u = u0);
-  119 :
-  120 :     return u[];
-  121 : }
-  122 :
+  117 :         +  int3d(Th)(dz(u0)  * v + dx(u0)  * dx(v) + dy(u0)  * dy(v))
+  118 :         - int3d(Th)(rsh * v)
+  119 :         + on(1, 2, 3, 4, u = uD) + on(5, u = 0);
+  120 :     u = u + u0;
+  121 :     return u[];
+  122 : }
   123 :
-  124 : // Adjoint equation
-  125 : func real[int] AdjointProblem(real[int] uu){
-  126 :     Vh p, v, u; u[] = uu;
-  127 :     Vh wh = omg * u;
-  128 :     real[int] del = IntegralOnSpace(wh[]) - lue;
-  129 :     Vh delta; delta[] = TimeToQ(del);
-  130 :     Vh rhs = omg * delta;
-  131 :     rhs[] = FlipTimeDirection(rhs[]);
-  132 :
-  133 :     solve SpaceTime(p, v, solver = sparsesolver) =
-  134 :           int3d(Th)(dz(p) * v + dx(p) * dx(v) + dy(p) * dy(v))
-  135 :         - int3d(Th)(rhs * v)
-  136 :         + on(1, 2, 3, 4, 5, p = 0);
-  137 :
-  138 :     return FlipTimeDirection(p[]);
-  139 : }
-  140 :
+  124 :
+  125 : // Adjoint equation
+  126 : func real[int] AdjointProblem(real[int] uu){
+  127 :     Vh p, v, u; u[] = uu;
+  128 :     Vh wh = omg * u;
+  129 :     real[int] del = IntegralOnSpace(wh[]) - lue;
+  130 :     Vh delta; delta[] = TimeToQ(del);
+  131 :     Vh rhs = omg * delta;
+  132 :     rhs[] = FlipTimeDirection(rhs[]);
+  133 :
+  134 :     solve SpaceTime(p, v, solver = sparsesolver) =
+  135 :           int3d(Th)(dz(p) * v + dx(p) * dx(v) + dy(p) * dy(v))
+  136 :         - int3d(Th)(rhs * v)
+  137 :         + on(1, 2, 3, 4, 5, p = 0);
+  138 :
+  139 :     return FlipTimeDirection(p[]);
+  140 : }
   141 :
   142 :
-  143 : // Tikhonov functional
-  144 : func real J(real[int] ff) {
-  145 :     Vh f; f[] = ff;
-  146 :     Vh u; u[] = StateProblem(ff);
-  147 :     Vh wh = omg * u;
-  148 :     real[int] del = IntegralOnSpace(wh[]) - lue;
-  149 :     return 0.5 * InnerProductOnTime(del, del) + 0.5 * gamma * int3d(Th)(f^2);
-  150 : }
-  151 :
+  143 :
+  144 : // Tikhonov functional
+  145 : func real J(real[int] ff) {
+  146 :     Vh f; f[] = ff;
+  147 :     Vh u; u[] = StateProblem(ff);
+  148 :     Vh wh = omg * u;
+  149 :     real[int] del = IntegralOnSpace(wh[]) - lue;
+  150 :     return 0.5 * InnerProductOnTime(del, del) + 0.5 * gamma * int3d(Th)(f^2);
+  151 : }
   152 :
-  153 : // Gradient of Tikhonov funtional
-  154 : func real[int] GradJ(real[int] ff) {
-  155 :     Vh p; p[] = AdjointProblem(StateProblem(ff));
-  156 :     Vh qp = p * q;
-  157 :     real[int] res = qp[] + gamma * ff;
-  158 :     return res;
-  159 : }
-  160 :
+  153 :
+  154 : // Gradient of Tikhonov funtional
+  155 : func real[int] GradJ(real[int] ff) {
+  156 :     Vh p; p[] = AdjointProblem(StateProblem(ff));
+  157 :     Vh qp = p * q;
+  158 :     real[int] res = qp[] + gamma * ff;
+  159 :     return res;
+  160 : }
   161 :
   162 :
-  163 : Vh fh = fe;
-  164 : IPOPT(J, GradJ, fh[], tol = 1e-3);
-  165 :
-  166 : cout << "J: " << J(fh[]) << endl;
-  167 : Vh delta = fh - fe;
-  168 :
-  169 : cout << "fe min and max: " << fe[].min << ", " << fe[].max << endl;
-  170 : cout << "fh min and max: " << fh[].min << ", " << fh[].max << endl;
-  171 : cout << "(fh-fe) min and max: " << delta[].min << ", " << delta[].max << endl;
-  172 : cout << "erorr L2: " << sqrt(int3d(Th)(delta * delta)) << endl; sizestack + 1024 =11064  ( 10040 )
+  163 :
+  164 : Vh fh = fe;
+  165 : IPOPT(J, GradJ, fh[], tol = 0.5e-3);
+  166 : savesol("2D_Points_fh.sol", Th, fh);
+  167 :
+  168 : cout << "J: " << J(fh[]) << endl;
+  169 : Vh delta = fh - fe;
+  170 :
+  171 : cout << "fe min and max: " << fe[].min << ", " << fe[].max << endl;
+  172 : cout << "fh min and max: " << fh[].min << ", " << fh[].max << endl;
+  173 : cout << "(fh-fe) min and max: " << delta[].min << ", " << delta[].max << endl;
+  174 : cout << "erorr L2: " << sqrt(int3d(Th)(delta * delta)) << endl; sizestack + 1024 =12104  ( 11080 )
  
   Enter: BuildCube: 6
     kind = 6 n tet Cube = 6 / n slip 6 70
@@ -200,7 +202,7 @@ Number of nonzeros in inequality constraint Jacobian.:        0
 Number of nonzeros in Lagrangian Hessian.............:        0
  
   -- Solve :
-          min -3.43544e-038  max 2.70953
+          min -7.72028e-036  max 1.70953
   -- Solve :
           min -0.00162062  max 8.98118e-006
 Total number of variables............................:    68921
@@ -214,61 +216,75 @@ Total number of inequality constraints...............:        0
         inequality constraints with only upper bounds:        0
  
   -- Solve :
-          min -3.43544e-038  max 2.70953
+          min -7.72028e-036  max 1.70953
   -- Solve :
           min -0.00162062  max 8.98118e-006
   -- Solve :
-          min -3.43544e-038  max 2.70953
+          min -7.72028e-036  max 1.70953
 iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
-   0 3.9078367e-006 0.00e+000 5.42e-003   0.0 0.00e+000    -  0.00e+000 0.00e+000   0
+   0 3.7148818e-006 0.00e+000 5.42e-003   0.0 0.00e+000    -  0.00e+000 0.00e+000   0
   -- Solve :
-          min -3.43365e-038  max 2.70972
+          min -7.72868e-036  max 1.70972
   -- Solve :
-          min -3.43365e-038  max 2.70972
+          min -7.72868e-036  max 1.70972
   -- Solve :
-          min -0.00145853  max 1.02421e-005
-   1 3.3928355e-006 0.00e+000 4.96e-003 -11.0 5.42e-003    -  1.00e+000 1.00e+000f  1
+          min -0.00145835  max 1.02441e-005
+   1 3.1985614e-006 0.00e+000 4.96e-003 -11.0 5.42e-003    -  1.00e+000 1.00e+000f  1
   -- Solve :
-          min -3.41668e-038  max 2.71137
+          min -7.84254e-036  max 1.71138
   -- Solve :
-          min -3.41668e-038  max 2.71137
+          min -7.84254e-036  max 1.71138
   -- Solve :
-          min -0.00022003  max 0.00010285
-   2 1.0369324e-006 0.00e+000 7.46e-004 -11.0 5.88e-002    -  1.00e+000 1.00e+000f  1
+          min -0.000218362  max 0.000105047
+   2 8.3654505e-007 0.00e+000 7.42e-004 -11.0 5.87e-002    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -7.85982e-036  max 1.71136
+  -- Solve :
+          min -7.85982e-036  max 1.71136
+  -- Solve :
+          min -0.000175637  max 9.96981e-005
+   3 8.2925292e-007 0.00e+000 5.97e-004 -11.0 8.35e-003    -  1.00e+000 1.00e+000f  1
+  -- Solve :
+          min -7.90803e-036  max 1.71115
+  -- Solve :
+          min -7.90803e-036  max 1.71115
+  -- Solve :
+          min -2.6521e-005  max 8.78382e-005
+   4 8.2320669e-007 0.00e+000 2.99e-004 -11.0 3.91e-002    -  1.00e+000 1.00e+000f  1
  
-Number of Iterations....: 2
+Number of Iterations....: 4
  
                                    (scaled)                 (unscaled)
-Objective...............:  1.0369323902031907e-006   1.0369323902031907e-006
-Dual infeasibility......:  7.4644652949083172e-004   7.4644652949083172e-004
+Objective...............:  8.2320668571053932e-007   8.2320668571053932e-007
+Dual infeasibility......:  2.9876242315478156e-004   2.9876242315478156e-004
 Constraint violation....:  0.0000000000000000e+000   0.0000000000000000e+000
 Complementarity.........:  0.0000000000000000e+000   0.0000000000000000e+000
-Overall NLP error.......:  7.4644652949083172e-004   7.4644652949083172e-004
+Overall NLP error.......:  2.9876242315478156e-004   2.9876242315478156e-004
  
  
-Number of objective function evaluations             = 3
-Number of objective gradient evaluations             = 3
+Number of objective function evaluations             = 5
+Number of objective gradient evaluations             = 5
 Number of equality constraint evaluations            = 0
 Number of inequality constraint evaluations          = 0
 Number of equality constraint Jacobian evaluations   = 0
 Number of inequality constraint Jacobian evaluations = 0
 Number of Lagrangian Hessian evaluations             = 0
-Total CPU secs in IPOPT (w/o function evaluations)   =     40.814
-Total CPU secs in NLP function evaluations           =    100.767
+Total CPU secs in IPOPT (w/o function evaluations)   =     42.637
+Total CPU secs in NLP function evaluations           =    245.124
  
 EXIT: Optimal Solution Found.
  
  
 *** Ipopt succeeded
   -- Solve :
-          min -3.41668e-038  max 2.71137
-J: 1.03693e-006
+          min -7.90803e-036  max 1.71115
+J: 8.23207e-007
 fe min and max: 0, 1
-fh min and max: -5.28936e-036, 1.03539
-(fh-fe) min and max: -0.0011958, 0.0641749
-erorr L2: 0.00764042
-times: compile 0.247s, execution 153.962s,  mpirank:0
- ######## We forget of deleting   535 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
- CodeAlloc : nb ptr  3850,  size :422408 mpirank: 0
+fh min and max: -0.0120511, 1.04352
+(fh-fe) min and max: -0.0120511, 0.11157
+erorr L2: 0.00791576
+times: compile 0.31s, execution 305.467s,  mpirank:0
+ ######## We forget of deleting   782 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
+ CodeAlloc : nb ptr  3904,  size :425136 mpirank: 0
 Ok: Normal End
  try getConsole \\Hdnhan\d\Study\HUST\FEM\heatsource\FreeFem++\2D_Points.edp

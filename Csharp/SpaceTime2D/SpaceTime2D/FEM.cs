@@ -41,7 +41,7 @@ namespace SpaceTime2D {
         public void LinearEquation(Dictionary<Tuple<int, int>, double> A, ref double[] b, double[,] node, int[,] elem, double jacobi,
            Func<double, double, double, double> axx, Func<double, double, double, double> ayy,
             Func<double, double, double> dxu0, Func<double, double, double> dyu0, Func<double, double, double, double> F) {
-           
+
             int NoE = elem.GetLength(0);
             for (int noe = 0; noe < NoE; noe++) {
                 double[] x = new double[] { node[elem[noe, 0], 0], node[elem[noe, 1], 0], node[elem[noe, 2], 0], node[elem[noe, 3], 0] };
@@ -110,7 +110,7 @@ namespace SpaceTime2D {
                 }
             }
 
-           
+
             double F_hat(double xi, double eta, double zeta) => F(x_hat(xi, eta, zeta), y_hat(xi, eta, zeta), t_hat(xi, eta, zeta));
             double dxu0_hat(double xi, double eta, double zeta) => axx_hat(xi, eta, zeta) * dxu0(x_hat(xi, eta, zeta), y_hat(xi, eta, zeta));
             double dyu0_hat(double xi, double eta, double zeta) => ayy_hat(xi, eta, zeta) * dyu0(x_hat(xi, eta, zeta), y_hat(xi, eta, zeta));
