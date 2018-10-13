@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HeatSource1D_Q_fxt {
+namespace HeatSource2D_1PointOnOmega_ft {
     class Operators {
 
         public double[] Ones(int LengthOfVector) {
@@ -180,18 +180,6 @@ namespace HeatSource1D_Q_fxt {
                         res[nt * (Nx + 1) * (Ny + 1) + ny * (Nx + 1) + nx] = f[(Nt - nt) * (Nx + 1) * (Ny + 1) + ny * (Nx + 1) + nx];
                         res[(Nt - nt) * (Nx + 1) * (Ny + 1) + ny * (Nx + 1) + nx] = f[nt * (Nx + 1) * (Ny + 1) + ny * (Nx + 1) + nx];
                     }
-                }
-            }
-            return res;
-        }
-
-        // flip time direction
-        public double[] flip(double[] f, int Nx, int Nt) {
-            double[] res = new double[f.Length];
-            for (int nt = 0; nt <= Nt / 2; nt++) {
-                for (int nx = 0; nx <= Nx; nx++) {
-                    res[nt * (Nx + 1) + nx] = f[(Nt - nt) * (Nx + 1) + nx];
-                    res[(Nt - nt) * (Nx + 1) + nx] = f[nt * (Nx + 1) + nx];
                 }
             }
             return res;

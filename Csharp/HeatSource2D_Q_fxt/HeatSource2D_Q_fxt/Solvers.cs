@@ -133,7 +133,7 @@ namespace HeatSource2D_Q_fxt {
             double[] del2 = new double[Nt + 1];
 
             for (int nt = 0; nt <= Nt; nt++) {
-                del2[nt] = (fh[nt] - f(nt * ht)) * fh[nt] - f(nt * ht);
+                del2[nt] = (fh[nt] - f(nt * ht)) * (fh[nt] - f(nt * ht));
             }
 
             for (int nt = 0; nt < Nt; nt++) {

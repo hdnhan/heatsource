@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace HeatSource2D_QT_fx {
     class InverseFEM {
@@ -14,6 +15,10 @@ namespace HeatSource2D_QT_fx {
         public double[] CG(double[,] node, int[,] elem, int[] dirichlet, int Nx, int Ny, int Nt, double hx, double hy, double ht, double jacobi, double[] omega, double gamma, double eps,
             Func<double, double, double, double> axx, Func<double, double, double, double> ayy, Func<double, double, double> u0, double[] U0,
             Func<double, double, double> f, Func<double, double, double, double> q, Func<double, double, double, double> g) {
+
+            String path_infor = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\Results\QT_ft_" + Nx + "_" + eps * 100 + "%_log.txt");
+            String path_fh = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\Results\QT_ft_" + Nx + "_" + eps * 100 + "%.txt");
+            TextWriter log_infor = new StreamWriter(path_infor);
 
             Operators oprs = new Operators();
             Solvers slvs = new Solvers();
@@ -28,21 +33,15 @@ namespace HeatSource2D_QT_fx {
             double[] d = new double[omega.Length];
 
             double errorold, error = 0;
-
+            fh = oprs.Ones(omega.Length);
             // solution of problem (coz fh = 0)                 
             double[] uh = sfem.SolveFEM(node, elem, dirichlet, Nx, Ny, jacobi, axx, ayy, U0, oprs.Ones(omega.Length), g);
             for (int i = 0; i < NoN; i++) {
                 uh[i] += u0(node[i, 0], node[i, 1]);
             }
-            double[] fe = new double[omega.Length];
-            for (int ny = 0; ny <= Ny; ny++) {
-                for (int nx = 0; nx <= Nx; nx++) {
-                    fe[ny * (Nx + 1) + nx] = f(nx * hx, ny * hy);
-                }
-            }
-            //uh = oprs.Add(uh, sfem.SolveFEM(node, elem, dirichlet, Nx, Ny, jacobi, axx, ayy, oprs.Zeros(fe.Length), fe, q));
+
             double[] del_lu = delta_lu(uh, omega, Nx, Ny, Nt);
-            //Console.WriteLine("del: " + del_lu.Min() + ", " + del_lu.Max());
+
             for (int iter = 0; iter < 100; iter++) {
 
                 // solution of adjoint problem
@@ -67,9 +66,12 @@ namespace HeatSource2D_QT_fx {
 
                 errorold = error;
                 error = slvs.ErrorL2(f, fh, Nx, Ny, hx, hy);
-                
+
                 Console.WriteLine(iter + ": ErrorL2: " + error.ToString("e") + ", DeltaError: " + (errorold - error).ToString("e"));
                 Console.WriteLine("J: " + J(Nx, Ny, hx, hy, del_lu, fh, gamma).ToString("e"));
+                log_infor.WriteLine(iter + ": ErrorL2: " + error.ToString("e") + ", DeltaError: " + (errorold - error).ToString("e"));
+                log_infor.WriteLine("J: " + J(Nx, Ny, hx, hy, del_lu, fh, gamma).ToString("e"));
+                log_infor.WriteLine();
 
                 if (Math.Sqrt(slvs.NormL2(del_lu, Nx, Ny, hx, hy)) < 1.1 * eps) {
                     //break;
@@ -81,10 +83,26 @@ namespace HeatSource2D_QT_fx {
                         fh = fhold;
                         break;
                     }
+                    if (errorold / error < 1 + 1e-3)
+                        break;
                 }
                 del_lu = oprs.Add(del_lu, oprs.Mul(alpha, Ad));
                 Console.WriteLine();
             }
+
+            double[] del = new double[(Nx + 1) * (Ny + 1)];
+            for (int ny = 0; ny <= Ny; ny++) {
+                for (int nx = 0; nx <= Nx; nx++) {
+                    del[ny * (Nx + 1) + nx] = fh[ny * (Nx + 1) + nx] - f(nx * hx, ny * hy);
+                }
+            }
+
+            log_infor.WriteLine("Error in L2: " + slvs.ErrorL2(f, fh, Nx, Ny, hx, hy).ToString("e"));
+            log_infor.WriteLine("min and max: " + del.Min().ToString("e") + ", " + del.Max().ToString("e"));
+            log_infor.WriteLine("Done!");
+            File.WriteAllLines(path_fh, fh.Select(dd => dd.ToString()));
+            log_infor.Close();
+
             return fh;
         }
 
@@ -119,7 +137,7 @@ namespace HeatSource2D_QT_fx {
             double axxT(double x, double y, double t) => axx(x, y, ht * Nt - t);
             double ayyT(double x, double y, double t) => ayy(x, y, ht * Nt - t);
 
-            double[] p = sfem.SolveFEM(node, elem, dirichlet, Nx, Ny, jacobi, axxT, ayyT, del_lu, oprs.Zeros(del_lu.Length), one3);
+            double[] p = sfem.SolveFEM(node, elem, dirichlet, Nx, Ny, jacobi, axxT, ayyT, del_lu, oprs.Zeros(del_lu.Length), zero3);
 
             for (int nt = 0; nt <= Nt; nt++) {
                 for (int ny = 0; ny <= Ny; ny++) {

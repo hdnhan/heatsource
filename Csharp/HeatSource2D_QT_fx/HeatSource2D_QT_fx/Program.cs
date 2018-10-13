@@ -16,28 +16,26 @@ namespace HeatSource2D_QT_fx {
             double axx(double x, double y, double t) => 1;
             double ayy(double x, double y, double t) => 1;
 
-            // Ex 1:
-            double u(double x, double y, double t) => Math.Cos(Math.PI * t) * Math.Sin(Math.PI * x) * Math.Sin(Math.PI * y);
-            double F(double x, double y, double t) => -Math.PI * Math.Sin(Math.PI * t) * Math.Sin(Math.PI * x) * Math.Sin(Math.PI * y)
-                                                                  + 2 * Math.PI * Math.PI * u(x, y, t);
-
-            // Ex 2:
-            //...
+            // Example:
+            double u(double x, double y, double t) => Math.Exp(t) * x * (1 - x) * Math.Sin(Math.PI * y);
+            double F(double x, double y, double t) => u(x, y, t) + 2 * Math.Exp(t) * Math.Sin(Math.PI * y) + Math.PI * Math.PI * u(x, y, t);
 
             double u0(double x, double y) => u(x, y, 0);
+            //double dxu0(double x, double y) => (1 - 2 * x) * Math.Sin(Math.PI * y);
+            //double dyu0(double x, double y) => Math.PI * x * (1 - x) * Math.Cos(Math.PI * y);
 
-            double f(double x, double y) => Math.Sin(Math.PI * x) * Math.Sin(Math.PI * y);
-            double q(double x, double y, double t) => 1 + x * x + y * y + t * t;
+            double f(double x, double y) => Math.Sin(Math.PI * x) * y * (1 - y);
+            double q(double x, double y, double t) => x * y + t + 1;
             double g(double x, double y, double t) => F(x, y, t) - f(x, y) * q(x, y, t);
             double gamma = 1e-5;
 
-            int nn = 32;
+            int nn = 64;
             int Nx = nn, Ny = nn, Nt = nn;
             double[] xlim = new double[] { 0, 1 };
             double[] ylim = new double[] { 0, 1 };
             double T = 1;
             double hx = (xlim[1] - xlim[0]) / Nx;
-            double hy = (ylim[1] - ylim[0]) / Nt;
+            double hy = (ylim[1] - ylim[0]) / Ny;
             double ht = T / Nt; // time step
             double jacobi = hx * hy * ht; // Jacobi = 6 * volume(elem)
 
@@ -52,27 +50,22 @@ namespace HeatSource2D_QT_fx {
             double[] omega = new double[(Nx + 1) * (Ny + 1)];
             double[] U0 = new double[(Nx + 1) * (Ny + 1)];
             Random random = new Random();
+            for (int ny = 0; ny <= Ny; ny++) {
+                for (int nx = 0; nx <= Nx; nx++) {
+                    omega[ny * (Nx + 1) + nx] = 2 * random.NextDouble() - 1; // eps * [-1, 1]
+                }
+            }
+            double norm_noise = Math.Sqrt(slvs.NormL2(omega, Nx, Ny, hx, hy));
             double eps = 0.01;
             for (int ny = 0; ny <= Ny; ny++) {
                 for (int nx = 0; nx <= Nx; nx++) {
-                    omega[ny * (Nx + 1) + nx] = u(nx * hx, ny * hy, T) - eps * (2 * random.NextDouble() - 1); // eps * [-1, 1]
+                    omega[ny * (Nx + 1) + nx] = u(nx * hx, ny * hy, T);// - eps * omega[ny * (Nx + 1) + nx] / norm_noise;
                     U0[ny * (Nx + 1) + nx] = u0(nx * hx, ny * hy);
                 }
             }
 
             double[] fh = ifem.CG(node, elem, dirichlet, Nx, Ny, Nt, hx, hy, ht, jacobi, omega, gamma, eps, axx, ayy, u0, U0, f, q, g);
-            
-            double[] del = new double[(Nx + 1) * (Ny + 1)];
-            for (int ny = 0; ny <= Ny; ny++) {
-                for (int nx = 0; nx <= Nx; nx++) {
-                    del[ny * (Nx + 1) + nx] = fh[ny * (Nx + 1) + nx] - f(nx * hx, ny * hy);
-                }
-            }
-
-            Console.WriteLine("Error in L2: " + slvs.ErrorL2(f, fh, Nx, Ny, hx, hy).ToString("e"));
-            Console.WriteLine("min and max: " + del.Min().ToString("e") + ", " + del.Max().ToString("e"));
-            Console.WriteLine("Done!");
-            Console.ReadLine();
+            //Console.ReadLine();
         }
     }
 }

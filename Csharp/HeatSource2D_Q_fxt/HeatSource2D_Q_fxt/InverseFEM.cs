@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+
 
 namespace HeatSource2D_Q_fxt {
     class InverseFEM {
@@ -11,10 +13,14 @@ namespace HeatSource2D_Q_fxt {
         Func<double, double, double> one2 = (x, y) => 1;
         Func<double, double, double, double> one3 = (x, y, t) => 1;
 
-        public double[] CG(double[,] node, int[,] elem, int[] dirichlet, int Nx, int Ny, int Nt, double T, double jacobi, double[] omega, double gamma, double eps, 
+        public double[] CG(double[,] node, int[,] elem, int[] dirichlet, int Nx, int Ny, int Nt, double T, double jacobi, double[] omega, double gamma, double eps,
             Func<double, double, double, double> axx, Func<double, double, double, double> ayy,
             Func<double, double, double> u0, Func<double, double, double> dxu0, Func<double, double, double> dyu0,
             Func<double, double, double, double> f, Func<double, double, double, double> q, Func<double, double, double, double> g) {
+
+            String path_infor = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\Results\Q_fxt_" + Nx + "_" + eps * 100 + "%_log.txt");
+            String path_fh = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\Results\Q_fxt_" + Nx + "_" + eps * 100 + "%.txt");
+            TextWriter log_infor = new StreamWriter(path_infor);
 
             Operators oprs = new Operators();
             Solvers slvs = new Solvers();
@@ -28,11 +34,6 @@ namespace HeatSource2D_Q_fxt {
             double[] rold = new double[NoN];
             double[] d = new double[NoN];
 
-            double[] fe = new double[NoN];
-            for (int i = 0; i < NoN; i++) {
-                fe[i] = f(node[i, 0], node[i, 1], node[i, 2]);
-            }
-
             double errorold, error = 0;
 
             // solution of problem (coz fh = 0)                 
@@ -40,7 +41,7 @@ namespace HeatSource2D_Q_fxt {
             for (int i = 0; i < NoN; i++) {
                 uh[i] += u0(node[i, 0], node[i, 1]);
             }
-            
+            //
             double[] del_lu = oprs.Sub(uh, omega);
 
             for (int iter = 0; iter < 50; iter++) {
@@ -68,6 +69,10 @@ namespace HeatSource2D_Q_fxt {
                 Console.WriteLine(iter + ": ErrorL2: " + error.ToString("e") + ", DeltaError: " + (errorold - error).ToString("e"));
                 Console.WriteLine("J: " + J(elem, jacobi, del_lu, fh, gamma).ToString("e"));
 
+                log_infor.WriteLine(iter + ": ErrorL2: " + error.ToString("e") + ", DeltaError: " + (errorold - error).ToString("e"));
+                log_infor.WriteLine("J: " + J(elem, jacobi, del_lu, fh, gamma).ToString("e"));
+                log_infor.WriteLine();
+
                 if (Math.Sqrt(slvs.NormL2(del_lu, elem, jacobi)) < 1.1 * eps) {
                     //break;
                 }
@@ -78,10 +83,23 @@ namespace HeatSource2D_Q_fxt {
                         fh = fhold;
                         break;
                     }
+                    if (errorold / error < 1 + 1e-3)
+                        break;
                 }
                 del_lu = oprs.Add(del_lu, oprs.Mul(alpha, udh));
                 Console.WriteLine();
             }
+
+            double[] del = new double[node.GetLength(0)];
+            for (int i = 0; i < node.GetLength(0); i++) {
+                del[i] = fh[i] - f(node[i, 0], node[i, 1], node[i, 2]);
+            }
+            log_infor.WriteLine("Error in L2: " + slvs.ErrorL2(f, fh, node, elem, jacobi).ToString("e"));
+            log_infor.WriteLine("min and max: " + del.Min().ToString("e") + ", " + del.Max().ToString("e"));
+            log_infor.WriteLine("Done!");
+            File.WriteAllLines(path_fh, fh.Select(dd => dd.ToString()));
+            log_infor.Close();
+
             return fh;
         }
 
@@ -96,7 +114,7 @@ namespace HeatSource2D_Q_fxt {
         }
 
 
-        public double[] AdjointProblem(double[,] node, int[,] elem, int Nx, int Ny, int Nt, double T,int[] dirichlet, double jacobi,
+        public double[] AdjointProblem(double[,] node, int[,] elem, int Nx, int Ny, int Nt, double T, int[] dirichlet, double jacobi,
             Func<double, double, double, double> axx, Func<double, double, double, double> ayy, double[] del_lu) {
             Operators oprs = new Operators();
             FEM sfem = new FEM();

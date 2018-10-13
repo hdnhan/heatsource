@@ -25,7 +25,7 @@ namespace SpaceTime2D {
             double dxu0(double x, double y) => Math.PI * Math.Cos(Math.PI * x) * Math.Sin(Math.PI * y);
             double dyu0(double x, double y) => Math.PI * Math.Sin(Math.PI * x) * Math.Cos(Math.PI * y);
 
-            int nn = 32;
+            int nn = 16;
             int Nx = nn;
             int Ny = nn;
             int Nt = nn;
@@ -33,7 +33,7 @@ namespace SpaceTime2D {
             double[] ylim = new double[] { 0, 1 };
             double T = 1;
             double hx = (xlim[1] - xlim[0]) / Nx;
-            double hy = (ylim[1] - ylim[0]) / Nt;
+            double hy = (ylim[1] - ylim[0]) / Ny;
             double ht = T / Nt; // time step
             double jacobi = hx * hy * ht; // Jacobi = 6 * volume(elem)
 

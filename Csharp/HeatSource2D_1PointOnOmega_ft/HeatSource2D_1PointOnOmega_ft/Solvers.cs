@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HeatSource2D_QT_fx {
+namespace HeatSource2D_1PointOnOmega_ft {
     class Solvers {
 
         // Tính tích phân 3 lớp f(x, y) x: 0 -> 1, y: 0 -> 1-x, z: 1-x-y

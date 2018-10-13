@@ -79,8 +79,8 @@ namespace HeatSource1D_Q_fxt {
                 Console.WriteLine(iter + ": ErrorL2: " + error.ToString("e") + ", DeltaError: " + (errorold - error).ToString("e"));
                 Console.WriteLine("J: " + J(elem, jacobi, del_lu, fh, gamma).ToString("e"));
 
-                if (Math.Sqrt(slvs.NormL2(del_lu, elem, jacobi)) < 1.1 * eps) {
-                    //break;
+                if (Math.Abs(errorold - error) < 1e-3 || Math.Sqrt(slvs.NormL2(del_lu, elem, jacobi)) < 1.1 * eps) {
+                    break;
                 }
 
                 if (iter > 0) {
@@ -115,6 +115,7 @@ namespace HeatSource1D_Q_fxt {
             int[] dirichlet, double jacobi, Func<double, double, double> a, double[] del_lu) {
             Operators oprs = new Operators();
             FEM sfem = new FEM();
+            // not flip time of a yet
             double[] p = sfem.SolveFEM(node, elem, dirichlet, jacobi, a, zero1, oprs.flip(del_lu, Nx, Nt), one2);
             //Console.WriteLine("p min and max: " + p.Min() + ", " + p.Max());
             return oprs.flip(p, Nx, Nt);
