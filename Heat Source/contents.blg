@@ -1,5 +1,8 @@
 This is BibTeX, Version 0.99dThe top-level auxiliary file: contents.aux
 The style file: plain.bst
-I found no \citation commands---while reading file contents.aux
 Database file #1: references.bib
-(There was 1 error message)
+Name 1 in "Kriksin Yu.A., Plyushchev S.N., Samarskaya E.A., and Tishkin V.F." has a comma at the end for entry a7
+while executing---line 1049 of file plain.bst
+Name 1 in "Kriksin Yu.A., Plyushchev S.N., Samarskaya E.A., and Tishkin V.F." has a comma at the end for entry a7
+while executing---line 1090 of file plain.bst
+(There were 2 error messages)

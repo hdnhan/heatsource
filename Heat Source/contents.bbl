@@ -1,3 +1,116 @@
-\begin{thebibliography}{}
+\begin{thebibliography}{10}
+
+\bibitem{a3}
+Hasanov A. and Pekta¸s B.
+\newblock A unified approach to identifying an unknown spacewise dependent
+  source in a variable coefficient parabolic equation from final and integral
+  overdeterminations.
+\newblock {\em Appl. Numer. Math.}, 78:49--67, 2014.
+
+\bibitem{a4}
+Iskenderov A.D.
+\newblock Some inverse problems on determining the right-hand sides of
+  differential equations.
+\newblock {\em Izv. Akad. Nauk Azerbaijan. SSR Ser. Fiz.-Tehn. Mat. Nauk},
+  pages no. 2, 58--63, 1979.
+
+\bibitem{a11}
+Prilepko A.I. and Solov’ev V.V.
+\newblock Solvability theorems and the rothe method in inverse problems for an
+  equation of parabolic type. i.
+\newblock {\em Differentsial’nye Uravneniya}, 23:1791--1799, 1987.
+
+\bibitem{a12}
+Prilepko A.I. and Solov’ev V.V.
+\newblock Solvability theorems and the rothe method in inverse problems for an
+  equation of parabolic type. ii.
+\newblock {\em Differentsial’nye Uravneniya}, 23:1971--1980, 1987.
+
+\bibitem{a9}
+Orlovskii D.G.
+\newblock Solvability of an inverse problem for a parabolic equation in the
+  h¨older class.
+\newblock {\em Mat. Zametki}, 50:no. 3, 107–112, 1991.
+
+\bibitem{a13}
+Nguyen Thi Ngoc~Oanh Dinh Nho~Hao, Bui Viet~Huong and Phan~Xuan Thanh.
+\newblock Determination of a term in the right-hand side of parabolic
+  equations.
+\newblock {\em ournal of Computational and Applied Mathematics}, 309:28--43,
+  2016.
+
+\bibitem{a14}
+Hao D.N.
+\newblock A noncharacteristic cauchy problem for linear parabolic equations ii:
+  A variational method.
+\newblock {\em Numer. Funct. Anal. Optim.}, 13:541--564, 1992.
+
+\bibitem{a15}
+Hao D.N.
+\newblock A noncharacteristic cauchy problem for linear parabolic equations
+  iii: A variational method and its approximation schemes.
+\newblock {\em Numer. Funct. Anal. Optim.}, 13:565--583, 1992.
+
+\bibitem{b2}
+Tr¨oltzsh F.
+\newblock {\em Optimal Control of Partial Differential Equations: Theory,
+  Methods and Applications}.
+\newblock Amer. Math. Soc., Providence, Rhode Island, 2010.
+
+\bibitem{b3}
+Wloka J.
+\newblock {\em Partial Differential Equations}.
+\newblock Cambridge Univ. Press, Cambridge, 1987.
+
+\bibitem{a7}
+Samarskaya~E.A. Kriksin~Yu.A., Plyushchev~S.N. and Tishkin V.F.
+\newblock The inverse problem of source reconstruction for a convective
+  diffusion equation.
+\newblock {\em Mat. Model.}, 7:no. 11, 95–108, 1995.
+
+\bibitem{a1}
+Lavrent’ev M.M. and Maksimov V.I.
+\newblock On the reconstruction of the right-hand side of a parabolic equation.
+\newblock {\em Comput. Math. Math. Phys.}, 48:641--647, 2008.
+
+\bibitem{a8}
+Oanh N.T.N. and Huong B.V.
+\newblock Determination of a time-dependent term in the right hand side of
+  linear parabolic equations.
+\newblock {\em Acta Math. Vietnam}, 41:313--335, 2016.
+
+\bibitem{b1}
+Ladyzhenskaya O.A.
+\newblock {\em The Boundary Value Problems of Mathematical Physics}.
+\newblock Springer-Verlag, New York, 1985.
+
+\bibitem{a2}
+Vabishchevich P.N.
+\newblock Numerical solution of the problem of the identification of the
+  right-hand side of a parabolic equation.
+\newblock {\em Russian Math. (Iz. VUZ)}, 47:no.1, 27--35, 2003.
+
+\bibitem{a16}
+Olaf {S}teinbach.
+\newblock Space-time finite element methods for parabolic problems.
+\newblock {\em Comput. Methods Appl. Math}, 15(4):551–566, 2015.
+
+\bibitem{a5}
+Kamynin V.L.
+\newblock n the unique solvability of an inverse problem for parabolic
+  equations with a final overdetermination condition.
+\newblock {\em Math. Notes}, 73:202--211, 2003.
+
+\bibitem{a10}
+Borukhov V.T. and Vabishchevich P.N.
+\newblock Numerical solution of an inverse problem of source reconstructions in
+  a parabolic equation.
+\newblock {\em Mat. Model.}, 10:Mat. Model., 1998.
+
+\bibitem{a6}
+Rundell W.
+\newblock Determination of an unknown nonhomogeneous term in a linear partial
+  differential equation from overspecified boundary data.
+\newblock {\em Applicable Anal.}, 10:no. 3, 231--242, 1980.
 
 \end{thebibliography}
