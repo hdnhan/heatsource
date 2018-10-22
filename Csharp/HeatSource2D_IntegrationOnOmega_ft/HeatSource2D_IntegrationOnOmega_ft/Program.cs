@@ -20,8 +20,8 @@ namespace HeatSource2D_IntegrationOnOmega_ft {
             double dyu0(double x, double y) => Math.PI * x * (1 - x) * Math.Cos(Math.PI * y);
 
             //double f(double t) => Math.Sin(Math.PI * t);
-            //double f(double t) => 2 * t * ((0.5 - t) >= 0 ? 1 : 0) + 2 * (1 - t) * ((t - 0.5) > 0 ? 1 : 0);
-            double f(double t) => ((t - 0.25) >= 0 ? 1 : 0) * ((t - 0.75) <= 0 ? 1 : 0);
+            double f(double t) => 2 * t * ((0.5 - t) >= 0 ? 1 : 0) + 2 * (1 - t) * ((t - 0.5) > 0 ? 1 : 0);
+            //double f(double t) => ((t - 0.25) >= 0 ? 1 : 0) * ((t - 0.75) <= 0 ? 1 : 0);
 
             double q(double x, double y, double t) => x * y + t + 1;
             double g(double x, double y, double t) => F(x, y, t) - f(t) * q(x, y, t);
@@ -36,7 +36,7 @@ namespace HeatSource2D_IntegrationOnOmega_ft {
             double[] ylim = new double[] { 0, 1 };
             double T = 1;
             double hx = (xlim[1] - xlim[0]) / Nx;
-            double hy = (ylim[1] - ylim[0]) / Nt;
+            double hy = (ylim[1] - ylim[0]) / Ny;
             double ht = T / Nt; // time step
             double jacobi = hx * hy * ht; // Jacobi = 6 * volume(elem)
 
@@ -56,7 +56,8 @@ namespace HeatSource2D_IntegrationOnOmega_ft {
             double[] omega = new double[Nt + 1];
             double[] omega_noise = new double[Nt + 1];
             Random random = new Random();
-            for (int nt = 0; nt <= Nt; nt++) {
+            // avoid initial condition noise
+            for (int nt = 1; nt <= Nt; nt++) {
                 omega_noise[nt] = 2 * random.NextDouble() - 1;
             }
             double norm_noise = Math.Sqrt(slvs.NormL2(omega_noise, ht));

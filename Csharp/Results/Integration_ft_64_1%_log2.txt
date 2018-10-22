@@ -1,12 +1,12 @@
-0: ErrorL2: 1.825801e-001, DeltaError: -1.825801e-001
-J: 2.342858e-003
+0: ErrorL2: 1.752450e-001, DeltaError: -1.752450e-001
+J: 2.249230e-003
 
-1: ErrorL2: 1.403742e-001, DeltaError: 4.220586e-002
-J: 1.084549e-004
+1: ErrorL2: 1.229613e-001, DeltaError: 5.228372e-002
+J: 1.194970e-004
 
-2: ErrorL2: 1.431168e-001, DeltaError: -2.742550e-003
-J: 4.635620e-005
+2: ErrorL2: 1.463760e-001, DeltaError: -2.341471e-002
+J: 4.883562e-005
 
-Error in L2: 1.403742e-001
-min and max: -4.021202e-001, 4.372014e-001
+Error in L2: 1.229613e-001
+min and max: -4.705287e-001, 2.653852e-001
 Done!

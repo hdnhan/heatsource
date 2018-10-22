@@ -19,12 +19,12 @@ namespace HeatSource2D_Q_fxt {
             double dxu0(double x, double y) => (1 - 2 * x) * Math.Sin(Math.PI * y);
             double dyu0(double x, double y) => Math.PI * x * (1 - x) * Math.Cos(Math.PI * y);
 
-            double f(double x, double y, double t) => (x * x * x + y * y * y) * (1 + t * t);
-            double q(double x, double y, double t) => t * t + 2;
+            double f(double x, double y, double t) => Math.Sin(Math.PI * x) * y * (1 - y) * (1 + t * t);
+            double q(double x, double y, double t) => x * y + t + 1;
             double g(double x, double y, double t) => F(x, y, t) - f(x, y, t) * q(x, y, t);
             double gamma = 1e-5;
 
-            int nn = 32;
+            int nn = 64;
             int Nx = nn;
             int Ny = nn;
             int Nt = nn;
@@ -52,9 +52,15 @@ namespace HeatSource2D_Q_fxt {
             // Observation
             double[] omega = new double[node.GetLength(0)];
             Random random = new Random();
-            for (int i = 0; i < node.GetLength(0); i++) {
-                omega[i] = 2 * random.NextDouble() - 1;
+            // avoid dirichlet and initial conditions noise
+            for (int nt = 1; nt <= Nt; nt++) {
+                for (int ny = 1; ny < Ny; ny++) {
+                    for (int nx = 1; nx < Nx; nx++) {
+                        omega[nt * (Nx + 1) * (Ny + 1) + ny * (Nx + 1) + nx] = 2 * random.NextDouble() - 1;
+                    }
+                }
             }
+
             double norm_noise = Math.Sqrt(slvs.NormL2(omega, elem, jacobi));
             double eps = 0.01;
             for (int i = 0; i < node.GetLength(0); i++) {

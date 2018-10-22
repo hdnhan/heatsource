@@ -16,8 +16,8 @@ namespace HeatSource2D_QT_fx {
             Func<double, double, double, double> axx, Func<double, double, double, double> ayy, Func<double, double, double> u0, double[] U0,
             Func<double, double, double> f, Func<double, double, double, double> q, Func<double, double, double, double> g) {
 
-            String path_infor = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\Results\QT_ft_" + Nx + "_" + eps * 100 + "%_log.txt");
-            String path_fh = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\Results\QT_ft_" + Nx + "_" + eps * 100 + "%.txt");
+            String path_infor = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\Results\QT_fx_" + Nx + "_" + eps * 100 + "%_log.txt");
+            String path_fh = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\Results\QT_fx_" + Nx + "_" + eps * 100 + "%.txt");
             TextWriter log_infor = new StreamWriter(path_infor);
 
             Operators oprs = new Operators();
@@ -33,7 +33,7 @@ namespace HeatSource2D_QT_fx {
             double[] d = new double[omega.Length];
 
             double errorold, error = 0;
-            fh = oprs.Ones(omega.Length);
+            //fh = oprs.Ones(omega.Length);
             // solution of problem (coz fh = 0)                 
             double[] uh = sfem.SolveFEM(node, elem, dirichlet, Nx, Ny, jacobi, axx, ayy, U0, oprs.Ones(omega.Length), g);
             for (int i = 0; i < NoN; i++) {

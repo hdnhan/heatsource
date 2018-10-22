@@ -18,8 +18,8 @@ namespace HeatSource2D_1PointOnOmega_ft {
             Func<double, double, double> u0, Func<double, double, double> dxu0, Func<double, double, double> dyu0,
             Func<double, double> f, Func<double, double, double, double> q, Func<double, double, double, double> g) {
 
-            String path_infor = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\Results\1Point_ft_" + Nx + "_" + eps * 100 + "%_log1.txt");
-            String path_fh = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\Results\1Point_ft_" + Nx + "_" + eps * 100 + "%_1.txt");
+            String path_infor = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\Results\1Point_ft_" + Nx + "_" + eps * 100 + "%_log2.txt");
+            String path_fh = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\Results\1Point_ft_" + Nx + "_" + eps * 100 + "%_2.txt");
             TextWriter log_infor = new StreamWriter(path_infor);
 
             Operators oprs = new Operators();

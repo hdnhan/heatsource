@@ -2,7 +2,7 @@
 \input{packages_and_definitions}
 \everymath{\displaystyle}
 
-\title{Reconstruction of a term in the right-hand side of parabolic equations}
+\title{Reconstruction of the right-hand side in parabolic equations from integral observations}
 
 \author{Ta Thi Thanh Mai\thanks{email: mai.tathithanh@hust.edu.vn} \and Ho Duc Nhan\thanks{email: hdnhan28@gmail.com}}
 
@@ -15,13 +15,23 @@
 %\thispagestyle{empty}
 %\normalsize
 \begin{abstract}
-	...
+We study the problem of determining the right-hand side in
+parabolic equations with time-dependent coefficients from integral observations which can be regarded as generalizations of point-wise interior observations. 
+%check lai
+%We develop the previous research methods for inverse problems 
+Our approach is new in the sense that for determining the right-hand side we do not assume that the data available in the whole space domain or in a subset of the space domain, but some integral observations during the time interval. 
+We propose a variational method in combination with Tikhonov regularization for solving the problem and then discrete it by space-time finite element methods. As a result, a numerical scheme with error estimate are given.
+The discretized minimization problem is solved by the conjugate gradient method. Some numerical examples are investigated for showing the efficiency and accuracy
+of present method.
 \end{abstract}
+
 \textbf{Keywords:} Inverse source problems, least squares method, Tikhonov regularization, space-time finite element method, conjugate gradient method.
-\section{Introduction}
-Consider a physical domain $\Omega \subset \mathbb{R}^d,\, d\in \mathbb{N^+}$ be bounded with the boundary $\Gamma$ and donate the cylinder $Q=\Omega\times (0,\, T]$ and lateral surface area $S=\Gamma \times (0,\, T]$ where $T>0$. 
+\section{Introduction and Problem setting}
+Over the last decades, the problem of determining a term in the right hand side of parabolic equations has received a large amount of attention from both engineers and mathematicians. Despite a vast literature on the existence, uniqueness and stability estimates of a solution to the problem, challenging topics still require further investigation to reach the ill-posedness and possible nonlinearity.
+For surveys on the subject, we refer the reader to the books [5, 23, 29, 30, 43] and the recent paper [48].\\
+To be more detailed, let $\Omega \subset \mathbb{R}^d,\, d\in \mathbb{N^+}$ be a bounded domain with a boundary $\Gamma$ and endow the cylinder $Q=\Omega\times (0,\, T]$ and lateral surface area $S=\Gamma \times (0,\, T]$ where $T>0$. 
 \\
-Consider the heat equation
+Consider the unsteady heat equation:
 \begin{align}\label{1.1}
 	\frac{\partial u}{\partial t}-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial u}{\partial x_i}\right)=F(x, t), \quad(x, t)\in Q,
 \end{align}
@@ -49,13 +59,15 @@ We have different inverse problems depending on either the form of $F$ or the ob
 	\item IP3: Find $f(t)$ if $\int_\Omega w(x)u(x, t)dx$ and $w(x)>0, \forall x\in \Omega$ are given \cite{a7, a8, a9}. This observation called \textit{integral observation}. Furthermore, an observation derives from integral observation called \textit{point observation} if $w(x)$ is a dirac delta function $\delta(x-x_0)$, so that $\int_\Omega\delta(x-x_0)u(x, t)dx=u(x_0, t), x_0$ is a point in $\Omega$ \cite{a10, a11, a12}. Beside that, find $f(x, t)$ or $f(x)$ if some integral or point observations are available \cite{a13}.
 	%\item IP3: Find $f(t)$ if $\ell_ku=\int_\Omega w_k(x)u(x, t)dx=\omega_k(t)$ and $w_k(x)>0, \forall x\in \Omega$ are given. This observation called \textit{integral observation}. Furthermore, an observation derives from integral observation called \textit{point observation} if $w_k(x)$ is a dirac delta function $\delta_k(x-x_k)$, so that $\ell_k(t)=\int_\Omega\delta_k(x-x_k)u(x, t)dx=u(x_k, t)=\omega_k(t)$. 
 \end{itemize}
-Donate $w$ is the value of the observation that given and $\ell u(f)$ is the result of the observation based on the solution $u$ we get. In this paper, we only present  the case of having many integral observations with $N_m$ is the number of observations, others can be proved similarly. So, to solve this problem, we need to minimize the least square functional \cite{a14, a15}
+Donate $w$ is the value of the observation that given and $\ell u(f)$ is the result of the observation based on the solution $u$ we get. In this paper, we present  the case of having many integral observations with $N_m$ is the number of observations, others can be proved similarly. So, to solve this problem, we need to minimize the least square functional \cite{a14, a15}
 $$J_{\gamma}(f)=\frac{1}{2}\sum_{k=1}^{N_{m}}\left\|\ell_k u(f)-\omega_k\right\|_{L^2(0, T)}^2.$$
 However, this minimization problem is unstable and there might be many minimizers to it. Therefore, we minimize the Tikhonov functional instead
 $$J_{\gamma}(f)=\frac{1}{2}\sum_{k=1}^{N_{o}}\left\|\ell_k u(f)-\omega_k\right\|_{L^2(0, T)}^2+\frac{\gamma}{2}\left\|f-f^*\right\|_{*}^2,$$
 with $\gamma>0$ being a regularization parameter, $f^*$ is an a prior estimation of $f$ and $\left\|.\right\|_*$ an appropriate norm.
 
-\section{Variational problem}
+This paper is organized into five sections. The next section provides a variational problem and prove that the Tikhonov functional is Frechet differentiable. Section \ref{section3} reviews some classical theories of conjugate gradient method, as well as the computation of descent direction. Section \ref{section4} presents the numerical method for solving the state and adjoint problem by space-time finite element methods; the convergence results is outlined in Section .... All the numerical test cases are presented in Section \ref{section5}. The last section gives some perspectives and comments about the effectiveness and limitations of the present scheme.
+
+\section{Variational problem}\label{section2}
 To introduce the concept of weak form, we use the standard Sobolev spaces $H^1(\Omega),\, H^1_0(\Omega),\, H^{1, 0}(Q)$ and $H^{1, 1}(Q)$ \cite{b1, b2, b3}. Further, for a Banach space $B$, we define
 $$L^2(0, T; B)=\left\{u:u(t)\in B \text{ a.e } t\in (0, T) \text{ and } \left\|u\right\|_{L^2(0, T;\; B)} <\infty \right\},$$
 with the norm
@@ -144,6 +156,8 @@ By changing the time direction, meaning $\tilde{p}(x, t)=p(x, T-t)$, we will get
 		\item $F(x, t)=f(t)q(x, t)+g(x, t)$: the penalty functional is $\left\|f-f^*\right\|_{L^2(0, T)}$ and $$\nabla J_0(f)=\int_\Omega q(x, t)p(x, t)dt.$$
 	\end{itemize}
 \end{cy}
+
+\section{Conjugate gradient method}\label{section3}
 \noindent To find $f$ satisfied \eqref{2.4}, we use the conjugate gradient method (CG). Its iteration follows, we assume that at the $k$th iteration, we have $f^k$ and then the next iteration will be
 $$f^{k+1}=f^k+\alpha_kd^k,$$
 with
@@ -198,6 +212,7 @@ Putting $\frac{\partial J_\gamma(f^k+\alpha d^k)}{\partial \alpha}=0$, we obtain
 \end{align*}
 Because of $d^k=r^k+\beta_kd^{k-1},\, r^k=-\nabla J_\gamma (f^k)$ and $\left\langle r^k,d^{k-1}\right\rangle_{L^2(I)}=0$, we get 
 $$\alpha_k=\frac{\left\|r^k\right\|^2_{L^2(Q)}}{\displaystyle\sum_{i=1}^{N_m}\left\|A_id^k\right\|^2_{L^2(0, T)}+\gamma\left\|d^k\right\|^2_{L^2(Q)}}.$$
+Thus, the CG algorithm is set up by following loop:
 
 \noindent \textbf{CG algorithm}
 \begin{itemize}
@@ -218,7 +233,7 @@ $$\alpha_k=\frac{\left\|r^k\right\|^2_{L^2(Q)}}{\displaystyle\sum_{i=1}^{N_m}\le
 	$$f^{k+1}=f^{k}+\alpha_kd^k.$$
 \end{itemize}
 
-\section{Finite element method}
+\section{Finite element method}\label{section4}
 We rewrite the Tikhonov functional
 \begin{align*}
 	J_\gamma(f)&=\frac{1}{2}\sum_{i=1}^{N_m}\left\|\ell_i u[f]+\ell_i u(u_0, \varphi)-\omega_i\right\|^2_{L^2(0, T)}+\frac{\gamma}{2}\left\|f-f^*\right\|^2_{L^2(Q)}\\
@@ -235,7 +250,7 @@ with $A_i^*: L^2(0, T)\to L^2(Q)$ is the adjoint operator of $A_i$ defined by $\
 \\
 We will approximate \eqref{3.1} by space-time finite element method. In fact, we will approximate $A_k$ and $A^*_k$ as follows.
 
-\subsection{Finite element approximate of $A_k,\, A_k^*$}
+\subsection{Approximation of $A_k,\, A_k^*$}
 We suppose that finite spaces $W_h\subset W(0, T)$, $X_h \subset X$ and $Y_h \subset Y$, we assume that $X_h \subset Y_h$. 
 The Galerkin-Petrov discretization of the variational problem \eqref{2.1} is to find $\overline{u}_h\in X_h$ such that
 \begin{align}\label{3.2}
@@ -350,11 +365,11 @@ We would like to reconstruct function $f$ with several forms of $F$ following
 	\item Example 3: $F(x, t)=f(t)q(x, t)+g(x, t)$ for IP3 with following functions
 	\begin{itemize}
 		\item[1.]$f(t)=
-			\begin{cases}
-			2t, & t\in [0, 0.5],\\
-			2(1-t), & t \in [0.5, 1],
-			\end{cases}$ \qquad for Example 3.1
- 		\item[2.] $f(t)=
+		\begin{cases}
+		2t, & t\in [0, 0.5],\\
+		2(1-t), & t \in [0.5, 1],
+		\end{cases}$ \qquad for Example 3.1
+		\item[2.] $f(t)=
 		\begin{cases}
 		1, & t\in [0.25, 0.75],\\
 		0, & t \notin [0.25, 0.75],
@@ -369,7 +384,7 @@ We use a uniform decomposition of the domain $Q$ into $65^3=274,625$ nodes and $
 We reconstruct $f(x, t)$ with observation in the whole domain.
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=.5\linewidth]{../FreeFem++/fhx}
+	\includegraphics[width=.5\linewidth]{../Csharp/Results/HS_Q_fxt}
 	\caption{The exact $f(x_p, t),\; x_p=(0.5, 0.5)$ and the numerical solution of Example 1.1.}
 \end{figure}
 
@@ -379,11 +394,11 @@ We reconstruct $f(x)$ with observation is the final overdetermination.
 \begin{figure}[h!]
 	\begin{subfigure}{.5\linewidth}
 		\centering
-		\includegraphics[width=\linewidth]{../FreeFem++/fhx}
+		\includegraphics[width=\linewidth]{../Csharp/Results/HS_QT_fx1}
 	\end{subfigure}%
 	\begin{subfigure}{.5\linewidth}
 		\centering
-		\includegraphics[width=\linewidth]{../FreeFem++/fhx}
+		\includegraphics[width=\linewidth]{../Csharp/Results/HS_QT_fx2}
 	\end{subfigure}
 	\caption{The exacts $f(x_1, 0.5),\; f(0.5, x_2)$ and the numerical solutions of Example 2.1.}
 \end{figure}
@@ -395,22 +410,22 @@ We reconstruct $f(t)$ with an integral observation $w(x)=x_1^2+x_2^2+1$ or a poi
 \begin{figure}[h!]
 	\begin{subfigure}{.5\linewidth}
 		\centering
-		\includegraphics[width=\linewidth]{../FreeFem++/fhx}
+		\includegraphics[width=\linewidth]{../Csharp/Results/HS_Integration_ft1}
 	\end{subfigure}%
 	\begin{subfigure}{.5\linewidth}
 		\centering
-		\includegraphics[width=\linewidth]{../FreeFem++/fhx}
+		\includegraphics[width=\linewidth]{../Csharp/Results/HS_1Point_ft1}
 	\end{subfigure}
 	\caption{The exact and numerical solution of Example 3.1: integral observation (left) and point observation (right).}
 \end{figure}
 \begin{figure}[h!]
 	\begin{subfigure}{.5\linewidth}
 		\centering
-		\includegraphics[width=\linewidth]{../FreeFem++/fhx}
+		\includegraphics[width=\linewidth]{../Csharp/Results/HS_Integration_ft2}
 	\end{subfigure}%
 	\begin{subfigure}{.5\linewidth}
 		\centering
-		\includegraphics[width=\linewidth]{../FreeFem++/fhx}
+		\includegraphics[width=\linewidth]{../Csharp/Results/HS_1Point_ft2}
 	\end{subfigure}
 	\caption{The exact and numerical solution of Example 3.2: integral observation (left) and point observation (right).}
 \end{figure}
@@ -420,16 +435,23 @@ We reconstruct $f(t)$ with an integral observation $w(x)=x_1^2+x_2^2+1$ or a poi
 \\
 We reconstruct $f(x)$ with 9 points described as follows
 \begin{figure}[h!]
+	\centering
+	\includegraphics[width=.5\linewidth]{../Csharp/Results/Nine_Points}
+	\caption{fff}
+\end{figure}
+\begin{figure}[h!]
 	\begin{subfigure}{.5\linewidth}
 		\centering
-		\includegraphics[width=\linewidth]{../FreeFem++/fhx}
+		\includegraphics[width=\linewidth]{../Csharp/Results/HS_9Points_fx1}
 	\end{subfigure}%
 	\begin{subfigure}{.5\linewidth}
 		\centering
-		\includegraphics[width=\linewidth]{../FreeFem++/fhx}
+		\includegraphics[width=\linewidth]{../Csharp/Results/HS_9Points_fx2}
 	\end{subfigure}
 	\caption{Observation points (left) and the exact $f(x_p, t),\;x_p=(0.5, 0.5)$ and numerical solution of Example 2.2 (right).}
-\end{figure}\justifying
+\end{figure}
+
+\justifying
 \section{Conclusion}
 
 \newpage

@@ -1,7 +1,8 @@
-\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.1}{Introduction and Problem setting}{}% 1
 \BOOKMARK [1][-]{section.2}{Variational problem}{}% 2
-\BOOKMARK [1][-]{section.3}{Finite element method}{}% 3
-\BOOKMARK [2][-]{subsection.3.1}{Finite element approximate of Ak, Ak*}{section.3}% 4
-\BOOKMARK [2][-]{subsection.3.2}{Convergence results}{section.3}% 5
-\BOOKMARK [1][-]{section.4}{Numerical results}{}% 6
-\BOOKMARK [1][-]{section.5}{Conclusion}{}% 7
+\BOOKMARK [1][-]{section.3}{Conjugate gradient method}{}% 3
+\BOOKMARK [1][-]{section.4}{Finite element method}{}% 4
+\BOOKMARK [2][-]{subsection.4.1}{Approximation of Ak, Ak*}{section.4}% 5
+\BOOKMARK [2][-]{subsection.4.2}{Convergence results}{section.4}% 6
+\BOOKMARK [1][-]{section.5}{Numerical results}{}% 7
+\BOOKMARK [1][-]{section.6}{Conclusion}{}% 8

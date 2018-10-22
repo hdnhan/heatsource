@@ -50,8 +50,9 @@ namespace HeatSource2D_QT_fx {
             double[] omega = new double[(Nx + 1) * (Ny + 1)];
             double[] U0 = new double[(Nx + 1) * (Ny + 1)];
             Random random = new Random();
-            for (int ny = 0; ny <= Ny; ny++) {
-                for (int nx = 0; nx <= Nx; nx++) {
+            // avoid dirichlet condition noise
+            for (int ny = 1; ny < Ny; ny++) {
+                for (int nx = 1; nx < Nx; nx++) {
                     omega[ny * (Nx + 1) + nx] = 2 * random.NextDouble() - 1; // eps * [-1, 1]
                 }
             }
@@ -59,11 +60,11 @@ namespace HeatSource2D_QT_fx {
             double eps = 0.01;
             for (int ny = 0; ny <= Ny; ny++) {
                 for (int nx = 0; nx <= Nx; nx++) {
-                    omega[ny * (Nx + 1) + nx] = u(nx * hx, ny * hy, T);// - eps * omega[ny * (Nx + 1) + nx] / norm_noise;
+                    omega[ny * (Nx + 1) + nx] = u(nx * hx, ny * hy, T) - eps * omega[ny * (Nx + 1) + nx] / norm_noise;
                     U0[ny * (Nx + 1) + nx] = u0(nx * hx, ny * hy);
                 }
             }
-
+            
             double[] fh = ifem.CG(node, elem, dirichlet, Nx, Ny, Nt, hx, hy, ht, jacobi, omega, gamma, eps, axx, ayy, u0, U0, f, q, g);
             //Console.ReadLine();
         }

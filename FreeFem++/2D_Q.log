@@ -1,9 +1,9 @@
 You chose the file "\\Hdnhan\d\Study\HUST\FEM\heatsource\FreeFem++\2D_Q.edp"
 -- FreeFem++ v  3.610001 (date jeu. 12 juil. 2018 15:05:23)
- Load: lg_fem lg_mesh lg_mesh3 eigenvalue
-'\\Hdnhan\d\Study\HUST\FEM\heatsource\FreeFem++'
+ Load: lg_fem lg_mesh lg_mesh3 eigenvalue '\\Hdnhan\d\Study\HUST\FEM\heatsource\FreeFem++'
 CMD.EXE was started with the above path as the current directory.
 UNC paths are not supported.  Defaulting to Windows directory.
+ 
     1 : load "ff-IpOpt"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\ff-IpOpt = 0)
     2 : load "msh3"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\msh3 = 0)
     3 : load "medit"(load: loadLibary C:\Program Files (x86)\FreeFem++\\.\medit = 0)
@@ -18,13 +18,13 @@ UNC paths are not supported.  Defaulting to Windows directory.
    12 :
    13 :
    14 : // ***** DATA ***** //
-   15 : Vh ue = exp(z) * sin(pi * x) * sin(pi * y);
+   15 : Vh ue = exp(z) * x*(1-x) * sin(pi * y);
    16 : Vh uD = 0;
    17 : Vh u0 = ue(x, y, 0);
    18 :
-   19 : Vh fe = sin(pi * x) * (2 * y * ( y < 0.5) + 2 * (1 - y) * (y >= 0.5)) * ((z >= 0.25) * (z <= 0.75));
-   20 : Vh q = 2 + x^2 + y^2 + z^2;
-   21 : Vh g = (1 + 2 * pi^2) * ue - fe * q;
+   19 : Vh fe = sin(pi * x)*sin(pi * y)*sin(pi * z);
+   20 : Vh q = 2 + z^2;
+   21 : Vh g = (1 + pi^2) * ue + 2 * exp(z)* sin(pi * y) - fe * q;
    22 : real gamma = 1e-5;
    23 :
    24 : // The overdetermination
@@ -47,8 +47,10 @@ UNC paths are not supported.  Defaulting to Windows directory.
    41 :     for (int i = 0; i <= Nz/2; i++){
    42 :         for (int j = 0; j <= Ny; j++){
    43 :             for (int k = 0; k <= Nx; k++){
-   44 :                 u[][i * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k] = mat[(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Ny +Ó 1) + k];
-   45 :                 u[][(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k] = mat[i * (Nx + 1) * (Ny + 1) + j * (Ny +Ó 1) + k];
+   44 :                 u[][i * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k] = mat[(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Ny +036 
+-9.37554e-0IìÍ- 1) + k];
+   45 :                 u[][(Nz - i) * (Nx + 1) * (Ny + 1) + j * (Ny + 1) + k] = mat[i * (Nx + 1) * (Ny + 1) + j * (Ny +036 
+-9.37554e-0IìÍ- 1) + k];
    46 :             }
    47 :         }
    48 :     }
@@ -107,7 +109,7 @@ UNC paths are not supported.  Defaulting to Windows directory.
   101 :
   102 :
   103 : Vh fh = 0;
-  104 : IPOPT(J, GradJ, fh[], tol = 1e-5);
+  104 : IPOPT(J, GradJ, fh[], tol = 1e-3);
   105 : savesol("2D_Q_fh.sol", Th, fh);
   106 :
   107 : cout << "J: " << J(fh[]) << endl;
@@ -117,7 +119,7 @@ UNC paths are not supported.  Defaulting to Windows directory.
   111 : cout << "fh min and max: " << fh[].min << ", " << fh[].max << endl;
   112 : cout << "(fh-fe) min and max: " << del[].min << ", " << del[].max << endl;
   113 : cout << "erorr L2: " << sqrt(int3d(Th)(del * del)) << endl;
-  114 :  sizestack + 1024 =8720  ( 7696 )
+  114 :  sizestack + 1024 =8240  ( 7216 )
  
   Enter: BuildCube: 6
     kind = 6 n tet Cube = 6 / n slip 6 70
@@ -141,9 +143,9 @@ Number of nonzeros in inequality constraint Jacobian.:        0
 Number of nonzeros in Lagrangian Hessian.............:        0
  
   -- Solve :
-          min -7.76974e-036  max 1.70816
+          min -1.36221e-036  max 0.404825
   -- Solve :
-          min -0.00607747  max 1.20613e-006
+          min -0.00569505  max 1.69915e-037
 Total number of variables............................:    68921
                      variables with only lower bounds:        0
                 variables with lower and upper bounds:        0
@@ -155,234 +157,61 @@ Total number of inequality constraints...............:        0
         inequality constraints with only upper bounds:        0
  
   -- Solve :
-          min -7.76974e-036  max 1.70816
+          min -1.36221e-036  max 0.404825
   -- Solve :
-          min -0.00607747  max 1.20613e-006
+          min -0.00569505  max 1.69915e-037
   -- Solve :
-          min -7.76974e-036  max 1.70816
+          min -1.36221e-036  max 0.404825
 iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
-   0 8.3461229e-004 0.00e+000 1.78e-002   0.0 0.00e+000    -  0.00e+000 0.00e+000   0
+   0 8.2398785e-004 0.00e+000 1.32e-002   0.0 0.00e+000    -  0.00e+000 0.00e+000   0
   -- Solve :
-          min -7.77287e-036  max 1.7083
+          min -1.37546e-036  max 0.405266
   -- Solve :
-          min -7.77287e-036  max 1.7083
+          min -1.37546e-036  max 0.405266
   -- Solve :
-          min -0.00594909  max 1.56487e-006
-   1 8.0164926e-004 0.00e+000 1.74e-002 -11.0 1.78e-002    -  1.00e+000 1.00e+000f  1
+          min -0.00561944  max 1.66661e-037
+   1 8.0205620e-004 0.00e+000 1.31e-002 -11.0 1.32e-002    -  1.00e+000 1.00e+000f  1
   -- Solve :
-          min -7.82826e-036  max 1.70912
+          min -2.45241e-036  max 0.42708
   -- Solve :
-          min -7.82826e-036  max 1.70912
+          min -2.45241e-036  max 0.42708
   -- Solve :
-          min -0.000364455  max 0.000284089
-   2 5.3051898e-006 0.00e+000 9.07e-004 -11.0 8.28e-001    -  1.00e+000 1.00e+000f  1
-  -- Solve :
-          min -7.82114e-036  max 1.7112
-  -- Solve :
-          min -7.82114e-036  max 1.7112
-  -- Solve :
-          min -0.000248618  max 0.000194377
-   3 3.2620203e-006 0.00e+000 6.09e-004 -11.0 4.81e-002    -  1.00e+000 1.00e+000f  1
-  -- Solve :
-          min -8.0028e-036  max 1.71002
-  -- Solve :
-          min -8.0028e-036  max 1.71002
-  -- Solve :
-          min -0.00021588  max 0.00011004
-   4 1.4430209e-006 0.00e+000 7.08e-004 -11.0 1.39e-001    -  1.00e+000 1.00e+000f  1
-  -- Solve :
-          min -7.96796e-036  max 1.7143
-  -- Solve :
-          min -7.96796e-036  max 1.7143
-  -- Solve :
-          min -7.96796e-036  max 1.7143
-  -- Solve :
-          min -7.96796e-036  max 1.7143
-  -- Solve :
-          min -7.96796e-036  max 1.7143
-  -- Solve :
-          min -7.98538e-036  max 1.71216
-  -- Solve :
-          min -7.98538e-036  max 1.71216
-  -- Solve :
-          min -8.23187e-005  max 0.000105675
-   5 1.0081936e-006 0.00e+000 3.59e-004 -11.0 1.41e-001    -  1.00e+000 5.00e-001f  2
-  -- Solve :
-          min -7.85184e-036  max 1.71134
-  -- Solve :
-          min -7.85184e-036  max 1.71134
-  -- Solve :
-          min -4.8324e-005  max 4.29641e-005
-   6 7.8859386e-007 0.00e+000 1.36e-004 -11.0 2.13e-002    -  1.00e+000 1.00e+000f  1
-  -- Solve :
-          min -7.78529e-036  max 1.71079
-  -- Solve :
-          min -7.78529e-036  max 1.71079
-  -- Solve :
-          min -5.04409e-005  max 2.3506e-005
-   7 6.8953149e-007 0.00e+000 1.21e-004 -11.0 3.80e-002    -  1.00e+000 1.00e+000f  1
-  -- Solve :
-          min -7.95998e-036  max 1.71161
-  -- Solve :
-          min -7.95998e-036  max 1.71161
-  -- Solve :
-          min -8.84612e-005  max 6.25905e-005
-   8 6.8298140e-007 0.00e+000 2.63e-004 -11.0 8.26e-002    -  1.00e+000 1.00e+000f  1
-  -- Solve :
-          min -7.90122e-036  max 1.71039
-  -- Solve :
-          min -7.90122e-036  max 1.71039
-  -- Solve :
-          min -4.59899e-005  max 2.83806e-005
-   9 6.1544576e-007 0.00e+000 1.20e-004 -11.0 3.03e-002    -  1.00e+000 1.00e+000f  1
-  -- Solve :
-          min -7.93484e-036  max 1.71104
-  -- Solve :
-          min -7.93484e-036  max 1.71104
-  -- Solve :
-          min -3.08896e-005  max 1.03084e-005
-iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
-  10 5.8019514e-007 0.00e+000 7.40e-005 -11.0 1.66e-002    -  1.00e+000 1.00e+000f  1
-  -- Solve :
-          min -7.90829e-036  max 1.71116
-  -- Solve :
-          min -7.90829e-036  max 1.71116
-  -- Solve :
-          min -8.96088e-006  max 7.59893e-006
-  11 5.7230124e-007 0.00e+000 3.10e-005 -11.0 7.79e-003    -  1.00e+000 1.00e+000f  1
-  -- Solve :
-          min -7.89066e-036  max 1.71111
-  -- Solve :
-          min -7.89066e-036  max 1.71111
-  -- Solve :
-          min -1.42352e-005  max 4.40314e-006
-  12 5.6991517e-007 0.00e+000 3.13e-005 -11.0 6.56e-003    -  1.00e+000 1.00e+000f  1
-  -- Solve :
-          min -7.88015e-036  max 1.71094
-  -- Solve :
-          min -7.88015e-036  max 1.71094
-  -- Solve :
-          min -7.88015e-036  max 1.71094
-  -- Solve :
-          min -7.88015e-036  max 1.71094
-  -- Solve :
-          min -7.88015e-036  max 1.71094
-  -- Solve :
-          min -7.88541e-036  max 1.71103
-  -- Solve :
-          min -7.88541e-036  max 1.71103
-  -- Solve :
-          min -8.25824e-006  max 5.86342e-006
-  13 5.6806948e-007 0.00e+000 1.93e-005 -11.0 1.79e-002    -  1.00e+000 5.00e-001f  2
-  -- Solve :
-          min -7.85985e-036  max 1.71162
-  -- Solve :
-          min -7.85985e-036  max 1.71162
-  -- Solve :
-          min -7.85985e-036  max 1.71162
-  -- Solve :
-          min -7.85985e-036  max 1.71162
-  -- Solve :
-          min -7.85985e-036  max 1.71162
-  -- Solve :
-          min -7.87263e-036  max 1.71132
-  -- Solve :
-          min -7.87263e-036  max 1.71132
-  -- Solve :
-          min -1.49485e-005  max 6.13901e-006
-  14 5.6637323e-007 0.00e+000 3.90e-005 -11.0 2.65e-002    -  1.00e+000 5.00e-001f  2
-  -- Solve :
-          min -7.90612e-036  max 1.71145
-  -- Solve :
-          min -7.90612e-036  max 1.71145
-  -- Solve :
-          min -1.66104e-005  max 1.41335e-005
-  15 5.6538493e-007 0.00e+000 4.80e-005 -11.0 7.10e-003    -  1.00e+000 1.00e+000f  1
-  -- Solve :
-          min -7.91047e-036  max 1.71102
-  -- Solve :
-          min -7.91047e-036  max 1.71102
-  -- Solve :
-          min -7.91047e-036  max 1.71102
-  -- Solve :
-          min -7.91047e-036  max 1.71102
-  -- Solve :
-          min -7.91047e-036  max 1.71102
-  -- Solve :
-          min -7.90829e-036  max 1.71123
-  -- Solve :
-          min -7.90829e-036  max 1.71123
-  -- Solve :
-          min -1.1065e-005  max 6.68428e-006
-  16 5.6392738e-007 0.00e+000 2.18e-005 -11.0 6.49e-003    -  1.00e+000 5.00e-001f  2
-  -- Solve :
-          min -7.89148e-036  max 1.71114
-  -- Solve :
-          min -7.89148e-036  max 1.71114
-  -- Solve :
-          min -7.89148e-036  max 1.71114
-  -- Solve :
-          min -7.89148e-036  max 1.71114
-  -- Solve :
-          min -7.89148e-036  max 1.71114
-  -- Solve :
-          min -7.89989e-036  max 1.71119
-  -- Solve :
-          min -7.89989e-036  max 1.71119
-  -- Solve :
-          min -6.91475e-006  max 4.94196e-006
-  17 5.6331356e-007 0.00e+000 1.61e-005 -11.0 4.55e-003    -  1.00e+000 5.00e-001f  2
-  -- Solve :
-          min -7.89649e-036  max 1.71114
-  -- Solve :
-          min -7.89649e-036  max 1.71114
-  -- Solve :
-          min -7.89649e-036  max 1.71114
-  -- Solve :
-          min -7.89649e-036  max 1.71114
-  -- Solve :
-          min -7.89649e-036  max 1.71114
-  -- Solve :
-          min -7.89819e-036  max 1.71116
-  -- Solve :
-          min -7.89819e-036  max 1.71116
-  -- Solve :
-          min -5.89481e-006  max 2.49802e-006
-  18 5.6328313e-007 0.00e+000 8.34e-006 -11.0 2.10e-003    -  1.00e+000 5.00e-001f  2
+          min -0.00013623  max 9.64112e-005
+   2 9.8594273e-007 0.00e+000 2.74e-004 -11.0 1.00e+000    -  1.00e+000 1.00e+000f  1
  
-Number of Iterations....: 18
+Number of Iterations....: 2
  
                                    (scaled)                 (unscaled)
-Objective...............:  5.6328313424268181e-007   5.6328313424268181e-007
-Dual infeasibility......:  8.3394239004411831e-006   8.3394239004411831e-006
+Objective...............:  9.8594272699539113e-007   9.8594272699539113e-007
+Dual infeasibility......:  2.7416332290622033e-004   2.7416332290622033e-004
 Constraint violation....:  0.0000000000000000e+000   0.0000000000000000e+000
 Complementarity.........:  0.0000000000000000e+000   0.0000000000000000e+000
-Overall NLP error.......:  8.3394239004411831e-006   8.3394239004411831e-006
+Overall NLP error.......:  2.7416332290622033e-004   2.7416332290622033e-004
  
  
-Number of objective function evaluations             = 49
-Number of objective gradient evaluations             = 19
+Number of objective function evaluations             = 3
+Number of objective gradient evaluations             = 3
 Number of equality constraint evaluations            = 0
 Number of inequality constraint evaluations          = 0
 Number of equality constraint Jacobian evaluations   = 0
 Number of inequality constraint Jacobian evaluations = 0
 Number of Lagrangian Hessian evaluations             = 0
-Total CPU secs in IPOPT (w/o function evaluations)   =     42.424
-Total CPU secs in NLP function evaluations           =   1115.175
+Total CPU secs in IPOPT (w/o function evaluations)   =     36.363
+Total CPU secs in NLP function evaluations           =    121.599
  
 EXIT: Optimal Solution Found.
  
  
 *** Ipopt succeeded
   -- Solve :
-          min -7.89819e-036  max 1.71116
-J: 5.63283e-007
+          min -2.45241e-036  max 0.42708
+J: 9.85943e-007
 fe min and max: 0, 1
-fh min and max: -0.0724971, 0.942872
-(fh-fe) min and max: -0.0964303, 0.0503763
-erorr L2: 0.0143278
-times: compile 0.154s, execution 1172.73s,  mpirank:0
- ######## We forget of deleting   2667 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
- CodeAlloc : nb ptr  3620,  size :414800 mpirank: 0
+fh min and max: -2.32766e-035, 1.0132
+(fh-fe) min and max: -0.0265596, 0.0729073
+erorr L2: 0.00912165
+times: compile 0.168s, execution 174.074s,  mpirank:0
+ ######## We forget of deleting   403 Nb pointer,   0Bytes  ,  mpirank 0, memory leak =0
+ CodeAlloc : nb ptr  3599,  size :414320 mpirank: 0
 Ok: Normal End
  try getConsole \\Hdnhan\d\Study\HUST\FEM\heatsource\FreeFem++\2D_Q.edp

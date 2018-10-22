@@ -12,13 +12,13 @@ fespace Vh(Th, P1);
 
 
 // ***** DATA ***** //
-Vh ue = exp(z) * sin(pi * x) * sin(pi * y);
+Vh ue = exp(z) * x*(1-x) * sin(pi * y);
 Vh uD = 0;
 Vh u0 = ue(x, y, 0);
 
-Vh fe = sin(pi * x) * (2 * y * ( y < 0.5) + 2 * (1 - y) * (y >= 0.5)) * ((z >= 0.25) * (z <= 0.75));
-Vh q = 2 + x^2 + y^2 + z^2;
-Vh g = (1 + 2 * pi^2) * ue - fe * q;
+Vh fe = sin(pi * x)*sin(pi * y)*sin(pi * z);
+Vh q = 2 + z^2;
+Vh g = (1 + pi^2) * ue + 2 * exp(z)* sin(pi * y) - fe * q;
 real gamma = 1e-5;
 
 // The overdetermination
@@ -101,7 +101,7 @@ func real[int] GradJ(real[int] ff) {
 
 
 Vh fh = 0;
-IPOPT(J, GradJ, fh[], tol = 1e-5);
+IPOPT(J, GradJ, fh[], tol = 1e-3);
 savesol("2D_Q_fh.sol", Th, fh);
 
 cout << "J: " << J(fh[]) << endl; 
