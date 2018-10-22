@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630 64-bit) (preloaded format=pdflatex 2018.10.22)  22 OCT 2018 23:47
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630 64-bit) (preloaded format=pdflatex 2018.10.22)  23 OCT 2018 02:07
 entering extended mode
 **./contents.tex
 (contents.tex
@@ -534,6 +534,9 @@ File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 57.
 
+
+LaTeX Warning: Reference `section5' on page 2 undefined on input line 68.
+
 [2] [3] [4]
 LaTeX Font Info:    Font shape `OMS/cmr/m/it' in size <10> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 155.
@@ -572,24 +575,24 @@ Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 Missing character: There is no Ã in font cmr10!
 Missing character: There is no   in font cmr10!
 
-Overfull \hbox (22.89278pt too wide) detected at line 317
+Overfull \hbox (20.06636pt too wide) detected at line 317
 []
  []
 
 [10] [11] [12]
-<../Csharp/Results/HS_Q_fxt.png, id=221, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_Q_fxt.png, id=220, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_Q_fxt.png Graphic file (type png)
 <use ../Csharp/Results/HS_Q_fxt.png>
 Package pdftex.def Info: ../Csharp/Results/HS_Q_fxt.png  used on input line 387
 .
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
-<../Csharp/Results/HS_QT_fx1.png, id=222, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_QT_fx1.png, id=221, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_QT_fx1.png Graphic file (type png)
 <use ../Csharp/Results/HS_QT_fx1.png>
 Package pdftex.def Info: ../Csharp/Results/HS_QT_fx1.png  used on input line 39
 7.
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
-<../Csharp/Results/HS_QT_fx2.png, id=223, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_QT_fx2.png, id=222, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_QT_fx2.png Graphic file (type png)
 <use ../Csharp/Results/HS_QT_fx2.png>
 Package pdftex.def Info: ../Csharp/Results/HS_QT_fx2.png  used on input line 40
@@ -597,25 +600,25 @@ Package pdftex.def Info: ../Csharp/Results/HS_QT_fx2.png  used on input line 40
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
  [13 <../Csharp/Results/HS_Q_fxt.png (PNG copy)> <../Csharp/Results/HS_QT_fx1.p
 ng (PNG copy)> <../Csharp/Results/HS_QT_fx2.png (PNG copy)>]
-<../Csharp/Results/HS_Integration_ft1.png, id=231, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_Integration_ft1.png, id=230, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_Integration_ft1.png Graphic file (type png)
 <use ../Csharp/Results/HS_Integration_ft1.png>
 Package pdftex.def Info: ../Csharp/Results/HS_Integration_ft1.png  used on inpu
 t line 413.
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
-<../Csharp/Results/HS_1Point_ft1.png, id=232, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_1Point_ft1.png, id=231, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_1Point_ft1.png Graphic file (type png)
 <use ../Csharp/Results/HS_1Point_ft1.png>
 Package pdftex.def Info: ../Csharp/Results/HS_1Point_ft1.png  used on input lin
 e 417.
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
-<../Csharp/Results/HS_Integration_ft2.png, id=233, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_Integration_ft2.png, id=232, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_Integration_ft2.png Graphic file (type png)
 <use ../Csharp/Results/HS_Integration_ft2.png>
 Package pdftex.def Info: ../Csharp/Results/HS_Integration_ft2.png  used on inpu
 t line 424.
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
-<../Csharp/Results/HS_1Point_ft2.png, id=234, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_1Point_ft2.png, id=233, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_1Point_ft2.png Graphic file (type png)
 <use ../Csharp/Results/HS_1Point_ft2.png>
 Package pdftex.def Info: ../Csharp/Results/HS_1Point_ft2.png  used on input lin
@@ -625,19 +628,19 @@ e 428.
 [14 <../Csharp/Results/HS_Integration_ft1.png (PNG copy)> <../Csharp/Results/HS
 _1Point_ft1.png (PNG copy)> <../Csharp/Results/HS_Integration_ft2.png (PNG copy
 )> <../Csharp/Results/HS_1Point_ft2.png (PNG copy)>]
-<../Csharp/Results/Nine_Points.png, id=241, 421.575pt x 316.0608pt>
+<../Csharp/Results/Nine_Points.png, id=240, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/Nine_Points.png Graphic file (type png)
 <use ../Csharp/Results/Nine_Points.png>
 Package pdftex.def Info: ../Csharp/Results/Nine_Points.png  used on input line 
 439.
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
-<../Csharp/Results/HS_9Points_fx1.png, id=242, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_9Points_fx1.png, id=241, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_9Points_fx1.png Graphic file (type png)
 <use ../Csharp/Results/HS_9Points_fx1.png>
 Package pdftex.def Info: ../Csharp/Results/HS_9Points_fx1.png  used on input li
 ne 445.
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
-<../Csharp/Results/HS_9Points_fx2.png, id=243, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_9Points_fx2.png, id=242, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_9Points_fx2.png Graphic file (type png)
 <use ../Csharp/Results/HS_9Points_fx2.png>
 Package pdftex.def Info: ../Csharp/Results/HS_9Points_fx2.png  used on input li
@@ -686,13 +689,17 @@ Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 461.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 461.
 Package rerunfilecheck Info: File `contents.out' has not changed.
 (rerunfilecheck)             Checksum: 0C26F841EB7FED191F6219D2A365E9FE;483.
+
+
+LaTeX Warning: There were undefined references.
+
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 461.
  ) 
 Here is how much of TeX's memory you used:
- 10062 strings out of 493305
- 166800 string characters out of 3130236
- 274701 words of memory out of 3000000
- 13407 multiletter control sequences out of 15000+200000
+ 10061 strings out of 493305
+ 166785 string characters out of 3130236
+ 275701 words of memory out of 3000000
+ 13406 multiletter control sequences out of 15000+200000
  12808 words of font info for 49 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
  38i,15n,39p,699b,440s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -730,9 +737,9 @@ sers/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmti
 10.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsf
 onts/cm/cmti8.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/
 public/amsfonts/symbols/msbm10.pfb>
-Output written on contents.pdf (17 pages, 657069 bytes).
+Output written on contents.pdf (17 pages, 657128 bytes).
 PDF statistics:
- 354 PDF objects out of 1000 (max. 8388607)
+ 353 PDF objects out of 1000 (max. 8388607)
  85 named destinations out of 1000 (max. 500000)
  115 words of extra memory for PDF output out of 10000 (max. 10000000)
 

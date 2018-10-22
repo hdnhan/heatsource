@@ -59,12 +59,12 @@ We have different inverse problems depending on either the form of $F$ or the ob
 	\item IP3: Find $f(t)$ if $\int_\Omega w(x)u(x, t)dx$ and $w(x)>0, \forall x\in \Omega$ are given \cite{a7, a8, a9}. This observation called \textit{integral observation}. Furthermore, an observation derives from integral observation called \textit{point observation} if $w(x)$ is a dirac delta function $\delta(x-x_0)$, so that $\int_\Omega\delta(x-x_0)u(x, t)dx=u(x_0, t), x_0$ is a point in $\Omega$ \cite{a10, a11, a12}. Beside that, find $f(x, t)$ or $f(x)$ if some integral or point observations are available \cite{a13}.
 	%\item IP3: Find $f(t)$ if $\ell_ku=\int_\Omega w_k(x)u(x, t)dx=\omega_k(t)$ and $w_k(x)>0, \forall x\in \Omega$ are given. This observation called \textit{integral observation}. Furthermore, an observation derives from integral observation called \textit{point observation} if $w_k(x)$ is a dirac delta function $\delta_k(x-x_k)$, so that $\ell_k(t)=\int_\Omega\delta_k(x-x_k)u(x, t)dx=u(x_k, t)=\omega_k(t)$. 
 \end{itemize}
-Donate $w$ is the value of the observation that given and $\ell u(f)$ is the result of the observation based on the solution $u$ we get. In this paper, we present  the case of having many integral observations with $N_m$ is the number of observations, others can be proved similarly. So, to solve this problem, we need to minimize the least square functional \cite{a14, a15}
+Denote $w$ is the value of the observation that given and $\ell u(f)$ is the result of the observation based on the solution $u$ we get. In this paper, we present  the case of having many integral observations with $N_m$ is the number of observations, others can be proved similarly. So, to solve this problem, we need to minimize the least square functional \cite{a14, a15}
 $$J_{\gamma}(f)=\frac{1}{2}\sum_{k=1}^{N_{m}}\left\|\ell_k u(f)-\omega_k\right\|_{L^2(0, T)}^2.$$
 However, this minimization problem is unstable and there might be many minimizers to it. Therefore, we minimize the Tikhonov functional instead
 $$J_{\gamma}(f)=\frac{1}{2}\sum_{k=1}^{N_{o}}\left\|\ell_k u(f)-\omega_k\right\|_{L^2(0, T)}^2+\frac{\gamma}{2}\left\|f-f^*\right\|_{*}^2,$$
 with $\gamma>0$ being a regularization parameter, $f^*$ is an a prior estimation of $f$ and $\left\|.\right\|_*$ an appropriate norm.
-
+\\
 This paper is organized into five sections. The next section provides a variational problem and prove that the Tikhonov functional is Frechet differentiable. Section \ref{section3} reviews some classical theories of conjugate gradient method, as well as the computation of descent direction. Section \ref{section4} presents the numerical method for solving the state and adjoint problem by space-time finite element methods; the convergence results is outlined in Section .... All the numerical test cases are presented in Section \ref{section5}. The last section gives some perspectives and comments about the effectiveness and limitations of the present scheme.
 
 \section{Variational problem}\label{section2}
@@ -90,7 +90,7 @@ and
 \begin{align}\label{2.2}
 	u(x, 0)=u_0,\; x\in \Omega.
 \end{align}
-From now on, we donate $X=\left\{u: u\in W(0, T): u(x, 0)=0\right\}$ and $Y=L^2\left(0, T; H^1_0(\Omega)\right)$. Obviously, we have $X\subset Y$. We split $u(x, t)=\overline{u}(x, t)+\overline{u}_0$ for $(x, t)\in Q$ where $\overline{u}_0\in W(0, T)$ is some extension of the given initial datum $u_0\in H^1_0(\Omega)$. Here, we use space-time finite element method \cite{a16} and therefore we can prove that there exists a unique solution $\overline{u}\in X$ of the problem \cref{1.1,1.2,1.3} that satisfies 
+From now on, we denote $X=\left\{u: u\in W(0, T): u(x, 0)=0\right\}$ and $Y=L^2\left(0, T; H^1_0(\Omega)\right)$. Obviously, we have $X\subset Y$. We split $u(x, t)=\overline{u}(x, t)+\overline{u}_0$ for $(x, t)\in Q$ where $\overline{u}_0\in W(0, T)$ is some extension of the given initial datum $u_0\in H^1_0(\Omega)$. Here, we use space-time finite element method \cite{a16} and therefore we can prove that there exists a unique solution $\overline{u}\in X$ of the problem \cref{1.1,1.2,1.3} that satisfies 
 \begin{align}\label{2.3}
 	\left\|\overline{u}\right\|_{W(0, T)} \leq c_d \left(\left\|F\right\|_{L^2\left(0, T; H^{-1}(\Omega)\right)}+\left\|\overline{u}_0\right\|_{W(0, T)}\right).
 \end{align}
@@ -182,7 +182,7 @@ To identify $\alpha_k$, we consider two problems
 	\end{align*}
 \end{bt}
 \begin{bt}\label{bt2.2}
-	Denote the solution of this problem is $u(u_0, \varphi)$
+	Denote the solution of this problem is $u(u_0, g)$
 	\begin{align*}
 		\begin{cases}
 			\frac{\partial u}{\partial t}-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial u}{\partial x_i}\right)=g(x, t),&(x, t)\in Q,\\
@@ -191,11 +191,11 @@ To identify $\alpha_k$, we consider two problems
 		\end{cases}
 	\end{align*}
 \end{bt}
-\noindent If we do so, the observation operators have the form $\ell_i u(f)=\ell_i u[f]+\ell_i u(u_0, \varphi)=A_if+\ell_i u(u_0, \varphi)$, with $A_i$ being bounded linear operators from $L^2(Q)$ to $L^2(0, T)$.\\
+\noindent If we do so, the observation operators have the form $\ell_i u(f)=\ell_i u[f]+\ell_i u(u_0, g)=A_if+\ell_i u(u_0, g)$, with $A_i$ being bounded linear operators from $L^2(Q)$ to $L^2(0, T)$.\\
 We have
 \begin{align*}
 	J_{\gamma}(f^k+\alpha d^k)&=\frac{1}{2}\sum_{i=1}^{N_m}\left\|\ell_i u(f^k+\alpha d^k)-\omega_i\right\|_{L^2(0, T)}^2+\frac{\gamma}{2}\left\|f^k+\alpha d^k-f^*\right\|_{L^2(Q)}^2\\[0.2cm]
-	&=\frac{1}{2}\sum_{i=1}^{N_m}\left\|\alpha A_id^k+A_if^k+\ell_i u(u_0, \varphi)-\omega_i\right\|_{L^2(0, T)}^2+\frac{\gamma}{2}\left\|f^k+\alpha d^k-f^*\right\|_{L^2(Q)}^2\\[0.2cm]
+	&=\frac{1}{2}\sum_{i=1}^{N_m}\left\|\alpha A_id^k+A_if^k+\ell_i u(u_0, g)-\omega_i\right\|_{L^2(0, T)}^2+\frac{\gamma}{2}\left\|f^k+\alpha d^k-f^*\right\|_{L^2(Q)}^2\\[0.2cm]
 	&=\frac{1}{2}\sum_{i=1}^{N_m}\left\|\alpha A_id^k+\ell_i u(f^k)-\omega_i\right\|_{L^2(0, T)}^2+\frac{\gamma}{2}\left\|f^k+\alpha d^k-f^*\right\|_{L^2(Q)}^2.
 \end{align*}
 Differentiating $J_\gamma(f^k+\alpha d^k)$ with respect to $\alpha$, we get
@@ -236,11 +236,11 @@ Thus, the CG algorithm is set up by following loop:
 \section{Finite element method}\label{section4}
 We rewrite the Tikhonov functional
 \begin{align*}
-	J_\gamma(f)&=\frac{1}{2}\sum_{i=1}^{N_m}\left\|\ell_i u[f]+\ell_i u(u_0, \varphi)-\omega_i\right\|^2_{L^2(0, T)}+\frac{\gamma}{2}\left\|f-f^*\right\|^2_{L^2(Q)}\\
-	&=\frac{1}{2}\sum_{i=1}^{N_m}\left\|A_if+\ell_i u(u_0, \varphi)-\omega_i\right\|^2_{L^2(0, T)}+\frac{\gamma}{2}\left\|f-f^*\right\|^2_{L^2(Q)}\\
+	J_\gamma(f)&=\frac{1}{2}\sum_{i=1}^{N_m}\left\|\ell_i u[f]+\ell_i u(u_0, g)-\omega_i\right\|^2_{L^2(0, T)}+\frac{\gamma}{2}\left\|f-f^*\right\|^2_{L^2(Q)}\\
+	&=\frac{1}{2}\sum_{i=1}^{N_m}\left\|A_if+\ell_i u(u_0, g)-\omega_i\right\|^2_{L^2(0, T)}+\frac{\gamma}{2}\left\|f-f^*\right\|^2_{L^2(Q)}\\
 	&=\frac{1}{2}\sum_{i=1}^{N_m}\left\|A_if-\hat{\omega}_i\right\|^2_{L^2(0, T)}+\frac{\gamma}{2}\left\|f-f^*\right\|^2_{L^2(Q)},
 \end{align*}
-with $\hat{\omega}_i=\omega_i-\ell_i u(u_0, \varphi)$.
+with $\hat{\omega}_i=\omega_i-\ell_i u(u_0, g)$.
 \\
 The solution $f^\gamma$ of the minimization problem \eqref{2.4} is characterized by the first-order optimality condition
 \begin{align}\label{3.1}
@@ -285,7 +285,7 @@ Therefore, instead of getting $\hat{f}^\gamma_h$ that satisfies the equation \eq
 \begin{align}\label{3.5}
 	\nabla J_{\gamma, h}\left(\hat{f}^{\gamma, \delta}_h\right)= \sum_{i=1}^{N_m}\hat{A}_{i, h}^*(A_{i, h}\hat{f}^{\gamma, \delta}_h-\hat{\omega}_{i, h}^\delta)+\gamma(\hat{f}^{\gamma, \delta}_h-f^*)=0,
 \end{align}
-with $\hat{\omega}_{i, h}^\delta=\omega^\delta-\ell_i u_h(u_0, \varphi)$.
+with $\hat{\omega}_{i, h}^\delta=\omega^\delta-\ell_i u_h(u_0, g)$.
 \subsection{Convergence results}
 \begin{dl}\label{dl3.2}
 	Let $u(x, t)$ be the solution of variational problem \eqref{2.1} - \eqref{2.2} and $\overline{u}_h(x, t)$ be the solution for \eqref{3.2} and $u_h(x, t)=\overline{u}_h(x, t)+\overline{u}_{0, h}(x, t)$. Then there holds the error estimate
@@ -304,7 +304,7 @@ with $\hat{\omega}_{i, h}^\delta=\omega^\delta-\ell_i u_h(u_0, \varphi)$.
 \begin{align}\label{3.8}
 	\Rightarrow \left\| \sum_{i=1}^{N_m}\left(A_i^*-A^*_{i, h}\right)\phi_i\right\|_{L^2(Q)}\leq ch^2.
 \end{align}
-Let $u_h[f]$ và $u_h(u_0, \varphi)$ are the approximate solutions of \cref{bt2.1} and \cref{bt2.2} by using space-time finite element method. We define $A_h$ of $A$ is $A_hf=\ell u_h[f]$ and $\hat{\omega}_h=\omega-\ell u_h(u_0, \varphi)$. We have
+Let $u_h[f]$ và $u_h(u_0, g)$ are the approximate solutions of \cref{bt2.1} and \cref{bt2.2} by using space-time finite element method. We define $A_h$ of $A$ is $A_hf=\ell u_h[f]$ and $\hat{\omega}_h=\omega-\ell u_h(u_0, g)$. We have
 \begin{align*}
 	\left\| \sum_{i=1}^{N_m}\left(A_i-A_{i, h}\right)f\right\|_{L^2(0, T)}^2=\sum_{i=1}^{N_m}\left\| \ell_i u[f]-\ell_i u_h[f]\right\|_{L^2(0, T)}^2\leq\sum_{i=1}^{N_m} \left\|w_i\right\|^2_{L^2(\Omega)}\left\| u[f]-u_h[f]\right\|_{L^2(Q)}^2
 \end{align*}
@@ -313,7 +313,7 @@ Let $u_h[f]$ và $u_h(u_0, \varphi)$ are the approximate solutions of \cref{bt2.
 \end{align}
 and 
 \begin{align*}
-	\left\|\sum_{i=1}^{N_m}\left(\hat{\omega}_i-\hat{\omega}_{i, h}\right)\right\|_{L^2(0, T)}^2=\sum_{i=1}^{N_m}\left\| \ell_iu(u_0,\varphi)-\ell_iu_h(u_0, \varphi)\right\|_{L^2(0, T)}^2\leq\sum_{i=1}^{N_m} \left\|w_i\right\|^2_{L^2(\Omega)}\left\| u(u_0,\varphi)-u_h(u_0, \varphi)\right\|_{L^2(Q)}^2
+	\left\|\sum_{i=1}^{N_m}\left(\hat{\omega}_i-\hat{\omega}_{i, h}\right)\right\|_{L^2(0, T)}^2=\sum_{i=1}^{N_m}\left\| \ell_iu(u_0,\varphi)-\ell_iu_h(u_0, g)\right\|_{L^2(0, T)}^2\leq\sum_{i=1}^{N_m} \left\|w_i\right\|^2_{L^2(\Omega)}\left\| u(u_0,\varphi)-u_h(u_0, g)\right\|_{L^2(Q)}^2
 \end{align*}
 \begin{align}\label{3.10}
 	\Rightarrow\left\|\sum_{i=1}^{N_m}\left(\hat{\omega}_i-\hat{\omega}_{i, h}\right)\right\|_{L^2(0, T)}\leq ch^2
