@@ -24,7 +24,7 @@ namespace HeatSource2D_Q_fxt {
             double g(double x, double y, double t) => F(x, y, t) - f(x, y, t) * q(x, y, t);
             double gamma = 1e-5;
 
-            int nn = 64;
+            int nn = 4;
             int Nx = nn;
             int Ny = nn;
             int Nt = nn;

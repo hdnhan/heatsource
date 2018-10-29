@@ -1,7 +1,7 @@
 clear
 clc
 
-nn = 64;
+nn = 32;
 f = @(x, y, t) sin(pi * x).*y.*(1-y) * (t .^ 2 + 1);
 time = 0:1/nn:1;
 
