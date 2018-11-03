@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630 64-bit) (preloaded format=pdflatex 2018.10.22)  23 OCT 2018 02:07
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630 64-bit) (preloaded format=pdflatex 2018.10.22)  3 NOV 2018 22:58
 entering extended mode
 **./contents.tex
 (contents.tex
@@ -407,20 +407,20 @@ Package cleveref Info: `amsthm' support loaded on input line 3026.
 )) (contents.aux)
 \openout1 = `contents.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 12.
-LaTeX Font Info:    ... okay on input line 12.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 12.
-LaTeX Font Info:    ... okay on input line 12.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 12.
-LaTeX Font Info:    ... okay on input line 12.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 12.
-LaTeX Font Info:    ... okay on input line 12.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 12.
-LaTeX Font Info:    ... okay on input line 12.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 12.
-LaTeX Font Info:    ... okay on input line 12.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 12.
-LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
 
 ("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\context\base\supp-pdf.mki
 i"
@@ -453,7 +453,7 @@ G,.JBIG2,.JB2,.eps]
 (grfext)             \AppendGraphicsExtensions on input line 456.
 )
 \AtBeginShipoutBox=\box29
-Package hyperref Info: Link coloring ON on input line 12.
+Package hyperref Info: Link coloring ON on input line 15.
 
 ("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\hyperref\nameref.st
 y"
@@ -465,9 +465,9 @@ Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
 \c@section@level=\count135
 )
-LaTeX Info: Redefining \ref on input line 12.
-LaTeX Info: Redefining \pageref on input line 12.
-LaTeX Info: Redefining \nameref on input line 12.
+LaTeX Info: Redefining \ref on input line 15.
+LaTeX Info: Redefining \pageref on input line 15.
+LaTeX Info: Redefining \nameref on input line 15.
  (contents.out) (contents.out)
 \@outlinefile=\write3
 \openout3 = `contents.out'.
@@ -476,7 +476,7 @@ Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
 
 ABD: EverySelectfont initializing macros
-LaTeX Info: Redefining \selectfont on input line 12.
+LaTeX Info: Redefining \selectfont on input line 15.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -512,139 +512,134 @@ LaTeX Info: Redefining \selectfont on input line 12.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-LaTeX Font Info:    Try loading font information for U+msa on input line 14.
+LaTeX Font Info:    Try loading font information for U+msa on input line 17.
 ("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd"
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 14.
+LaTeX Font Info:    Try loading font information for U+msb on input line 17.
 
 ("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\umsb.fd"
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
+
+LaTeX Warning: No \author given.
+
 [1
 
 {C:/Users/nhan/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
-Missing character: There is no Ã in font cmr10!
-Missing character: There is no   in font cmr10!
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 57.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 59.
 
 ("C:\Users\nhan\AppData\Local\Programs\MiKTeX 2.9\tex\latex\base\omscmr.fd"
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 57.
-
-
-LaTeX Warning: Reference `section5' on page 2 undefined on input line 68.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 59.
 
 [2] [3] [4]
 LaTeX Font Info:    Font shape `OMS/cmr/m/it' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 155.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 157.
  [5] [6]
-Underfull \hbox (badness 10000) in paragraph at lines 221--223
+Underfull \hbox (badness 10000) in paragraph at lines 223--225
 
  []
 
 [7]
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 253.
+(hyperref)                removing `math shift' on input line 255.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `subscript' on input line 253.
+(hyperref)                removing `subscript' on input line 255.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                \kern 1.66702pt
-(hyperref)                removed on input line 253.
+(hyperref)                removed on input line 255.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `subscript' on input line 253.
+(hyperref)                removing `subscript' on input line 255.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `superscript' on input line 253.
+(hyperref)                removing `superscript' on input line 255.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 253.
+(hyperref)                removing `math shift' on input line 255.
 
 [8] [9]
-Missing character: There is no Ã in font cmr10!
-Missing character: There is no   in font cmr10!
-
-Overfull \hbox (20.06636pt too wide) detected at line 317
+Overfull \hbox (20.06636pt too wide) detected at line 319
 []
  []
 
 [10] [11] [12]
-<../Csharp/Results/HS_Q_fxt.png, id=220, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_Q_fxt.png, id=215, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_Q_fxt.png Graphic file (type png)
 <use ../Csharp/Results/HS_Q_fxt.png>
-Package pdftex.def Info: ../Csharp/Results/HS_Q_fxt.png  used on input line 387
+Package pdftex.def Info: ../Csharp/Results/HS_Q_fxt.png  used on input line 389
 .
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
-<../Csharp/Results/HS_QT_fx1.png, id=221, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_QT_fx1.png, id=216, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_QT_fx1.png Graphic file (type png)
 <use ../Csharp/Results/HS_QT_fx1.png>
 Package pdftex.def Info: ../Csharp/Results/HS_QT_fx1.png  used on input line 39
-7.
+9.
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
-<../Csharp/Results/HS_QT_fx2.png, id=222, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_QT_fx2.png, id=217, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_QT_fx2.png Graphic file (type png)
 <use ../Csharp/Results/HS_QT_fx2.png>
 Package pdftex.def Info: ../Csharp/Results/HS_QT_fx2.png  used on input line 40
-1.
+3.
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
  [13 <../Csharp/Results/HS_Q_fxt.png (PNG copy)> <../Csharp/Results/HS_QT_fx1.p
 ng (PNG copy)> <../Csharp/Results/HS_QT_fx2.png (PNG copy)>]
-<../Csharp/Results/HS_Integration_ft1.png, id=230, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_Integration_ft1.png, id=225, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_Integration_ft1.png Graphic file (type png)
 <use ../Csharp/Results/HS_Integration_ft1.png>
 Package pdftex.def Info: ../Csharp/Results/HS_Integration_ft1.png  used on inpu
-t line 413.
+t line 415.
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
-<../Csharp/Results/HS_1Point_ft1.png, id=231, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_1Point_ft1.png, id=226, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_1Point_ft1.png Graphic file (type png)
 <use ../Csharp/Results/HS_1Point_ft1.png>
 Package pdftex.def Info: ../Csharp/Results/HS_1Point_ft1.png  used on input lin
-e 417.
+e 419.
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
-<../Csharp/Results/HS_Integration_ft2.png, id=232, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_Integration_ft2.png, id=227, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_Integration_ft2.png Graphic file (type png)
 <use ../Csharp/Results/HS_Integration_ft2.png>
 Package pdftex.def Info: ../Csharp/Results/HS_Integration_ft2.png  used on inpu
-t line 424.
+t line 426.
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
-<../Csharp/Results/HS_1Point_ft2.png, id=233, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_1Point_ft2.png, id=228, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_1Point_ft2.png Graphic file (type png)
 <use ../Csharp/Results/HS_1Point_ft2.png>
 Package pdftex.def Info: ../Csharp/Results/HS_1Point_ft2.png  used on input lin
-e 428.
+e 430.
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
 
 [14 <../Csharp/Results/HS_Integration_ft1.png (PNG copy)> <../Csharp/Results/HS
 _1Point_ft1.png (PNG copy)> <../Csharp/Results/HS_Integration_ft2.png (PNG copy
 )> <../Csharp/Results/HS_1Point_ft2.png (PNG copy)>]
-<../Csharp/Results/Nine_Points.png, id=240, 421.575pt x 316.0608pt>
+<../Csharp/Results/Nine_Points.png, id=235, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/Nine_Points.png Graphic file (type png)
 <use ../Csharp/Results/Nine_Points.png>
 Package pdftex.def Info: ../Csharp/Results/Nine_Points.png  used on input line 
-439.
+441.
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
-<../Csharp/Results/HS_9Points_fx1.png, id=241, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_9Points_fx1.png, id=236, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_9Points_fx1.png Graphic file (type png)
 <use ../Csharp/Results/HS_9Points_fx1.png>
 Package pdftex.def Info: ../Csharp/Results/HS_9Points_fx1.png  used on input li
-ne 445.
+ne 447.
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
-<../Csharp/Results/HS_9Points_fx2.png, id=242, 421.575pt x 316.0608pt>
+<../Csharp/Results/HS_9Points_fx2.png, id=237, 421.575pt x 316.0608pt>
 File: ../Csharp/Results/HS_9Points_fx2.png Graphic file (type png)
 <use ../Csharp/Results/HS_9Points_fx2.png>
 Package pdftex.def Info: ../Csharp/Results/HS_9Points_fx2.png  used on input li
-ne 449.
+ne 451.
 (pdftex.def)             Requested size: 220.50887pt x 165.32191pt.
  [15 <../Csharp/Results/Nine_Points.png (PNG copy)> <../Csharp/Results/HS_9Poin
 ts_fx1.png (PNG copy)> <../Csharp/Results/HS_9Points_fx2.png (PNG copy)>] (cont
@@ -680,66 +675,53 @@ Missing character: There is no â in font cmr10!
 Missing character: There is no € in font cmr10!
 Missing character: There is no “ in font cmr10!
  [16])
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 461.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 463.
  [17]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 461.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 463.
 
 (contents.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 461.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 461.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 463.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 463.
 Package rerunfilecheck Info: File `contents.out' has not changed.
-(rerunfilecheck)             Checksum: 0C26F841EB7FED191F6219D2A365E9FE;483.
-
-
-LaTeX Warning: There were undefined references.
-
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 461.
+(rerunfilecheck)             Checksum: F779755BCBAD1CFB3A6175B556DDEE84;491.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 463.
  ) 
 Here is how much of TeX's memory you used:
- 10061 strings out of 493305
- 166785 string characters out of 3130236
+ 10058 strings out of 493305
+ 166695 string characters out of 3130236
  275701 words of memory out of 3000000
  13406 multiletter control sequences out of 15000+200000
- 12808 words of font info for 49 fonts, out of 3000000 for 9000
+ 12456 words of font info for 48 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 38i,15n,39p,699b,440s stack positions out of 5000i,500n,10000p,200000b,50000s
-pdfTeX warning (dest): name{Hfootnote.2} has been referenced but does not exi
-st, replaced by a fixed one
-
-pdfTeX warning (dest): name{Hfootnote.1} has been referenced but does not exist
-, replaced by a fixed one
-
-<C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm
-/cmbx10.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public
-/amsfonts/cm/cmbx12.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/
-type1/public/amsfonts/cm/cmbx9.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX
- 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/nhan/AppData/Local/Pro
-grams/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/nhan/AppDa
-ta/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/User
-s/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi5.p
-fb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts
-/cm/cmmi7.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/publ
-ic/amsfonts/cm/cmmi8.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts
-/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTe
-X 2.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/nhan/AppData/Local/Pro
-grams/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/nhan/AppDat
-a/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Users/n
-han/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr6.pfb><
-C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/
-cmr7.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/am
-sfonts/cm/cmr8.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1
-/public/amsfonts/cm/cmr9.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/f
-onts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/nhan/AppData/Local/Programs/
-MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy5.pfb><C:/Users/nhan/AppData/Loca
-l/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/nhan/A
-ppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/U
-sers/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmti
-10.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsf
-onts/cm/cmti8.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/
-public/amsfonts/symbols/msbm10.pfb>
-Output written on contents.pdf (17 pages, 657128 bytes).
+ 38i,15n,39p,664b,440s stack positions out of 5000i,500n,10000p,200000b,50000s
+<C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/
+cm/cmbx10.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/publ
+ic/amsfonts/cm/cmbx12.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/font
+s/type1/public/amsfonts/cm/cmbx9.pfb><C:/Users/nhan/AppData/Local/Programs/MiKT
+eX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/nhan/AppData/Local/P
+rograms/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/nhan/App
+Data/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Us
+ers/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi5
+.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfon
+ts/cm/cmmi7.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/pu
+blic/amsfonts/cm/cmmi8.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fon
+ts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/nhan/AppData/Local/Programs/MiK
+TeX 2.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/nhan/AppData/Local/P
+rograms/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/nhan/AppD
+ata/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Users
+/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr7.pfb
+><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/c
+m/cmr9.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/
+amsfonts/cm/cmsy10.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 2.9/fonts/t
+ype1/public/amsfonts/cm/cmsy5.pfb><C:/Users/nhan/AppData/Local/Programs/MiKTeX 
+2.9/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/nhan/AppData/Local/Progr
+ams/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/nhan/AppData/
+Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/n
+han/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/symbols/msbm1
+0.pfb>
+Output written on contents.pdf (17 pages, 621713 bytes).
 PDF statistics:
- 353 PDF objects out of 1000 (max. 8388607)
- 85 named destinations out of 1000 (max. 500000)
+ 338 PDF objects out of 1000 (max. 8388607)
+ 83 named destinations out of 1000 (max. 500000)
  115 words of extra memory for PDF output out of 10000 (max. 10000000)
 

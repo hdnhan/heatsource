@@ -2,15 +2,12 @@
 \input{packages_and_definitions}
 \everymath{\displaystyle}
 
-\title{A space-time finite element method for parabolic inverse problem with integral observations}
+\title{Reconstruction of the right-hand side in parabolic equations from integral observations}
 
-%\author{
-%Dinh Nho Hao\thanks{email: hao@math.ac.vn}
-%\and Ta Thi Thanh Mai\thanks{email: mai.tathithanh@hust.edu.vn} 
-%\and Ho Duc Nhan\thanks{email: hdnhan28@gmail.com}}
-%\thanksmarkseries{arabic}
-%\date{\footnotesize\textit{Hanoi Institute of Mathematics, VAST, 18 Hoang Quoc Viet Road, Hanoi, Vietnam\\
-%School of Applied Mathematics and Informatics, Hanoi University of Science and Technology, 1 Dai Co Viet street, Hai Ba Trung District, Hanoi, Vietnam}}
+\author{Ta Thi Thanh Mai\thanks{email: mai.tathithanh@hust.edu.vn} \and Ho Duc Nhan\thanks{email: hdnhan28@gmail.com}}
+
+\thanksmarkseries{arabic}
+\date{\footnotesize\textit{School of Applied Mathematics and Informatics, Hanoi University of Science and Technology, \\ No.1 Dai Co Viet street, Hai Ba Trung District, Hanoi, Vietnam}}
 
 \begin{document}
 \justifying
@@ -19,10 +16,10 @@
 %\normalsize
 \begin{abstract}
 We study the problem of determining the right-hand side in
-parabolic equations with time-dependent coefficients from integral observations which can be regarded as generalizations of point-wise interior observations. The main purpose of this paper is the development of the variational approach for the previous research \cite{a13}.
+parabolic equations with time-dependent coefficients from integral observations which can be regarded as generalizations of point-wise interior observations. 
 %check lai
 %We develop the previous research methods for inverse problems 
-%Our approach is new in the sense that for determining the right-hand side we do not assume that the data available in the whole space domain or in a subset of the space domain, but some integral observations during the time interval. 
+Our approach is new in the sense that for determining the right-hand side we do not assume that the data available in the whole space domain or in a subset of the space domain, but some integral observations during the time interval. 
 We propose a variational method in combination with Tikhonov regularization for solving the problem and then discrete it by space-time finite element methods. As a result, a numerical scheme with error estimate are given.
 The discretized minimization problem is solved by the conjugate gradient method. Some numerical examples are investigated for showing the efficiency and accuracy
 of present method.
@@ -30,12 +27,13 @@ of present method.
 
 \textbf{Keywords:} Inverse source problems, least squares method, Tikhonov regularization, space-time finite element method, conjugate gradient method.
 \section{Introduction and Problem setting}
-Over the last decades, the problem of determining a term in the right hand side of parabolic equations has received a large amount of attention from both engineers and mathematicians. Despite a vast literature on the existence, uniqueness and stability estimates of a solution to the problem, challenging topics still require further investigation to reach the ill-posedness and possible nonlinearity. For references on this subject, we refer the reader to [...].\\
+Over the last decades, the problem of determining a term in the right hand side of parabolic equations has received a large amount of attention from both engineers and mathematicians. Despite a vast literature on the existence, uniqueness and stability estimates of a solution to the problem, challenging topics still require further investigation to reach the ill-posedness and possible nonlinearity.
+For surveys on the subject, we refer the reader to the books [5, 23, 29, 30, 43] and the recent paper [48].\\
 To be more detailed, let $\Omega \subset \mathbb{R}^d,\, d\in \mathbb{N^+}$ be a bounded domain with a boundary $\Gamma$ and endow the cylinder $Q=\Omega\times (0,\, T]$ and lateral surface area $S=\Gamma \times (0,\, T]$ where $T>0$. 
 \\
 Consider the unsteady heat equation:
 \begin{align}\label{1.1}
-	\frac{\partial u}{\partial t}-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_i}\left(a_{ij}(x, t)\frac{\partial u}{\partial x_j}\right)=F(x, t), \quad(x, t)\in Q,
+	\frac{\partial u}{\partial t}-\sum_{i, j=1}^{d}\frac{\partial}{\partial x_j}\left(a_{ji}(x, t)\frac{\partial u}{\partial x_i}\right)=F(x, t), \quad(x, t)\in Q,
 \end{align}
 with the initial and Dirichlet conditions, respectively
 \begin{align}
@@ -48,9 +46,9 @@ where
 	&\lambda_1\left\|\xi\right\|^2\leq \sum_{i, j=1}^{d}a_{ij}\xi_i\xi_j\leq \lambda_2\left\|\xi\right\|^2,\; \forall \xi\in\mathbb{R}^d,\\
 	&u_0\in H^1_0(\Omega),\; F\in L^2(0,\, T;\, H^{-1}(\Omega)),
 \end{align*}
-with $\lambda_1$ and $\lambda_2$ are positive constants.
+with $\lambda_1$ và $\lambda_2$ are positive constants.
 \\
-The direct problem is to determine $u$ when all data $a_{ij}, i, j=\overline{1, d}, \,u_0, \,\varphi$ and $F$ in \cref{1.1,1.2,1.3} are given. On the other hand, the inverse problem (IP) is to identify a missed data such as the right hand side $F$ when some additional observations on the solution $u$ are available. 
+The direct problem is to determine $u$ when all data $a_{ji}, i, j=\overline{1, d}, \,u_0, \,\varphi$ and $F$ in \cref{1.1,1.2,1.3} are given. On the other hand, the inverse problem (IP) is to identify a missed data such as the right hand side $F$ when some additional observations on the solution $u$ are available. 
 \\
 We consider the right hand side of the equation \eqref{1.1} following the form $F(x, t)=f(.)q(x, t)+g(x, t)$, where $q(x, t),\, g(x, t)$ are given and $f(.)$ can be either $f(x, t)$, $f(x)$ or $f(t)$.
 %Denote $N_m$ is the number of measurements and $\ell_k u(f) =\omega_k, k=\overline{1, N_m}$ is the value of the $kth$ measurement. 
@@ -67,7 +65,7 @@ However, this minimization problem is unstable and there might be many minimizer
 $$J_{\gamma}(f)=\frac{1}{2}\sum_{k=1}^{N_{o}}\left\|\ell_k u(f)-\omega_k\right\|_{L^2(0, T)}^2+\frac{\gamma}{2}\left\|f-f^*\right\|_{*}^2,$$
 with $\gamma>0$ being a regularization parameter, $f^*$ is an a prior estimation of $f$ and $\left\|.\right\|_*$ an appropriate norm.
 \\
-This paper is organized into five sections. The next section provides a variational problem and prove that the Tikhonov functional is Frechet differentiable. In section \ref{section3} we present the conjugate gradient method, as well as the computation of descent direction. Section \ref{section4} describes the numerical method for solving the state and adjoint problem by space-time finite element methods and gives the convergence results. All the numerical test cases are outlined in Section \ref{section5}. The last section gives some perspectives and comments about the effectiveness and limitations of the present scheme.
+This paper is organized into five sections. The next section provides a variational problem and prove that the Tikhonov functional is Frechet differentiable. Section \ref{section3} reviews some classical theories of conjugate gradient method, as well as the computation of descent direction. Section \ref{section4} presents the numerical method for solving the state and adjoint problem by space-time finite element methods; the convergence results is outlined in Section .... All the numerical test cases are presented in Section \ref{section5}. The last section gives some perspectives and comments about the effectiveness and limitations of the present scheme.
 
 \section{Variational problem}\label{section2}
 To introduce the concept of weak form, we use the standard Sobolev spaces $H^1(\Omega),\, H^1_0(\Omega),\, H^{1, 0}(Q)$ and $H^{1, 1}(Q)$ \cite{b1, b2, b3}. Further, for a Banach space $B$, we define
@@ -137,7 +135,7 @@ By changing the time direction, meaning $\tilde{p}(x, t)=p(x, T-t)$, we will get
 	\begin{align}\label{2.8}
 		\left\|\ell_k\delta u(f)\right\|_{L^2(0, T)}^2=o\left(\left\|\delta f\right\|_{L^2(Q)}\right)\, \text{when } \left\|\delta f\right\|_{L^2(Q)}\to 0.
 	\end{align}
-	What is more, applying the Green formula for \eqref{2.5} and \eqref{2.7}, we get
+	What is more, applying the Green formula [...] for \eqref{2.5} and \eqref{2.7}, we get
 	\begin{align}\label{2.9}
 		\sum_{k=1}^{N_m}\int_{Q} \delta u(x, t) w(x) \left(\ell_k u(f)-\omega_k(t)\right)dxdt=\int_{Q} p(x, t)q(x, t)\delta f(x, t)dxdt
 	\end{align}
@@ -235,7 +233,7 @@ Thus, the CG algorithm is set up by following loop:
 	$$f^{k+1}=f^{k}+\alpha_kd^k.$$
 \end{itemize}
 
-\section{Finite element discretization}\label{section4}
+\section{Finite element method}\label{section4}
 We rewrite the Tikhonov functional
 \begin{align*}
 	J_\gamma(f)&=\frac{1}{2}\sum_{i=1}^{N_m}\left\|\ell_i u[f]+\ell_i u(u_0, g)-\omega_i\right\|^2_{L^2(0, T)}+\frac{\gamma}{2}\left\|f-f^*\right\|^2_{L^2(Q)}\\
@@ -306,7 +304,7 @@ with $\hat{\omega}_{i, h}^\delta=\omega^\delta-\ell_i u_h(u_0, g)$.
 \begin{align}\label{3.8}
 	\Rightarrow \left\| \sum_{i=1}^{N_m}\left(A_i^*-A^*_{i, h}\right)\phi_i\right\|_{L^2(Q)}\leq ch^2.
 \end{align}
-Let $u_h[f]$ and $u_h(u_0, g)$ are the approximate solutions of \cref{bt2.1} and \cref{bt2.2} by using space-time finite element method. We define $A_h$ of $A$ is $A_hf=\ell u_h[f]$ and $\hat{\omega}_h=\omega-\ell u_h(u_0, g)$. We have
+Let $u_h[f]$ và $u_h(u_0, g)$ are the approximate solutions of \cref{bt2.1} and \cref{bt2.2} by using space-time finite element method. We define $A_h$ of $A$ is $A_hf=\ell u_h[f]$ and $\hat{\omega}_h=\omega-\ell u_h(u_0, g)$. We have
 \begin{align*}
 	\left\| \sum_{i=1}^{N_m}\left(A_i-A_{i, h}\right)f\right\|_{L^2(0, T)}^2=\sum_{i=1}^{N_m}\left\| \ell_i u[f]-\ell_i u_h[f]\right\|_{L^2(0, T)}^2\leq\sum_{i=1}^{N_m} \left\|w_i\right\|^2_{L^2(\Omega)}\left\| u[f]-u_h[f]\right\|_{L^2(Q)}^2
 \end{align*}
@@ -356,7 +354,7 @@ and
 \end{cy}
 
 
-\section{Numerical results}\label{section5}
+\section{Numerical results}
 In all examples in this section, we choose the domain $\Omega=(0, 1)\times(0, 1),\, T=1$ and $a_{ij}(x, t)=\delta_{ij}$.
 For the temperature we take the exact solution be given by
 $$u(x, t)=e^t(x_1-x_1^2)\sin(\pi x_2).$$
