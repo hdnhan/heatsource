@@ -277,11 +277,11 @@ Let $f^\gamma_h$ be the solution of this problem is characterized by the variati
 \begin{align}\label{3.3}
 	\nabla J_{\gamma, h}(f^\gamma_h)= \sum_{i=1}^{N_m}A_{i, h}^*(A_{i, h}f^\gamma-\hat{\omega}_{i, h})+\gamma(f^\gamma_h-f^*)=0,
 \end{align}
-where $A_{i, h}^*$ is the adjoint operator of $A_{i, h}$. But it is hardly to find $A^*_{i, h}$ from $A_{i, h}$ in practice. So we define a proximate $\hat{A}_{i, h}^*$ of $A_i^*$ instead. In deed, we have $\sum_{i=1}^{N_m}\hat{A}^*_{i, h}\phi_i=p_h$, where $\phi_i=\ell_i u(f) - \omega_i$ and $p_h$ is the approximate solution of adjoint problem \eqref{2.5}. Therefore, the equation above will be
+where $A_{i, h}^*$ is the adjoint operator of $A_{i, h}$. But it is hardly to find $A^*_{i, h}$ from $A_{i, h}$ in practice, so we define a proximate $\hat{A}_{i, h}^*$ of $A_i^*$ instead. Therefore, we suppose that $\sum_{i=1}^{N_m}\hat{A}^*_{i, h}\phi_i=p_h$, where $\phi_i=\ell_i u(f) - \omega_i$ and $p_h$ is the approximate solution of adjoint problem \eqref{2.5}. Therefore, the equation above will be
 \begin{align}\label{3.4}
 	\nabla J_{\gamma, h}(f^\gamma_h)\simeq\nabla J_{\gamma, h}(\hat{f}^\gamma_h)= \sum_{i=1}^{N_m}\hat{A}_{i, h}^*(A_{i, h}\hat{f}^\gamma-\hat{\omega}_{i, h})+\gamma(\hat{f}^\gamma_h-f^*)=0,
 \end{align}
-Moreover, the observation will have noise in practice, so instead of $\omega$, we only get $\omega^{\delta}$ satisfying
+Moreover, the observation will have noise in practice, so instead of $\omega$, we suppose that only get $\omega^{\delta}$ satisfying
 $$\left\| \omega-\omega^\delta\right\|_{L^2(S_1)}\leq \delta.$$
 Therefore, instead of getting $\hat{f}^\gamma_h$ that satisfies the equation \eqref{3.5}, we will get $\hat{f}^{\gamma, \delta}_h$ satisfying
 \begin{align}\label{3.5}
